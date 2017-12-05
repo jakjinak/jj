@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <jjIncDir>..</jjIncDir>
+    <jjIncDir2>../..</jjIncDir2>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="jjIncDir">
+      <Value>$(jjIncDir)</Value>
+    </BuildMacro>
+    <BuildMacro Include="jjIncDir2">
+      <Value>$(jjIncDir2)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
