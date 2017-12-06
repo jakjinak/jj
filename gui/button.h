@@ -22,12 +22,12 @@ typedef creationOptions_t<opt::title, opt::position, opt::size, buttonStyle_t> b
 
 class button_t : public nativePointerWrapper_t<button_t>, public control_t
 {
-    typedef nativePointerWrapper_t<button_t> native_t;
     typedef control_t parent_t;
 
 public:
     button_t(contentHolder_t& owner, buttonOptions_t setup);
 
+    typedef nativePointerWrapper_t<button_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 

@@ -38,8 +38,6 @@ public:
 
 class menu_t : public nativePointerWrapper_t<menu_t>, public idGenerator_t
 {
-    typedef nativePointerWrapper_t<menu_t> native_t;
-
     enum type_t { MENU, BAR };
     type_t type_;
 
@@ -59,6 +57,7 @@ public:
     menu_t();
     menu_t(const string_t& title);
 
+    typedef nativePointerWrapper_t<menu_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 

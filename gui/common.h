@@ -75,7 +75,6 @@ class sizer_t;
 
 class contentHolder_t : public nativePointerWrapper_t<contentHolder_t>, public idGenerator_t, public itemContainer_t<content_t>
 {
-    typedef nativePointerWrapper_t<contentHolder_t> native_t;
     sizer_t* sizer_;
     void set_sizer();
 
@@ -88,6 +87,7 @@ public:
     contentHolder_t();
     virtual ~contentHolder_t();
 
+    typedef nativePointerWrapper_t<contentHolder_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 

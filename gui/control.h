@@ -12,7 +12,6 @@ namespace gui
 
 class content_t : public nativePointerWrapper_t<content_t>, protected idHolder_t
 {
-    typedef nativePointerWrapper_t<content_t> native_t;
 public:
     enum type_t { CONTROL, SIZER };
 private:
@@ -26,18 +25,19 @@ public:
     virtual ~content_t();
     type_t type() const { return type_; }
 
+    typedef nativePointerWrapper_t<content_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 };
 
 class control_t : public nativePointerWrapper_t<control_t>, public content_t
 {
-    typedef nativePointerWrapper_t<control_t> native_t;
     typedef content_t parent_t;
 
 public:
     control_t(contentHolder_t& owner);
 
+    typedef nativePointerWrapper_t<control_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 };

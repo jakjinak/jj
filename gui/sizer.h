@@ -36,12 +36,12 @@ struct sizerFlags_t
 
 class sizer_t : public content_t, public nativePointerWrapper_t<sizer_t>
 {
-    typedef nativePointerWrapper_t<sizer_t> native_t;
     typedef content_t parent_t;
 
 public:
     sizer_t(contentHolder_t& owner);
 
+    typedef nativePointerWrapper_t<sizer_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
@@ -50,13 +50,13 @@ public:
 
 class boxSizer_t : public sizer_t, public nativePointerWrapper_t<boxSizer_t>
 {
-    typedef nativePointerWrapper_t<boxSizer_t> native_t;
     typedef sizer_t parent_t;
 
 public:
     enum orientation_t { VERTICAL, HORIZONTAL };
     boxSizer_t(contentHolder_t& owner, orientation_t o);
 
+    typedef nativePointerWrapper_t<boxSizer_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 };

@@ -17,7 +17,6 @@ class application_t;
 
 class topLevelWindow_t : public nativePointerWrapper_t<topLevelWindow_t>, public contentHolder_t
 {
-    typedef nativePointerWrapper_t<topLevelWindow_t> native_t;
     typedef contentHolder_t parent_t;
 
     application_t& app_;
@@ -27,6 +26,7 @@ public:
     topLevelWindow_t(application_t& app, topLevelWindow_t* owner) : app_(app), owner_(owner) {}
     virtual ~topLevelWindow_t() {}
 
+    typedef nativePointerWrapper_t<topLevelWindow_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
@@ -55,13 +55,13 @@ class frame_t;
 
 class menuBar_t : public nativePointerWrapper_t<menuBar_t>, public menu_t
 {
-    typedef nativePointerWrapper_t<menuBar_t> native_t;
     typedef menu_t parent_t;
     frame_t& owner_;
 
 public:
     menuBar_t(frame_t& owner);
 
+    typedef nativePointerWrapper_t<menuBar_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 };
@@ -83,8 +83,6 @@ public:
     typedef std::vector<field_t> fields_t;
 
 private:
-    typedef nativePointerWrapper_t<statusBar_t> native_t;
-
     frame_t& owner_;
 
     statusBar_t(const statusBar_t&) = delete;
@@ -95,6 +93,7 @@ public:
     statusBar_t(frame_t& owner);
     statusBar_t(frame_t& owner, const fields_t& fields) : statusBar_t(owner) { set(fields); }
 
+    typedef nativePointerWrapper_t<statusBar_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
@@ -130,7 +129,6 @@ public:
     typedef creationOptions_t<opt::title, opt::position, opt::size, style_t> options_t;
 
 private:
-    typedef nativePointerWrapper_t<frame_t> native_t;
     typedef topLevelWindow_t parent_t;
 
     menuBar_t* menuBar_;
@@ -147,6 +145,7 @@ public:
     frame_t(application_t& app, topLevelWindow_t& owner, options_t setup);
     ~frame_t();
 
+    typedef nativePointerWrapper_t<frame_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 

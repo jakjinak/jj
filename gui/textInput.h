@@ -22,12 +22,12 @@ typedef creationOptions_t<opt::text, opt::position, opt::size, textInputStyle_t>
 
 class textInput_t : public control_t, public nativePointerWrapper_t<textInput_t>
 {
-    typedef nativePointerWrapper_t<textInput_t> native_t;
     typedef control_t parent_t;
 
 public:
     textInput_t(contentHolder_t& owner, textInputOptions_t setup);
 
+    typedef nativePointerWrapper_t<textInput_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
