@@ -86,6 +86,16 @@ void button_t::reset_native_pointer()
     parent_t::reset_native_pointer();
 }
 
+string_t button_t::text() const
+{
+    return wxs2s<string_t>::cvt(GET<wxButton>::from(this)->GetLabel());
+}
+
+void button_t::text(const string_t& v)
+{
+    GET<wxButton>::from(this)->SetLabel(v);
+}
+
 } // namespace gui
 } // namespace jj
 

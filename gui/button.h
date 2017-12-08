@@ -35,6 +35,9 @@ public:
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
+    string_t text() const;
+    void text(const string_t& v);
+
     eventCallback_t<void, button_t&> OnClick;
 };
 

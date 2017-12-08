@@ -7,7 +7,7 @@
 class wnd : public jj::gui::frame_t
 {
     jj::gui::textInput_t* t1;
-    jj::gui::button_t* b1, *b2, *b3;
+    jj::gui::button_t* b1, *b2, *b3, *b4;
 
     void onb1(jj::gui::button_t&) {
         if (!o)
@@ -40,6 +40,12 @@ class wnd : public jj::gui::frame_t
     void onb3(jj::gui::button_t&) {
         status_bar().style(2, cycleSB(status_bar().style(2)));
     }
+    void onb4(jj::gui::button_t& b) {
+        if (b.text() == jjT("B4 A"))
+            b.text(jjT("B4 B"));
+        else
+            b.text(jjT("B4 A"));
+    }
     void ontxt(jj::gui::textInput_t& x) {
         status_bar().text(x.value());
         if (!o)
@@ -62,11 +68,14 @@ public:
         b2->OnClick.add(*this, &wnd::onb2);
         b3 = new button_t(*this, button_t::options() << opt::title(jjT("B3")) << align_t::LEFT << alignv_t::BOTTOM);
         b3->OnClick.add(*this, &wnd::onb3);
+        b4 = new button_t(*this, button_t::options() << opt::title(jjT("B4 A")) << button_t::EXACT_FIT << button_t::NO_BORDER);
+        b4->OnClick.add(*this, &wnd::onb4);
         t1 = new textInput_t(*this, textInputOptions_t() << opt::text(jjT("Child")));
         t1->OnTextChange.add(*this, &wnd::ontxt);
         sizer().add(*b1, sizerFlags_t().set(align_t::CENTER));
         sizer().add(*b2, sizerFlags_t().set(align_t::CENTER));
         sizer().add(*b3, sizerFlags_t().set(align_t::CENTER).set(sizerFlags_t::EXPAND));
+        sizer().add(*b4, sizerFlags_t().set(align_t::CENTER));
         sizer().add(*t1, sizerFlags_t().set(align_t::CENTER).proportion(1));
 
         menu_t* m1, *m2, *m3;
