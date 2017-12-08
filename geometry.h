@@ -14,7 +14,7 @@ struct basic_point_t
         for (T& i : X)
             i = T();
     }
-    template<typename T1>
+    template<typename T1, typename std::enable_if<!std::is_same<basic_point_t, T1>::value>::type>
     basic_point_t(T1 v1)
         : basic_point_t()
     {
@@ -38,6 +38,11 @@ struct basic_point_t
         X[1] = v2;
         X[2] = v3;
     }
+
+    basic_point_t(const basic_point_t& other)
+    {
+        operator=(other);
+    }
     basic_point_t& operator=(const basic_point_t& other)
     {
         for (size_t i = 0; i < SIZE; ++i)
@@ -56,6 +61,7 @@ struct screen_point_t : public basic_point_t<int, 2>
        & Width;
     screen_point_t() : Row(X[1]), Column(X[0]), Left(X[0]), Top(X[1]), Height(X[1]), Width(X[0]) {}
     screen_point_t(int column, int row) : basic_point_t(column, row), Row(X[1]), Column(X[0]), Left(X[0]), Top(X[1]), Height(X[1]), Width(X[0]) {}
+    screen_point_t(const screen_point_t& other) : basic_point_t<int, 2>(static_cast<const screen_point_t&>(other)), Row(X[1]), Column(X[0]), Left(X[0]), Top(X[1]), Height(X[1]), Width(X[0]) {}
     screen_point_t& operator=(const screen_point_t& other) { basic_point_t<int, 2>::operator=(other); return *this; }
 };
 
