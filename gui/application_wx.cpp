@@ -5,6 +5,7 @@
 #include "wx/cmdline.h"
 
 #include "jj/gui/application.h"
+#include "jj/stream.h"
 
 #include <exception>
 
@@ -39,7 +40,7 @@ application_t::application_t()
 
         // but if multiple (global) application objects a created before OnInit then it's definitely a bug
         // TODO replace with kind of jjINITLOG
-        std::cerr << "Multiple application instance!\n";
+        jj::cerr << jjT("Multiple application instance!\n");
         exit(1);
     }
     r.inst = this;
@@ -68,7 +69,7 @@ class theApp : public wxApp
         if (!r.inst)
         {
             // TODO replace with kind of jjINITLOG
-            std::cerr << "No application instance!\n";
+            jj::cerr << jjT("No application instance!\n");
             return false; // no global instance of jj::gui::application_t found
         }
         r.in_run = true;
