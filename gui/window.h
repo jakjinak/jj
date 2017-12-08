@@ -120,13 +120,21 @@ public:
 class frame_t : public nativePointerWrapper_t<frame_t>, public topLevelWindow_t
 {
 public:
-    struct style_t
+    enum flags_t
     {
-        style_t();
-
-        long Style;
+        NO_RESIZE,
+        NO_MINIMIZE,
+        NO_MAXIMIZE,
+        NO_CLOSE,
+        NO_SYSMENU,
+        NO_CAPTION,
+        NO_TASKBAR,
+        TOOL_WINDOW,
+        SHAPED,
+        MAX_FLAGS
     };
-    typedef creationOptions_t<opt::title, opt::position, opt::size, style_t> options_t;
+    typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
+    typedef creationOptions_t<opt::title, opt::position, opt::size, flags1_t> options_t;
 
 private:
     typedef topLevelWindow_t parent_t;

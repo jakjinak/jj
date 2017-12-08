@@ -8,6 +8,7 @@
 #include "jj/string.h"
 #include "jj/idGenerator.h"
 #include "jj/geometry.h"
+#include "jj/flagSet.h"
 
 #include <set>
 #include <functional>
@@ -24,22 +25,47 @@ struct text { string_t Text; text() {} text(string_t atext) : Text(atext) {} };
 struct position { screen_point_t Position; position(); position(screen_point_t p) : Position(p) {} position(int left, int top) : Position(left, top) {} };
 struct size { screen_point_t Size; size(); size(screen_point_t s) : Size(s) {} size(int width, int height) : Size(width, height) {} };
 template<typename T> struct e { T Value; e() : Value() {} e(T v) : Value(v) {} };
+template<typename T, T COUNT> struct f : jj::flagSet_t<T, COUNT> { f() : flagSet_t<T, COUNT>() {} f(std::initializer_list<T> init) : flagSet_t<T, COUNT>(init) {} };
 } // namespace opt
 
 template<typename ... Ts>
 class creationOptions_t : public Ts...
 {
-    template<typename T, bool X = std::is_convertible<creationOptions_t&, opt::e<T>&>::value>
-    struct HELPER { typedef T type; };
-    template<typename T>
-    struct HELPER<T, true> { typedef opt::e<T> type; };
+    template<typename T, typename S, typename ... Ss>
+    struct SEARCHER : SEARCHER<T, Ss...> 
+    {
+        // just forward to next type
+    };
+    template<typename T, typename ... Ss>
+    struct SEARCHER<T, T, Ss...>
+    {
+        typedef T type;
+        static void adopt(type& t, const T v) { t = v; }
+    };
+    template<typename T, typename ... Ss>
+    struct SEARCHER<T, opt::e<T>, Ss...>
+    {
+        typedef opt::e<T> type;
+        static void adopt(type& t, const T v) { t = v; }
+    };
+    template<typename T, T COUNT, typename ... Ss>
+    struct SEARCHER<T, opt::f<T, COUNT>, Ss...>
+    {
+        typedef opt::f<T, COUNT> type;
+        static void adopt(type& t, const T v) { t |= v; }
+    };
+    template<typename T, typename S>
+    struct SEARCHER<T, S> : S::noMatchingTypeFoundInTemplateParameterList
+    {
+        // the sentinel if no match was found in the type list
+    };
 
 public:
     template<typename T>
     creationOptions_t& operator<<(const T v)
     {
-        typename HELPER<T>::type& t = *this;
-        t = v;
+        typename SEARCHER<T, Ts...>::type& t = *this;
+        SEARCHER<T, Ts...>::adopt(t, v);
         return *this;
     }
 };

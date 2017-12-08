@@ -371,12 +371,30 @@ void statusBar_t::style(size_t i, style_t value)
     }
 }
 
+namespace // <anonymous>
+{
+static long ff2wxfs(frame_t::flags1_t v)
+{
+    long ret = wxDEFAULT_FRAME_STYLE;
+    if (v*frame_t::NO_RESIZE) ret &= (~(wxRESIZE_BORDER));
+    if (v*frame_t::NO_MINIMIZE) ret &= (~(wxMINIMIZE_BOX));
+    if (v*frame_t::NO_MAXIMIZE) ret &= (~(wxMAXIMIZE_BOX));
+    if (v*frame_t::NO_CLOSE) ret &= (~(wxCLOSE_BOX));
+    if (v*frame_t::NO_SYSMENU) ret &= (~(wxSYSTEM_MENU));
+    if (v*frame_t::NO_CAPTION) ret &= (~(wxCAPTION));
+    if (v*frame_t::NO_TASKBAR) ret |= wxFRAME_NO_TASKBAR;
+    if (v*frame_t::TOOL_WINDOW) ret |= wxFRAME_TOOL_WINDOW;
+    if (v*frame_t::SHAPED) ret |= wxFRAME_SHAPED;
+    return ret;
+}
+} // namespace <anonymous>
+
 frame_t::frame_t(application_t& app, options_t setup)
     : parent_t(app, nullptr), native_t(*this)
     , menuBar_(nullptr), statusBar_(nullptr)
     , onCreateMenuBar([this] { return new menuBar_t(*this); }), onCreateStatusBar([this] { return new statusBar_t(*this); })
 {
-    wrFrame* tmp = new wrFrame(*this, nullptr, wxID_ANY, setup.Title, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), setup.Style);
+    wrFrame* tmp = new wrFrame(*this, nullptr, wxID_ANY, setup.Title, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
     set_native_pointer(static_cast<wxFrame*>(tmp));
 }
 
@@ -385,7 +403,7 @@ frame_t::frame_t(application_t& app, topLevelWindow_t& owner, options_t setup)
     , menuBar_(nullptr), statusBar_(nullptr)
     , onCreateMenuBar([this] { return new menuBar_t(*this); }), onCreateStatusBar([this] { return new statusBar_t(*this); })
 {
-    wrFrame* tmp = new wrFrame(*this, GET<wxWindow>::from(&owner), wxID_ANY, setup.Title, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), setup.Style);
+    wrFrame* tmp = new wrFrame(*this, GET<wxWindow>::from(&owner), wxID_ANY, setup.Title, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
     set_native_pointer(static_cast<wxFrame*>(tmp));
 }
 
@@ -400,11 +418,6 @@ frame_t::~frame_t()
         twr->disown();
     tmp->Destroy();
     native_t::reset_native_pointer();
-}
-
-frame_t::style_t::style_t() 
-    : Style(wxDEFAULT_FRAME_STYLE)
-{
 }
 
 void frame_t::set_menu_bar()

@@ -161,6 +161,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="defines.h" />
+    <ClInclude Include="flagSet.h" />
     <ClInclude Include="functionBag.h" />
     <ClInclude Include="geometry.h" />
     <ClInclude Include="idGenerator.h" />

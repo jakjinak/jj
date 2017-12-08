@@ -30,5 +30,8 @@
     <ClInclude Include="functionBag.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="flagSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
