@@ -54,8 +54,8 @@ class creationOptions_t : public Ts...
         typedef opt::f<T, COUNT> type;
         static void adopt(type& t, const T v) { t |= v; }
     };
-    template<typename T, typename S>
-    struct SEARCHER<T, S> : S::noMatchingTypeFoundInTemplateParameterList
+    template<typename T>
+    struct SEARCHER<T, void> : T::noMatchingTypeFoundInTemplateParameterList
     {
         // the sentinel if no match was found in the type list
     };
@@ -64,8 +64,8 @@ public:
     template<typename T>
     creationOptions_t& operator<<(const T v)
     {
-        typename SEARCHER<T, Ts...>::type& t = *this;
-        SEARCHER<T, Ts...>::adopt(t, v);
+        typename SEARCHER<T, Ts..., void>::type& t = *this;
+        SEARCHER<T, Ts..., void>::adopt(t, v);
         return *this;
     }
 };
