@@ -104,14 +104,20 @@ $${RESULT_$(1)}: $${OBJ_$(1)}
 endef
 
 ########################################
+# jjbase
+SRCDIR_jjbase := $(realpath .)
+SOURCE_jjbase := stream.cpp
+DEFINE_jjbase := ${WXDEFINE}
+INCDIR_jjbase := -I$(realpath ${SRCDIR_jjbase}/..)
+$(eval $(call define_static_library,jjbase,libs,clean))
+
+########################################
 # jjgui
 SRCDIR_jjgui := $(realpath gui)
 SOURCE_jjgui := common_wx.cpp application_wx.cpp window_wx.cpp menu_wx.cpp sizer_wx.cpp control_wx.cpp button_wx.cpp textInput_wx.cpp
 DEFINE_jjgui := ${WXDEFINE}
 INCDIR_jjgui := -I$(realpath ${SRCDIR_jjgui}/../..) ${WXINCDIR}
 $(eval $(call define_static_library,jjgui,libs,clean))
-
-#endef
 
 ########################################
 # TestApp
@@ -124,7 +130,7 @@ SRC_TestApp := $(addprefix ${SRCDIR_TestApp}/,${SOURCE_TestApp})
 OBJDIR_TestApp := ${OBJDIR}/obj/TestApp
 OBJ_TestApp := $(addprefix ${OBJDIR_TestApp}/,$(SOURCE_TestApp:.cpp=.o))
 INCDIR_TestApp := -I$(realpath ${SRCDIR_TestApp}/../..)
-LIBS_TestApp := ${RESULT_jjgui}
+LIBS_TestApp := ${RESULT_jjgui} ${RESULT_jjbase}
 
 TestApp: ${RESULT_TestApp}
 
