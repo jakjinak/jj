@@ -12,9 +12,7 @@ namespace gui
 
 struct sizerFlags_t
 {
-    enum align_t { LEFT, CENTER, RIGHT };
     align_t Align;
-    enum alignv_t { TOP, MIDDLE, BOTTOM };
     alignv_t AlignV;
     enum expand_t { DONT_EXPAND, EXPAND };
     expand_t Expand;

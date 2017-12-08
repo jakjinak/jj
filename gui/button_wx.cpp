@@ -24,6 +24,32 @@ struct wrButton : public nativeWrapper_t<button_t, wxButton>
         owner_->OnClick(*owner_);
     }
 };
+
+static long bf2wxbs(const button_t::flags1_t& v)
+{
+    long ret = 0;
+    if (v*button_t::EXACT_FIT) ret |= wxBU_EXACTFIT;
+    if (v*button_t::NO_BORDER) ret |= wxBORDER_NONE;
+    return ret;
+}
+static long ha2wxbs(const opt::e<align_t>& v)
+{
+    switch (v.Value)
+    {
+    case align_t::LEFT: return wxBU_LEFT;
+    case align_t::RIGHT: return wxBU_RIGHT;
+    default: return 0;
+    }
+}
+static long va2wxbs(const opt::e<alignv_t>& v)
+{
+    switch (v.Value)
+    {
+    case alignv_t::TOP: return wxBU_TOP;
+    case alignv_t::BOTTOM: return wxBU_BOTTOM;
+    default: return 0;
+    }
+}
 } // namespace <anonymous>
 
 namespace AUX
@@ -31,10 +57,15 @@ namespace AUX
 template<> struct COGET<button_t> { typedef wxButton TYPE; };
 } // namespace AUX
 
-button_t::button_t(contentHolder_t& owner, buttonOptions_t setup)
+button_t::button_t(contentHolder_t& owner, options_t setup)
     : parent_t(owner), native_t(*this)
 {
-    wrButton* tmp = new wrButton(*this, GET<wxWindow>::from(&owner), get_id(), setup.Title, wxPoint(setup.Position.Left, setup.Position.Top), wxSize(setup.Size.Width, setup.Size.Height), setup.Style);
+    wrButton* tmp = new wrButton(*this, GET<wxWindow>::from(&owner), 
+        get_id(), setup.Title, 
+        wxPoint(setup.Position.Left, setup.Position.Top), 
+        wxSize(setup.Size.Width, setup.Size.Height), 
+        bf2wxbs(setup)|ha2wxbs(setup)|va2wxbs(setup)
+    );
     set_native_pointer(static_cast<wxButton*>(tmp));
 
     AUX::setup_first_last_callbacks(OnClick, 

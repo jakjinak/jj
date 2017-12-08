@@ -21,7 +21,7 @@ struct wrBoxSizer : public nativeWrapper_t<boxSizer_t, wxBoxSizer>
 } // namespace <anonymous>
 
 sizerFlags_t::sizerFlags_t()
-    : Align(LEFT), AlignV(MIDDLE), Expand(DONT_EXPAND), Border(wxSizerFlags::GetDefaultBorder()), BorderV(wxSizerFlags::GetDefaultBorder()), Proportion(0)
+    : Align(align_t::LEFT), AlignV(alignv_t::MIDDLE), Expand(DONT_EXPAND), Border(wxSizerFlags::GetDefaultBorder()), BorderV(wxSizerFlags::GetDefaultBorder()), Proportion(0)
 {
 }
 
@@ -31,15 +31,15 @@ static wxSizerFlags f2f(const sizerFlags_t& f)
     int flag = 0;
     switch (f.Align)
     {
-    case sizerFlags_t::LEFT: flag |= wxALIGN_TOP; break;
-    case sizerFlags_t::CENTER: flag |= wxALIGN_CENTER_HORIZONTAL; break;
-    case sizerFlags_t::RIGHT: flag |= wxALIGN_RIGHT; break;
+    case align_t::LEFT: flag |= wxALIGN_TOP; break;
+    case align_t::CENTER: flag |= wxALIGN_CENTER_HORIZONTAL; break;
+    case align_t::RIGHT: flag |= wxALIGN_RIGHT; break;
     }
     switch (f.AlignV)
     {
-    case sizerFlags_t::TOP: flag |= wxALIGN_TOP; break;
-    case sizerFlags_t::MIDDLE: flag |= wxALIGN_CENTER_VERTICAL; break;
-    case sizerFlags_t::BOTTOM: flag |= wxALIGN_BOTTOM; break;
+    case alignv_t::TOP: flag |= wxALIGN_TOP; break;
+    case alignv_t::MIDDLE: flag |= wxALIGN_CENTER_VERTICAL; break;
+    case alignv_t::BOTTOM: flag |= wxALIGN_BOTTOM; break;
     }
     t.Align(flag);
 

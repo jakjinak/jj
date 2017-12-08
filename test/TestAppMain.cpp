@@ -56,18 +56,18 @@ public:
 
         onCreateSizer = [this] { return new boxSizer_t(*this, boxSizer_t::HORIZONTAL); };
 
-        b1 = new button_t(*this, buttonOptions_t() << opt::title(jjT("B1")));
+        b1 = new button_t(*this, button_t::options() << opt::title(jjT("B1")));
         b1->OnClick.add(*this, &wnd::onb1);
-        b2 = new button_t(*this, buttonOptions_t() << opt::title(jjT("B2")));
+        b2 = new button_t(*this, button_t::options() << opt::title(jjT("B2")) << button_t::EXACT_FIT);
         b2->OnClick.add(*this, &wnd::onb2);
-        b3 = new button_t(*this, buttonOptions_t() << opt::title(jjT("B3")));
+        b3 = new button_t(*this, button_t::options() << opt::title(jjT("B3")) << align_t::LEFT << alignv_t::BOTTOM);
         b3->OnClick.add(*this, &wnd::onb3);
         t1 = new textInput_t(*this, textInputOptions_t() << opt::text(jjT("Child")));
         t1->OnTextChange.add(*this, &wnd::ontxt);
-        sizer().add(*b1, sizerFlags_t().set(sizerFlags_t::CENTER));
-        sizer().add(*b2, sizerFlags_t().set(sizerFlags_t::CENTER));
-        sizer().add(*b3, sizerFlags_t().set(sizerFlags_t::CENTER));
-        sizer().add(*t1, sizerFlags_t().set(sizerFlags_t::CENTER).proportion(1));
+        sizer().add(*b1, sizerFlags_t().set(align_t::CENTER));
+        sizer().add(*b2, sizerFlags_t().set(align_t::CENTER));
+        sizer().add(*b3, sizerFlags_t().set(align_t::CENTER).set(sizerFlags_t::EXPAND));
+        sizer().add(*t1, sizerFlags_t().set(align_t::CENTER).proportion(1));
 
         menu_t* m1, *m2, *m3;
         menu_bar().append(m1 = new menu_t(), menuItem_t::subOptions_t() << opt::text(jjT("TEST")));
