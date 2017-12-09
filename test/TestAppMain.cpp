@@ -56,7 +56,7 @@ class wnd : public jj::gui::frame_t
 
 public:
     wnd(jj::gui::application_t& app)
-        : jj::gui::frame_t(app, jj::gui::frame_t::options_t() << jj::gui::opt::title(jjT("First One")) << jj::gui::opt::size(600, 280) << jj::gui::frame_t::NO_MAXIMIZE)
+        : jj::gui::frame_t(app, jj::gui::frame_t::options() << jj::gui::opt::title(jjT("First One")) << jj::gui::opt::size(600, 280) << jj::gui::frame_t::NO_MAXIMIZE)
         , o(nullptr)
     {
         using namespace jj::gui;
@@ -71,9 +71,9 @@ public:
         b3->OnClick.add(*this, &wnd::onb3);
         b4 = new button_t(*this, button_t::options() << opt::title(jjT("B4 A")) << button_t::EXACT_FIT << button_t::NO_BORDER);
         b4->OnClick.add(*this, &wnd::onb4);
-        t1 = new textInput_t(*this, textInput_t::options_t() << opt::text(jjT("Child")));
+        t1 = new textInput_t(*this, textInput_t::options() << opt::text(jjT("Child")));
         t1->OnTextChange.add(*this, &wnd::ontxt);
-        t2 = new textInput_t(*this, textInput_t::options_t() << textInput_t::MULTILINE);
+        t2 = new textInput_t(*this, textInput_t::options() << textInput_t::MULTILINE);
         sizer().add(*(s1 = new jj::gui::boxSizer_t(*this, boxSizer_t::HORIZONTAL)), sizerFlags_t().proportion(1).expand());
         sizer().add(*(s2 = new jj::gui::boxSizer_t(*this, boxSizer_t::HORIZONTAL)), sizerFlags_t().proportion(3).expand());
         s1->add(*b1, sizerFlags_t().set(align_t::CENTER));
@@ -84,18 +84,18 @@ public:
         s2->add(*t2, sizerFlags_t().proportion(1).expand());
 
         menu_t* m1, *m2, *m3;
-        menu_bar().append(m1 = new menu_t(), menuItem_t::subOptions_t() << opt::text(jjT("TEST")));
-        auto me = m1->append(menuItem_t::options_t() << opt::text(jjT("Exit")) << opt::accelerator(keys::accelerator_t(keys::ALT, keys::F4)));
+        menu_bar().append(m1 = new menu_t(), jjT("TEST"));
+        auto me = m1->append(menuItem_t::options() << opt::text(jjT("Exit")) << opt::accelerator(keys::accelerator_t(keys::ALT, keys::F4)));
         me.lock()->OnClick.add([this](menuItem_t&) { this->close(); });
-        menu_bar().append(m2 = new menu_t(), menuItem_t::subOptions_t() << opt::text(jjT("actions")));
-        m2->append(menuItem_t::options_t() << opt::text(jjT("M1")));
-        m2->append(m3 = new menu_t(), menuItem_t::subOptions_t() << opt::text(jjT("sub")));
-        m2->append(menuItem_t::options_t() << opt::text(jjT("M2")) << menuItem_t::CHECK);
-        m2->append(menuItem_t::options_t() << opt::text(jjT("M3")) << menuItem_t::CHECK);
+        menu_bar().append(m2 = new menu_t(), menuItem_t::submenu_options() << opt::text(jjT("actions")));
+        m2->append(menuItem_t::options() << opt::text(jjT("M1")));
+        m2->append(m3 = new menu_t(), jjT("sub"));
+        m2->append(menuItem_t::options() << opt::text(jjT("M2")) << menuItem_t::CHECK);
+        m2->append(menuItem_t::options() << opt::text(jjT("M3")) << menuItem_t::CHECK);
         m2->append(menuItem_t::SEPARATOR);
-        m2->append(menuItem_t::options_t() << opt::text(jjT("M4")));
-        m3->append(menuItem_t::options_t() << opt::text(jjT("S1")) << menuItem_t::RADIO);
-        m3->append(menuItem_t::options_t() << opt::text(jjT("S2")) << menuItem_t::RADIO);
+        m2->append(menuItem_t::options() << opt::text(jjT("M4")));
+        m3->append(menuItem_t::options() << opt::text(jjT("S1")) << menuItem_t::RADIO);
+        m3->append(menuItem_t::options() << opt::text(jjT("S2")) << menuItem_t::RADIO);
         status_bar().set({ {jjT("status"), -1, statusBar_t::RAISED}, {jjT("---"), -2, statusBar_t::FLAT}, {jjT("enjoy"), 60, statusBar_t::SUNKEN} });
         layout();
     }
@@ -123,7 +123,7 @@ class app : public jj::gui::application_t
         f = new wnd(*this);
         f->show();
 
-        f->o = new jj::gui::frame_t(*this, jj::gui::frame_t::options_t() << jj::gui::opt::title(jjT("Child")) << jj::gui::frame_t::NO_MINIMIZE);
+        f->o = new jj::gui::frame_t(*this, jj::gui::frame_t::options() << jj::gui::opt::title(jjT("Child")) << jj::gui::frame_t::NO_MINIMIZE);
         f->o->OnClose.add(*this, &app::ono);
         f->o->show();
 

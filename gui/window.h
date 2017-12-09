@@ -135,6 +135,7 @@ public:
     };
     typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
     typedef creationOptions_t<opt::title, opt::position, opt::size, flags1_t> options_t;
+    static options_t options() { return options_t(); }
 
 private:
     typedef topLevelWindow_t parent_t;

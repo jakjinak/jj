@@ -130,7 +130,7 @@ std::weak_ptr<menuItem_t> menu_t::append(menuItem_t::separator_t)
     return x;
 }
 
-std::weak_ptr<menuItem_t> menu_t::append(menu_t* sub, menuItem_t::subOptions_t setup)
+std::weak_ptr<menuItem_t> menu_t::append(menu_t* sub, menuItem_t::submenuOptions_t setup)
 {
     if (type_ == menu_t::BAR)
     {

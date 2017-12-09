@@ -31,7 +31,9 @@ public:
     enum separator_t { SEPARATOR };
 
     typedef creationOptions_t<opt::text, opt::accelerator, opt::e<kind_t>> options_t;
-    typedef creationOptions_t<opt::text> subOptions_t;
+    static options_t options() { return options_t(); }
+    typedef creationOptions_t<opt::text> submenuOptions_t;
+    static submenuOptions_t submenu_options() { return submenuOptions_t(); }
 
     eventCallback_t<void, menuItem_t&> OnClick;
 };
@@ -63,7 +65,8 @@ public:
 
     std::weak_ptr<menuItem_t> append(menuItem_t::options_t setup);
     std::weak_ptr<menuItem_t> append(menuItem_t::separator_t);
-    std::weak_ptr<menuItem_t> append(menu_t* sub, menuItem_t::subOptions_t setup);
+    std::weak_ptr<menuItem_t> append(menu_t* sub, menuItem_t::submenuOptions_t setup);
+    std::weak_ptr<menuItem_t> append(menu_t* sub, const string_t& text) { return append(sub, menuItem_t::submenu_options() << opt::text(text)); }
     //std::weak_ptr<menuItem_t> append(stockItem_t v);
 };
 

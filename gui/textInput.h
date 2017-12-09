@@ -24,6 +24,7 @@ public:
     };
     typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
     typedef creationOptions_t<opt::text, opt::position, opt::size, flags1_t, opt::e<align_t>> options_t;
+    static options_t options() { return options_t(); }
 
 private:
     typedef control_t parent_t;
