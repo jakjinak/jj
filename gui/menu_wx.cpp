@@ -52,6 +52,19 @@ static wxItemKind k2wxk(menuItem_t::kind_t k)
     }
 }
 
+static wxMenuItem& get_menu_item(menu_t& m, int id)
+{
+    wrMenu* menu = dynamic_cast<wrMenu*>(GET<wxMenu>::from(&m));
+    if (menu == nullptr)
+        throw std::invalid_argument("Internal error: no menu in menu_t");
+    wxMenuItem* item = menu->FindChildItem(id, nullptr);
+    if (item == nullptr)
+        throw std::invalid_argument("Internal error: no menuitem found for id");
+    if (item->GetId() != id)
+        throw std::invalid_argument("Internal error: ids of menuitems do not match");
+    return *item;
+}
+
 } // namespace <anonymous>
 
 menuItem_t::menuItem_t(menu_t& owner, int id) 
@@ -71,21 +84,56 @@ menuItem_t::menuItem_t(menu_t& owner, int id)
     }
 }
 
-menu_t::menu_t(menuBar_t&)
-    : type_(BAR)
+bool menuItem_t::checked() const
+{
+    wxMenuItem& item = get_menu_item(owner_, get_id());
+    return item.IsCheckable() && item.IsChecked();
+}
+
+void menuItem_t::check(bool v)
+{
+    wxMenuItem& item = get_menu_item(owner_, get_id());
+    if (!item.IsCheckable())
+        return;
+    item.Check(v);
+}
+
+bool menuItem_t::enabled() const
+{
+    return get_menu_item(owner_, get_id()).IsEnabled();
+}
+
+void menuItem_t::enable(bool v)
+{
+    get_menu_item(owner_, get_id()).Enable(v);
+}
+
+string_t menuItem_t::text() const
+{
+    return wxs2s<string_t>::cvt(get_menu_item(owner_, get_id()).GetItemLabel());
+}
+
+void menuItem_t::text(const string_t& v)
+{
+    get_menu_item(owner_, get_id()).SetItemLabel(v);
+}
+
+menu_t::menu_t(idGenerator_t& idsrc, menuBar_t&)
+    : idsrc_(idsrc), type_(BAR)
 {
     // note: the native pointer will be wxMenuBar
     //   and that wxMenuBar has already been created in menuBar_t ctor
 }
 
-menu_t::menu_t()
-    : type_(MENU)
+menu_t::menu_t(idGenerator_t& idsrc)
+    : idsrc_(idsrc), type_(MENU)
 {
     wrMenu* tmp = new wrMenu(*this);
     set_native_pointer(static_cast<wxMenu*>(tmp));
 }
 
-menu_t::menu_t(const string_t& title)
+menu_t::menu_t(idGenerator_t& idsrc, const string_t& title)
+    : idsrc_(idsrc), type_(MENU)
 {
     wrMenu* tmp = new wrMenu(*this, title);
     set_native_pointer(static_cast<wxMenu*>(tmp));
@@ -106,7 +154,7 @@ std::weak_ptr<menuItem_t> menu_t::append(menuItem_t::options_t setup)
     if (type_ == menu_t::BAR) // TODO this (in theory) is also allowed (via wxMenuBar::Append(0, "txt"); try and implement
         throw std::invalid_argument("no regular items in menu bar");
     wxMenu* m = GET<wxMenu>::from(this);
-    wxMenuItem* tmp = new wxMenuItem(m, get_an_id(), setup.Text, jjT(""), k2wxk(setup.Value));
+    wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id(), setup.Text, jjT(""), k2wxk(setup.Value));
     m->Append(tmp);
     if (!setup.Accelerator.empty())
     {
@@ -123,7 +171,7 @@ std::weak_ptr<menuItem_t> menu_t::append(menuItem_t::separator_t)
     if (type_ == menu_t::BAR)
         throw std::invalid_argument("no separators in menu bar");
     wxMenu* m = GET<wxMenu>::from(this);
-    wxMenuItem* tmp = new wxMenuItem(m, get_an_id()/*wxID_SEPARATOR*/, jjT(""), jjT(""), wxITEM_SEPARATOR);
+    wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id()/*wxID_SEPARATOR*/, jjT(""), jjT(""), wxITEM_SEPARATOR);
     m->Append(tmp);
     item_t x(new menuItem_t(*this, tmp->GetId()));
     items_.push_back(x);
@@ -143,7 +191,7 @@ std::weak_ptr<menuItem_t> menu_t::append(menu_t* sub, menuItem_t::submenuOptions
     else
     {
         wxMenu* m = GET<wxMenu>::from(this);
-        wxMenuItem* tmp = new wxMenuItem(m, get_an_id(), setup.Text, jjT(""), wxITEM_NORMAL, GET<wxMenu>::from(sub));
+        wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id(), setup.Text, jjT(""), wxITEM_NORMAL, GET<wxMenu>::from(sub));
         m->Append(tmp);
         item_t x(new menuItem_t(*this, tmp->GetId()));
         items_.push_back(x);

@@ -35,11 +35,24 @@ public:
     typedef creationOptions_t<opt::text> submenuOptions_t;
     static submenuOptions_t submenu_options() { return submenuOptions_t(); }
 
+    bool checked() const;
+    void check(bool v = true);
+    void uncheck() { check(false); }
+
+    bool enabled() const;
+    void enable(bool v = true);
+    void disable() { enable(false); }
+
+    string_t text() const;
+    void text(const string_t& v);
+
     eventCallback_t<void, menuItem_t&> OnClick;
 };
 
-class menu_t : public nativePointerWrapper_t<menu_t>, public idGenerator_t
+class menu_t : public nativePointerWrapper_t<menu_t>
 {
+    idGenerator_t& idsrc_;
+
     enum type_t { MENU, BAR };
     type_t type_;
 
@@ -54,10 +67,10 @@ class menu_t : public nativePointerWrapper_t<menu_t>, public idGenerator_t
 
     friend class menuItem_t;
     friend class menuBar_t;
-    menu_t(menuBar_t&);
+    menu_t(idGenerator_t& idsrc, menuBar_t&);
 public:
-    menu_t();
-    menu_t(const string_t& title);
+    menu_t(idGenerator_t& idsrc);
+    menu_t(idGenerator_t& idsrc, const string_t& title);
 
     typedef nativePointerWrapper_t<menu_t> native_t;
     void set_native_pointer(void* ptr);

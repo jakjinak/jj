@@ -143,7 +143,7 @@ struct wrFrame : public nativeWrapper_t<frame_t, wxFrame>
 } // namespace <anonymous>
 
 menuBar_t::menuBar_t(frame_t& owner)
-    : parent_t(*this), native_t(*this), owner_(owner)
+    : parent_t(owner, *this), native_t(*this), owner_(owner)
 {
     wrMenuBar* tmp = new wrMenuBar(*this);
     set_native_pointer(static_cast<wxMenuBar*>(tmp));
