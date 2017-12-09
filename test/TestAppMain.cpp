@@ -1,5 +1,6 @@
 #include "jj/gui/application.h"
 #include "jj/gui/window.h"
+#include "jj/gui/textLabel.h"
 #include "jj/gui/textInput.h"
 #include "jj/gui/button.h"
 #include "jj/gui/sizer.h"
@@ -66,6 +67,7 @@ public:
 
         onCreateSizer = [this] { return new boxSizer_t(*this, boxSizer_t::VERTICAL); };
 
+        textLabel_t* st = new textLabel_t(*this, textLabel_t::options() << opt::text(jjT("ST")));
         b1 = new button_t(*this, button_t::options() << opt::title(jjT("B1")));
         b1->OnClick.add(*this, &wnd::onb1);
         b2 = new button_t(*this, button_t::options() << opt::title(jjT("B2")) << button_t::EXACT_FIT);
@@ -79,6 +81,7 @@ public:
         t2 = new textInput_t(*this, textInput_t::options() << textInput_t::MULTILINE);
         sizer().add(*(s1 = new jj::gui::boxSizer_t(*this, boxSizer_t::HORIZONTAL)), sizerFlags_t().proportion(1).expand());
         sizer().add(*(s2 = new jj::gui::boxSizer_t(*this, boxSizer_t::HORIZONTAL)), sizerFlags_t().proportion(3).expand());
+        s1->add(*st, sizerFlags_t().border(5));
         s1->add(*b1, sizerFlags_t().set(align_t::CENTER));
         s1->add(*b2, sizerFlags_t().set(align_t::CENTER));
         s1->add(*b3, sizerFlags_t().set(align_t::CENTER).set(sizerFlags_t::EXPAND));
@@ -97,14 +100,21 @@ public:
         m2->append(m3 = new menu_t(*this), jjT("sub"));
         auto m22 = m2->append(menuItem_t::options() << opt::text(jjT("M2")) << menuItem_t::CHECK);
         m2->append(menuItem_t::options() << opt::text(jjT("M3")) << menuItem_t::CHECK)
-            .lock()->OnClick.add([m22](menuItem_t& i) { 
+            .lock()->OnClick.add([this, m22, st](menuItem_t& i) { 
                 menuItem_t& mi = *m22.lock(); 
                 mi.enable(i.checked());
                 jj::string_t txt = mi.text();
                 if (txt.length() < 15)
+                {
                     mi.text(txt + jjT(" X"));
+                    st->text(st->text() + jjT(" X"));
+                }
                 else
+                {
                     mi.text(txt.substr(0, 2));
+                    st->text(st->text().substr(0, 2));
+                }
+                this->layout();
             });
         m2->append(menuItem_t::SEPARATOR);
         m2->append(menuItem_t::options() << opt::text(jjT("M4")));

@@ -54,6 +54,9 @@
     <ClInclude Include="keys_wx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="textLabel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application_wx.cpp">
@@ -78,6 +81,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="menu_wx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="textLabel_wx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

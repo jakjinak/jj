@@ -337,6 +337,7 @@
     <ClInclude Include="sizer.h" />
     <ClInclude Include="sizer_wx.h" />
     <ClInclude Include="textInput.h" />
+    <ClInclude Include="textLabel.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -347,6 +348,7 @@
     <ClCompile Include="menu_wx.cpp" />
     <ClCompile Include="sizer_wx.cpp" />
     <ClCompile Include="textInput_wx.cpp" />
+    <ClCompile Include="textLabel_wx.cpp" />
     <ClCompile Include="window_wx.cpp" />
   </ItemGroup>
   <ItemGroup>
