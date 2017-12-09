@@ -12,20 +12,24 @@ namespace jj
 namespace gui
 {
 
-struct textInputStyle_t
-{
-    long Style;
-
-    textInputStyle_t() : Style(0) {}
-};
-typedef creationOptions_t<opt::text, opt::position, opt::size, textInputStyle_t> textInputOptions_t;
-
 class textInput_t : public control_t, public nativePointerWrapper_t<textInput_t>
 {
+public:
+    enum flags_t
+    {
+        MULTILINE,
+        READONLY,
+        PASSWORD,
+        MAX_FLAGS
+    };
+    typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
+    typedef creationOptions_t<opt::text, opt::position, opt::size, flags1_t, opt::e<align_t>> options_t;
+
+private:
     typedef control_t parent_t;
 
 public:
-    textInput_t(contentHolder_t& owner, textInputOptions_t setup);
+    textInput_t(contentHolder_t& owner, options_t setup);
 
     typedef nativePointerWrapper_t<textInput_t> native_t;
     void set_native_pointer(void* ptr);

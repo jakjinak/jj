@@ -6,8 +6,9 @@
 
 class wnd : public jj::gui::frame_t
 {
-    jj::gui::textInput_t* t1;
+    jj::gui::textInput_t* t1, *t2;
     jj::gui::button_t* b1, *b2, *b3, *b4;
+    jj::gui::boxSizer_t* s1, *s2;
 
     void onb1(jj::gui::button_t&) {
         if (!o)
@@ -55,12 +56,12 @@ class wnd : public jj::gui::frame_t
 
 public:
     wnd(jj::gui::application_t& app)
-        : jj::gui::frame_t(app, jj::gui::frame_t::options_t() << jj::gui::opt::title(jjT("First One")) << jj::gui::opt::size(800, 120) << jj::gui::frame_t::NO_MAXIMIZE)
+        : jj::gui::frame_t(app, jj::gui::frame_t::options_t() << jj::gui::opt::title(jjT("First One")) << jj::gui::opt::size(600, 280) << jj::gui::frame_t::NO_MAXIMIZE)
         , o(nullptr)
     {
         using namespace jj::gui;
 
-        onCreateSizer = [this] { return new boxSizer_t(*this, boxSizer_t::HORIZONTAL); };
+        onCreateSizer = [this] { return new boxSizer_t(*this, boxSizer_t::VERTICAL); };
 
         b1 = new button_t(*this, button_t::options() << opt::title(jjT("B1")));
         b1->OnClick.add(*this, &wnd::onb1);
@@ -70,13 +71,17 @@ public:
         b3->OnClick.add(*this, &wnd::onb3);
         b4 = new button_t(*this, button_t::options() << opt::title(jjT("B4 A")) << button_t::EXACT_FIT << button_t::NO_BORDER);
         b4->OnClick.add(*this, &wnd::onb4);
-        t1 = new textInput_t(*this, textInputOptions_t() << opt::text(jjT("Child")));
+        t1 = new textInput_t(*this, textInput_t::options_t() << opt::text(jjT("Child")));
         t1->OnTextChange.add(*this, &wnd::ontxt);
-        sizer().add(*b1, sizerFlags_t().set(align_t::CENTER));
-        sizer().add(*b2, sizerFlags_t().set(align_t::CENTER));
-        sizer().add(*b3, sizerFlags_t().set(align_t::CENTER).set(sizerFlags_t::EXPAND));
-        sizer().add(*b4, sizerFlags_t().set(align_t::CENTER));
-        sizer().add(*t1, sizerFlags_t().set(align_t::CENTER).proportion(1));
+        t2 = new textInput_t(*this, textInput_t::options_t() << textInput_t::MULTILINE);
+        sizer().add(*(s1 = new jj::gui::boxSizer_t(*this, boxSizer_t::HORIZONTAL)), sizerFlags_t().proportion(1).expand());
+        sizer().add(*(s2 = new jj::gui::boxSizer_t(*this, boxSizer_t::HORIZONTAL)), sizerFlags_t().proportion(3).expand());
+        s1->add(*b1, sizerFlags_t().set(align_t::CENTER));
+        s1->add(*b2, sizerFlags_t().set(align_t::CENTER));
+        s1->add(*b3, sizerFlags_t().set(align_t::CENTER).set(sizerFlags_t::EXPAND));
+        s1->add(*b4, sizerFlags_t().set(align_t::CENTER));
+        s1->add(*t1, sizerFlags_t().set(align_t::CENTER).proportion(1));
+        s2->add(*t2, sizerFlags_t().proportion(1).expand());
 
         menu_t* m1, *m2, *m3;
         menu_bar().append(m1 = new menu_t(), menuItem_t::subOptions_t() << opt::text(jjT("TEST")));

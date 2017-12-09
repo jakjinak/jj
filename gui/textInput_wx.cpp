@@ -26,6 +26,28 @@ struct wrTextInput : public nativeWrapper_t<textInput_t, wxTextCtrl>
     }
 };
 
+static long tif2wxtcs(const textInput_t::flags1_t& v)
+{
+    long ret = 0;
+    if (v*textInput_t::MULTILINE) ret |= wxTE_MULTILINE;
+    if (v*textInput_t::PASSWORD) ret |= wxTE_PASSWORD;
+    if (v*textInput_t::READONLY) ret |= wxTE_READONLY;
+    return ret;
+}
+
+static long ha2wxtcs(const opt::e<align_t>& v)
+{
+    switch (v.Value)
+    {
+    case align_t::CENTER:
+        return wxTE_CENTRE;
+    case align_t::RIGHT:
+        return wxTE_RIGHT;
+    default:
+        return wxTE_LEFT;
+    }
+}
+
 } // namespace <anonymous>
 
 namespace AUX
@@ -33,10 +55,10 @@ namespace AUX
 template<> struct COGET<textInput_t> { typedef wxTextCtrl TYPE; };
 } // namespace AUX
 
-textInput_t::textInput_t(contentHolder_t& owner, textInputOptions_t setup)
+textInput_t::textInput_t(contentHolder_t& owner, options_t setup)
     : parent_t(owner), native_t(*this)
 {
-    wrTextInput* tmp = new wrTextInput(*this, GET<wxWindow>::from(&owner), get_id(), setup.Text, wxPoint(setup.Position.Left, setup.Position.Top), wxSize(setup.Size.Width, setup.Size.Height), setup.Style);
+    wrTextInput* tmp = new wrTextInput(*this, GET<wxWindow>::from(&owner), get_id(), setup.Text, wxPoint(setup.Position.Left, setup.Position.Top), wxSize(setup.Size.Width, setup.Size.Height), tif2wxtcs(setup)|ha2wxtcs(setup));
     set_native_pointer(static_cast<wxTextCtrl*>(tmp));
 
     AUX::setup_first_last_callbacks(OnTextChange,
