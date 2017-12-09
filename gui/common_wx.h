@@ -26,6 +26,7 @@ template<typename P> struct GETTER<wxWindow, P> { inline static P* get(wxWindow*
 template<typename P> struct GETTER<wxControl, P> { inline static P* get(wxControl* p) { return p; } };
 template<typename P> struct GETTER<wxStaticText, P> { inline static P* get(wxStaticText* p) { return p; } };
 template<typename P> struct GETTER<wxTextCtrl, P> { inline static P* get(wxTextCtrl* p) { return p; } };
+template<typename P> struct GETTER<wxComboBox, P> { inline static P* get(wxComboBox* p) { return p; } };
 template<typename P> struct GETTER<wxButton, P> { inline static P* get(wxButton* p) { return p; } };
 
 template<typename P> struct GETTER<wxSizer, P> { inline static P* get(wxSizer* p) { return p; } };

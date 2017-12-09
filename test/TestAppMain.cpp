@@ -2,6 +2,7 @@
 #include "jj/gui/window.h"
 #include "jj/gui/textLabel.h"
 #include "jj/gui/textInput.h"
+#include "jj/gui/comboBox.h"
 #include "jj/gui/button.h"
 #include "jj/gui/sizer.h"
 
@@ -79,6 +80,8 @@ public:
         t1 = new textInput_t(*this, textInput_t::options() << opt::text(jjT("Child")));
         t1->OnTextChange.add(*this, &wnd::ontxt);
         t2 = new textInput_t(*this, textInput_t::options() << textInput_t::MULTILINE);
+        comboBox_t* cb = new comboBox_t(*this, { jjT("ABC"), jjT("XYZ"), jjT("123") });
+        cb->OnSelect.add([this](comboBox_t& x) { t2->changeValue(jjT("Selected [") + x.text() + jjT("]")); });
         sizer().add(*(s1 = new jj::gui::boxSizer_t(*this, boxSizer_t::HORIZONTAL)), sizerFlags_t().proportion(1).expand());
         sizer().add(*(s2 = new jj::gui::boxSizer_t(*this, boxSizer_t::HORIZONTAL)), sizerFlags_t().proportion(3).expand());
         s1->add(*st, sizerFlags_t().border(5));
@@ -87,6 +90,7 @@ public:
         s1->add(*b3, sizerFlags_t().set(align_t::CENTER).set(sizerFlags_t::EXPAND));
         s1->add(*b4, sizerFlags_t().set(align_t::CENTER));
         s1->add(*t1, sizerFlags_t().set(align_t::CENTER).proportion(1));
+        s1->add(*cb, sizerFlags_t().set(align_t::CENTER).proportion(1));
         s2->add(*t2, sizerFlags_t().proportion(1).expand());
 
         menu_t* m1, *m2, *m3;
