@@ -79,17 +79,17 @@ void textInput_t::reset_native_pointer()
     parent_t::reset_native_pointer();
 }
 
-string_t textInput_t::value() const
+string_t textInput_t::text() const
 {
     return wxs2s<string_t>::cvt(GET<wxTextCtrl>::from(this)->GetValue());
 }
 
-void textInput_t::setValue(const string_t& v)
+void textInput_t::text(const string_t& v)
 {
     GET<wxTextCtrl>::from(this)->SetValue(v);
 }
 
-void textInput_t::changeValue(const string_t& v)
+void textInput_t::changeText(const string_t& v)
 {
     GET<wxTextCtrl>::from(this)->ChangeValue(v);
 }

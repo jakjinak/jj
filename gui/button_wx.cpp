@@ -61,7 +61,7 @@ button_t::button_t(contentHolder_t& owner, options_t setup)
     : parent_t(owner), native_t(*this)
 {
     wrButton* tmp = new wrButton(*this, GET<wxWindow>::from(&owner), 
-        get_id(), setup.Title, 
+        get_id(), setup.Text, 
         wxPoint(setup.Position.Left, setup.Position.Top), 
         wxSize(setup.Size.Width, setup.Size.Height), 
         bf2wxbs(setup)|ha2wxbs(setup)|va2wxbs(setup)

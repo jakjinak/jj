@@ -394,7 +394,7 @@ frame_t::frame_t(application_t& app, options_t setup)
     , menuBar_(nullptr), statusBar_(nullptr)
     , onCreateMenuBar([this] { return new menuBar_t(*this); }), onCreateStatusBar([this] { return new statusBar_t(*this); })
 {
-    wrFrame* tmp = new wrFrame(*this, nullptr, wxID_ANY, setup.Title, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
+    wrFrame* tmp = new wrFrame(*this, nullptr, wxID_ANY, setup.Text, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
     set_native_pointer(static_cast<wxFrame*>(tmp));
 }
 
@@ -403,7 +403,7 @@ frame_t::frame_t(application_t& app, topLevelWindow_t& owner, options_t setup)
     , menuBar_(nullptr), statusBar_(nullptr)
     , onCreateMenuBar([this] { return new menuBar_t(*this); }), onCreateStatusBar([this] { return new statusBar_t(*this); })
 {
-    wrFrame* tmp = new wrFrame(*this, GET<wxWindow>::from(&owner), wxID_ANY, setup.Title, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
+    wrFrame* tmp = new wrFrame(*this, GET<wxWindow>::from(&owner), wxID_ANY, setup.Text, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
     set_native_pointer(static_cast<wxFrame*>(tmp));
 }
 

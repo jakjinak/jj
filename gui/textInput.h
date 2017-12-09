@@ -36,9 +36,9 @@ public:
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
-    string_t value() const;
-    void setValue(const string_t& v);
-    void changeValue(const string_t& v);
+    string_t text() const;
+    void text(const string_t& v);
+    void changeText(const string_t& v);
 
     eventCallback_t<void, textInput_t&> OnTextChange;
 };

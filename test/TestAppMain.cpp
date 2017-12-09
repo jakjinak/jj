@@ -50,10 +50,10 @@ class wnd : public jj::gui::frame_t
             b.text(jjT("B4 A"));
     }
     void ontxt(jj::gui::textInput_t& x) {
-        status_bar().text(x.value());
+        status_bar().text(x.text());
         if (!o)
             return;
-        o->title(x.value());
+        o->title(x.text());
     }
     void onradio(jj::gui::menuItem_t& x) {
         x.check();
@@ -61,7 +61,7 @@ class wnd : public jj::gui::frame_t
 
 public:
     wnd(jj::gui::application_t& app)
-        : jj::gui::frame_t(app, jj::gui::frame_t::options() << jj::gui::opt::title(jjT("First One")) << jj::gui::opt::size(600, 280) << jj::gui::frame_t::NO_MAXIMIZE)
+        : jj::gui::frame_t(app, jj::gui::frame_t::options() << jj::gui::opt::text(jjT("First One")) << jj::gui::opt::size(600, 280) << jj::gui::frame_t::NO_MAXIMIZE)
         , o(nullptr)
     {
         using namespace jj::gui;
@@ -69,19 +69,19 @@ public:
         onCreateSizer = [this] { return new boxSizer_t(*this, boxSizer_t::VERTICAL); };
 
         textLabel_t* st = new textLabel_t(*this, textLabel_t::options() << opt::text(jjT("ST")));
-        b1 = new button_t(*this, button_t::options() << opt::title(jjT("B1")));
+        b1 = new button_t(*this, button_t::options() << opt::text(jjT("B1")));
         b1->OnClick.add(*this, &wnd::onb1);
-        b2 = new button_t(*this, button_t::options() << opt::title(jjT("B2")) << button_t::EXACT_FIT);
+        b2 = new button_t(*this, button_t::options() << opt::text(jjT("B2")) << button_t::EXACT_FIT);
         b2->OnClick.add(*this, &wnd::onb2);
-        b3 = new button_t(*this, button_t::options() << opt::title(jjT("B3")) << align_t::LEFT << alignv_t::BOTTOM);
+        b3 = new button_t(*this, button_t::options() << opt::text(jjT("B3")) << align_t::LEFT << alignv_t::BOTTOM);
         b3->OnClick.add(*this, &wnd::onb3);
-        b4 = new button_t(*this, button_t::options() << opt::title(jjT("B4 A")) << button_t::EXACT_FIT << button_t::NO_BORDER);
+        b4 = new button_t(*this, button_t::options() << opt::text(jjT("B4 A")) << button_t::EXACT_FIT << button_t::NO_BORDER);
         b4->OnClick.add(*this, &wnd::onb4);
         t1 = new textInput_t(*this, textInput_t::options() << opt::text(jjT("Child")));
         t1->OnTextChange.add(*this, &wnd::ontxt);
         t2 = new textInput_t(*this, textInput_t::options() << textInput_t::MULTILINE);
         comboBox_t* cb = new comboBox_t(*this, { jjT("ABC"), jjT("XYZ"), jjT("123") });
-        cb->OnSelect.add([this](comboBox_t& x) { t2->changeValue(jjT("Selected [") + x.text() + jjT("]")); });
+        cb->OnSelect.add([this](comboBox_t& x) { t2->changeText(jjT("Selected [") + x.text() + jjT("]")); });
         sizer().add(*(s1 = new jj::gui::boxSizer_t(*this, boxSizer_t::HORIZONTAL)), sizerFlags_t().proportion(1).expand());
         sizer().add(*(s2 = new jj::gui::boxSizer_t(*this, boxSizer_t::HORIZONTAL)), sizerFlags_t().proportion(3).expand());
         s1->add(*st, sizerFlags_t().border(5));
@@ -153,7 +153,7 @@ class app : public jj::gui::application_t
         f = new wnd(*this);
         f->show();
 
-        f->o = new jj::gui::frame_t(*this, jj::gui::frame_t::options() << jj::gui::opt::title(jjT("Child")) << jj::gui::frame_t::NO_MINIMIZE);
+        f->o = new jj::gui::frame_t(*this, jj::gui::frame_t::options() << jj::gui::opt::text(jjT("Child")) << jj::gui::frame_t::NO_MINIMIZE);
         f->o->OnClose.add(*this, &app::ono);
         f->o->show();
 

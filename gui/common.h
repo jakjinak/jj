@@ -23,7 +23,6 @@ enum class alignv_t { TOP, MIDDLE, BOTTOM };
 
 namespace opt
 {
-struct title { string_t Title; title() {} title(string_t atitle) : Title(atitle) {} };
 struct text { string_t Text; text() {} text(string_t atext) : Text(atext) {} };
 struct position { screen_point_t Position; position(); position(screen_point_t p) : Position(p) {} position(int left, int top) : Position(left, top) {} position(const position& other) : Position(other.Position) {} };
 struct size { screen_point_t Size; size(); size(screen_point_t s) : Size(s) {} size(int width, int height) : Size(width, height) {} };
