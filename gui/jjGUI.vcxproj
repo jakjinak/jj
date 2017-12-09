@@ -344,7 +344,7 @@
   <ItemGroup>
     <ClCompile Include="application_wx.cpp" />
     <ClCompile Include="button_wx.cpp" />
-    <ClCompile Include="comboBox.cpp" />
+    <ClCompile Include="comboBox_wx.cpp" />
     <ClCompile Include="common_wx.cpp" />
     <ClCompile Include="control_wx.cpp" />
     <ClCompile Include="menu_wx.cpp" />

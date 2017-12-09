@@ -89,7 +89,7 @@
     <ClCompile Include="textLabel_wx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="comboBox.cpp">
+    <ClCompile Include="comboBox_wx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
