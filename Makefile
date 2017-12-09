@@ -114,7 +114,7 @@ $(eval $(call define_static_library,jjbase,libs,clean))
 ########################################
 # jjgui
 SRCDIR_jjgui := $(realpath gui)
-SOURCE_jjgui := common_wx.cpp application_wx.cpp window_wx.cpp menu_wx.cpp sizer_wx.cpp control_wx.cpp button_wx.cpp textInput_wx.cpp
+SOURCE_jjgui := common_wx.cpp application_wx.cpp window_wx.cpp menu_wx.cpp sizer_wx.cpp control_wx.cpp button_wx.cpp textLabel_wx.cpp textInput_wx.cpp comboBox_wx.cpp
 DEFINE_jjgui := ${WXDEFINE}
 INCDIR_jjgui := -I$(realpath ${SRCDIR_jjgui}/../..) ${WXINCDIR}
 $(eval $(call define_static_library,jjgui,libs,clean))
