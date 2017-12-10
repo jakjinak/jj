@@ -38,6 +38,10 @@ template<typename P> struct GETTER<wxStatusBar, P> { inline static P* get(wxStat
 
 template<typename P> struct GETTER<wxTopLevelWindow, P> { inline static P* get(wxTopLevelWindow* p) { return p; } };
 template<typename P> struct GETTER<wxFrame, P> { inline static P* get(wxFrame* p) { return p; } };
+template<typename P> struct GETTER<wxDialog, P> { inline static P* get(wxDialog* p) { return p; } };
+template<typename P> struct GETTER<wxMessageDialog, P> { inline static P* get(wxMessageDialog* p) { return p; } };
+template<typename P> struct GETTER<wxTextEntryDialog, P> { inline static P* get(wxTextEntryDialog* p) { return p; } };
+template<typename P> struct GETTER<wxPasswordEntryDialog, P> { inline static P* get(wxPasswordEntryDialog* p) { return p; } };
 
 /** Converts given type T representing a class containing a void* to the native type actually meant.
 Ie. ptr frame_t always holds a wxFrame pointer (even if it is void*), content_holder_t holds wxWindow* (even if void*), etc. */
@@ -50,10 +54,22 @@ template<> struct COGET<contentHolder_t> { typedef wxWindow TYPE; };
 template<typename X> struct GET
 {
     template<typename T> inline static X* from(const T* p) { return AUX::GETTER<typename AUX::COGET<T>::TYPE, X>::get(reinterpret_cast<typename AUX::COGET<T>::TYPE*>(p->T::native_t::native_pointer())); }
+
+    template<typename Y> struct AS
+    {
+        template<typename T> inline static X* from(const T* p) { return AUX::GETTER<Y, X>::get(reinterpret_cast<Y*>(p->T::native_t::native_pointer())); }
+    };
+};
+
+// TODO rename nativeWrapper_t to nativeWrapper_T and this to nativeWrapper_t
+struct nativeWrapper_base_t
+{
+    virtual ~nativeWrapper_base_t() {}
+    virtual void disown() = 0;
 };
 
 template<typename OWNER, typename NATIVE>
-class nativeWrapper_t : public NATIVE
+class nativeWrapper_t : public NATIVE, public nativeWrapper_base_t
 {
     typedef OWNER owner_t;
     typedef NATIVE native_t;
@@ -75,7 +91,7 @@ public:
         delete owner_;
     }
 
-    void disown()
+    virtual void disown() override
     {
         owner_ = nullptr;
     }

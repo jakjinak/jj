@@ -5,12 +5,15 @@
 #include "jj/gui/comboBox.h"
 #include "jj/gui/button.h"
 #include "jj/gui/sizer.h"
+#include "jj/stream.h"
+#include <sstream>
 
 class wnd : public jj::gui::frame_t
 {
     jj::gui::textInput_t* t1, *t2;
     jj::gui::button_t* b1, *b2, *b3, *b4;
     jj::gui::boxSizer_t* s1, *s2;
+    jj::gui::dialog_t* dlg;
 
     void onb1(jj::gui::button_t&) {
         if (!o)
@@ -62,7 +65,7 @@ class wnd : public jj::gui::frame_t
 public:
     wnd(jj::gui::application_t& app)
         : jj::gui::frame_t(app, jj::gui::frame_t::options() << jj::gui::opt::text(jjT("First One")) << jj::gui::opt::size(600, 280) << jj::gui::frame_t::NO_MAXIMIZE)
-        , o(nullptr)
+        , o(nullptr), dlg(nullptr)
     {
         using namespace jj::gui;
 
@@ -93,14 +96,64 @@ public:
         s1->add(*cb, sizerFlags_t().set(align_t::CENTER).proportion(1));
         s2->add(*t2, sizerFlags_t().proportion(1).expand());
 
-        menu_t* m1, *m2, *m3;
+        menu_t* m1, *m2, *m3, *m4;
         menu_bar().append(m1 = new menu_t(*this), jjT("TEST"));
         auto me = m1->append(menuItem_t::options() << opt::text(jjT("Exit")) << opt::accelerator(keys::accelerator_t(keys::ALT, keys::F4)));
         me.lock()->OnClick.add([this](menuItem_t&) { 
             this->close(); 
         });
         menu_bar().append(m2 = new menu_t(*this), menuItem_t::submenu_options() << opt::text(jjT("actions")));
-        m2->append(menuItem_t::options() << opt::text(jjT("M1")));
+        m2->append(m4 = new menu_t(*this), jjT("dialogs"));
+        auto m41 = m4->append(menuItem_t::options() << menuItem_t::CHECK << opt::text(jjT("generic is modal")));
+        auto m42 = m4->append(menuItem_t::options() << opt::text(jjT("generic")));
+        m42.lock()->OnClick.add([this, m41](menuItem_t&) {
+                this->dlg = new dialog_t(*this, dialog_t::options() << opt::text(jjT("The dialog")));
+                if (m41.lock()->checked())
+                    this->dlg->show_modal();
+                else
+                    this->dlg->show();
+            });
+        m4->append(menuItem_t::options() << opt::text(jjT("delete generic")))
+            .lock()->OnClick.add([this](menuItem_t&) {
+                delete this->dlg;
+                this->dlg = nullptr;
+            });
+        m4->append(menuItem_t::SEPARATOR);
+        m4->append(menuItem_t::options() << opt::text(jjT("simple")))
+            .lock()->OnClick.add([this](menuItem_t&) {
+                dlg::simple_t x(*this, jjT("So tell me now, what u want to do..."), jjT("Question for you"), dlg::simple_t::options() << stock::icon_t::ERR << stock::item_t::CANCEL, {/*stock::item_t::OK, */ stock::item_t::CANCEL, stock::item_t::YES });
+                modal_result_t result = x.show_modal();
+                if (result.isStock())
+                    t2->text(jjS(jjT("The result was a stock result ") << int(result.stock())));
+                else
+                    t2->text(jjS(jjT("The result was a regular result ") << result.regular()));
+            });
+        m4->append(menuItem_t::options() << opt::text(jjT("text input")))
+            .lock()->OnClick.add([this](menuItem_t&) {
+                dlg::input_t x(*this, jjT("Give me text:"), dlg::input_t::options() << opt::text(jjT("default")));
+                modal_result_t result = x.show_modal();
+                if (result == stock::item_t::OK)
+                    t2->text(jjS(jjT("The result was a stock OK: '") << x.text() << jjT("'")));
+                else if (result == stock::item_t::CANCEL)
+                    t2->text(jjT("The result was a stock CANCEL"));
+                else if (result.isStock())
+                    t2->text(jjS(jjT("The result was a stock result ") << int(result.stock())));
+                else
+                    t2->text(jjS(jjT("The result was a regular result ") << result.regular()));
+            });
+        m4->append(menuItem_t::options() << opt::text(jjT("password input")))
+            .lock()->OnClick.add([this](menuItem_t&) {
+            dlg::input_t x(*this, jjT("Give me password:"), dlg::input_t::options() << dlg::input_t::PASSWORD);
+            modal_result_t result = x.show_modal();
+            if (result == stock::item_t::OK)
+                t2->text(jjS(jjT("The result was a stock OK: '") << x.text() << jjT("'")));
+            else if (result == stock::item_t::CANCEL)
+                t2->text(jjT("The result was a stock CANCEL"));
+            else if (result.isStock())
+                t2->text(jjS(jjT("The result was a stock result ") << int(result.stock())));
+            else
+                t2->text(jjS(jjT("The result was a regular result ") << result.regular()));
+        });
         m2->append(m3 = new menu_t(*this), jjT("sub"));
         auto m22 = m2->append(menuItem_t::options() << opt::text(jjT("M2")) << menuItem_t::CHECK);
         m2->append(menuItem_t::options() << opt::text(jjT("M3")) << menuItem_t::CHECK)

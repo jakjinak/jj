@@ -3,6 +3,7 @@
 #if (JJ_USE_GUI == JJ_DEFINED_VALUE_GUI_WX)
 #include "jj/gui/common_wx.h"
 #include "jj/gui/window.h"
+#include "jj/gui/stock_wx.h"
 #include <array>
 
 /* DESTRUCTION MECHANISMS
@@ -35,6 +36,8 @@ template<> struct COGET<topLevelWindow_t> { typedef wxTopLevelWindow TYPE; };
 template<> struct COGET<frame_t> { typedef wxFrame TYPE; };
 template<> struct COGET<menuBar_t> { typedef wxMenuBar TYPE; };
 template<> struct COGET<statusBar_t> { typedef wxStatusBar TYPE; };
+template<> struct COGET<dialog_t> { typedef wxDialog TYPE; };
+template<> struct COGET<dlg::simple_t> { typedef wxMessageDialog TYPE; };
 
 } // namespace AUX
 
@@ -413,11 +416,11 @@ frame_t::~frame_t()
         return;
     
     wxFrame* tmp = GET<wxFrame>::from(this);
-    wrFrame* twr = dynamic_cast<wrFrame*>(tmp);
+    nativeWrapper_base_t* twr = dynamic_cast<nativeWrapper_base_t*>(tmp);
     if (twr)
         twr->disown();
     tmp->Destroy();
-    native_t::reset_native_pointer();
+    reset_native_pointer();
 }
 
 void frame_t::set_menu_bar()
@@ -443,6 +446,246 @@ void frame_t::reset_native_pointer()
     parent_t::reset_native_pointer();
 }
 
+namespace // <anonymous>
+{
+struct wrDialog : public nativeWrapper_t<dialog_t, wxDialog>
+{
+    template<typename ... Ps>
+    wrDialog(dialog_t& owner, Ps... ps)
+        : nativeWrapper_t(owner, ps...)
+    {
+        Bind(wxEVT_CLOSE_WINDOW, &wrDialog::evtClose, this, this->GetId());
+    }
+    void evtClose(wxCloseEvent& evt)
+    {
+        owner_->OnClose.call_individual(
+            [&evt](bool result) {
+                if (!result && evt.CanVeto())
+                    evt.Veto();
+                return true;
+            },
+            *owner_);
+        if (evt.GetVeto())
+            ;
+        else
+            owner_->hide()/*Destroy()*/;
+    }
+};
+
+static long df2wxds(dialog_t::flags1_t v)
+{
+    long ret = wxDEFAULT_DIALOG_STYLE;
+    if (v*dialog_t::RESIZEABLE) ret |= wxRESIZE_BORDER;
+    if (v*dialog_t::MINIMIZEABLE) ret |= wxMINIMIZE_BOX;
+    if (v*dialog_t::MAXIMIZEABLE) ret |= wxMAXIMIZE_BOX;
+    if (v*dialog_t::NO_CLOSE) ret &= (~(wxCLOSE_BOX));
+    if (v*dialog_t::NO_SYSMENU) ret &= (~(wxSYSTEM_MENU));
+    if (v*dialog_t::NO_CAPTION) ret &= (~(wxCAPTION));
+    return ret;
+}
+} // namespace <anonymous>
+
+dialog_t::dialog_t(topLevelWindow_t& owner, derived_t)
+    : parent_t(owner.app(), &owner)
+{
+    // all set in derived class
+}
+
+dialog_t::dialog_t(topLevelWindow_t& owner, options_t setup)
+    : parent_t(owner.app(), &owner)
+{
+    wrDialog* tmp = new wrDialog(*this, GET<wxTopLevelWindow>::from(&owner), wxID_ANY, setup.Text, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), df2wxds(setup));
+    set_native_pointer(static_cast<wxDialog*>(tmp));
+}
+
+dialog_t::dialog_t(application_t& app, options_t setup)
+    : parent_t(app, nullptr)
+{
+    wrDialog* tmp = new wrDialog(*this, nullptr, wxID_ANY, setup.Text, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), df2wxds(setup));
+    set_native_pointer(static_cast<wxDialog*>(tmp));
+}
+
+dialog_t::~dialog_t()
+{
+    if (!native_t::native_pointer())
+        return;
+
+    wxDialog* tmp = GET<wxDialog>::from(this);
+    nativeWrapper_base_t* twr = dynamic_cast<nativeWrapper_base_t*>(tmp);
+    if (twr)
+        twr->disown();
+    tmp->Destroy();
+    reset_native_pointer();
+}
+
+void dialog_t::set_native_pointer(void* ptr)
+{
+    native_t::set_native_pointer(ptr);
+    parent_t::set_native_pointer(GET<wxTopLevelWindow>::from(this));
+}
+
+void dialog_t::reset_native_pointer()
+{
+    native_t::reset_native_pointer();
+    parent_t::reset_native_pointer();
+}
+
+modal_result_t dialog_t::show_modal()
+{
+    int ret = GET<wxDialog>::from(this)->ShowModal();
+    if (ret > wxID_LOWEST)
+        return modal_result_t(wx2stock(ret));
+    else
+        return modal_result_t(ret);
+}
+
+void dialog_t::end_modal(modal_result_t ret)
+{
+    int v = (ret.isRegular() ? ret.regular() : stock2wx(ret.stock()));
+    GET<wxDialog>::from(this)->EndModal(v);
+}
+
+namespace dlg
+{
+namespace // <anonymous>
+{
+struct wrMessageDialog : public nativeWrapper_t<simple_t, wxMessageDialog>
+{
+    template<typename ... Ps>
+    wrMessageDialog(simple_t& owner, Ps... ps)
+        : nativeWrapper_t(owner, ps...)
+    {
+    }
+};
+
+long i2wxmbs(const simple_t::icon1_t& v)
+{
+    switch (v.Value)
+    {
+    default:
+    case stock::icon_t::NONE: return wxICON_NONE;
+    case stock::icon_t::INFO: return wxICON_INFORMATION;
+    case stock::icon_t::QUESTION: return wxICON_QUESTION;
+    case stock::icon_t::EXCLAMATION: return wxICON_EXCLAMATION;
+    case stock::icon_t::ERR: return wxICON_ERROR;
+    case stock::icon_t::NEED_AUTH: return wxICON_AUTH_NEEDED;
+    }
+}
+long b2wxmbs(const std::initializer_list<stock::item_t>& v)
+{
+    long ret = 0;
+    for (auto i : v)
+    {
+        if (i == stock::item_t::OK) { ret |= wxOK; continue; }
+        if (i == stock::item_t::CANCEL) { ret |= wxCANCEL; continue; }
+        if (i == stock::item_t::YES) { ret |= wxYES_NO; continue; }
+        if (i == stock::item_t::NO) { ret |= wxYES_NO; continue; }
+    }
+    return ret;
+}
+long d2wxmbs(const simple_t::default1_t& v)
+{
+    switch (v.Value)
+    {
+    default:
+    case stock::item_t::OK: return wxOK_DEFAULT;
+    case stock::item_t::CANCEL: return wxCANCEL_DEFAULT;
+    case stock::item_t::YES: return wxYES_DEFAULT;
+    case stock::item_t::NO: return wxNO_DEFAULT;
+    }
+}
+
+} // namespace <anonymous>
+
+simple_t::simple_t(topLevelWindow_t& parent, const string_t& message, const string_t& title, options_t setup, std::initializer_list<stock::item_t> buttons)
+    : parent_t(parent, DERIVED)
+{
+    wrMessageDialog* tmp = new wrMessageDialog(*this, GET<wxTopLevelWindow>::from(&parent), message, title, i2wxmbs(setup) | b2wxmbs(buttons) | d2wxmbs(setup), wxPoint(setup.Position.Column, setup.Position.Row));
+    set_native_pointer(static_cast<wxMessageDialog*>(tmp));
+}
+
+void simple_t::set_native_pointer(void* ptr)
+{
+    native_t::set_native_pointer(ptr);
+    parent_t::set_native_pointer(GET<wxDialog>::from(this));
+}
+
+void simple_t::reset_native_pointer()
+{
+    native_t::reset_native_pointer();
+    parent_t::reset_native_pointer();
+}
+
+namespace // <anonymous>
+{
+struct wrTextEntryDialog : public nativeWrapper_t<input_t, wxTextEntryDialog>
+{
+    template<typename ... Ps>
+    wrTextEntryDialog(input_t& owner, Ps... ps)
+        : nativeWrapper_t(owner, ps...)
+    {
+    }
+};
+struct wrPasswordEntryDialog : public nativeWrapper_t<input_t, wxPasswordEntryDialog>
+{
+    template<typename ... Ps>
+    wrPasswordEntryDialog(input_t& owner, Ps... ps)
+        : nativeWrapper_t(owner, ps...)
+    {
+    }
+};
+} // namespace <anonymous>
+
+input_t::input_t(topLevelWindow_t& parent, const string_t& message, options_t setup)
+    : parent_t(parent, DERIVED)
+{
+    const flags1_t& flags = setup;
+    if (flags*PASSWORD)
+    {
+        isPsw_ = true;
+        wrPasswordEntryDialog* tmp = new wrPasswordEntryDialog(
+            *this, GET<wxTopLevelWindow>::from(&parent),
+            message, (setup.Title.empty() ? wxGetPasswordFromUserPromptStr : wxString(setup.Title)),
+            setup.Text, wxTextEntryDialogStyle,
+            wxPoint(setup.Position.Column, setup.Position.Row)
+            );
+        set_native_pointer(static_cast<wxPasswordEntryDialog*>(tmp));
+    }
+    else
+    {
+        isPsw_ = false;
+        wrTextEntryDialog* tmp = new wrTextEntryDialog(
+            *this, GET<wxTopLevelWindow>::from(&parent),
+            message, (setup.Title.empty() ? wxGetTextFromUserPromptStr : wxString(setup.Title)),
+            setup.Text, wxTextEntryDialogStyle,
+            wxPoint(setup.Position.Column, setup.Position.Row)
+        );
+        set_native_pointer(static_cast<wxTextEntryDialog*>(tmp));
+    }
+}
+
+void input_t::set_native_pointer(void* ptr)
+{
+    native_t::set_native_pointer(ptr);
+    if (isPsw_)
+        parent_t::set_native_pointer(GET<wxDialog>::AS<wxPasswordEntryDialog>::from(this));
+    else
+        parent_t::set_native_pointer(GET<wxDialog>::AS<wxTextEntryDialog>::from(this));
+}
+
+void input_t::reset_native_pointer()
+{
+    native_t::reset_native_pointer();
+    parent_t::reset_native_pointer();
+}
+
+string_t input_t::text() const
+{
+    wxTextEntryDialog* d = (isPsw_ ? GET<wxTextEntryDialog>::AS<wxPasswordEntryDialog>::from(this) : GET<wxTextEntryDialog>::AS<wxTextEntryDialog>::from(this));
+    return wxs2s<string_t>::cvt(d->GetValue());
+}
+
+} // namespace dlg
 } // namespace gui
 } // namespace jj
 

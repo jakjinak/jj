@@ -7,6 +7,7 @@
 
 #include "jj/gui/menu.h"
 #include "jj/gui/eventCallback.h"
+#include "jj/gui/stock.h"
 
 namespace jj
 {
@@ -45,10 +46,6 @@ public:
     bool close(bool force = false);
 
     eventCallback_t<bool, topLevelWindow_t&> OnClose;
-};
-
-class dialog_t : public topLevelWindow_t
-{
 };
 
 class frame_t;
@@ -178,6 +175,131 @@ public:
         return *statusBar_;
     }
 };
+
+class modal_result_t
+{
+    enum type_t { REGULAR, STOCK };
+    type_t type_;
+    union
+    {
+        int r; //!< regular result
+        stock::item_t s; //!< stock result
+    };
+
+public:
+    modal_result_t(int v) : type_(REGULAR), r(v) {}
+    modal_result_t(stock::item_t v) : type_(STOCK), s(v) {}
+
+    bool isRegular() const { return type_ == REGULAR; }
+    bool isStock() const { return type_ == STOCK; }
+    int regular() const { return r; }
+    stock::item_t stock() const { return s; }
+
+    bool operator==(int v) const
+    {
+        if (type_ == STOCK)
+            return false;
+        return r == v;
+    }
+    bool operator==(stock::item_t v) const
+    {
+        if (type_ == REGULAR)
+            return false;
+        return s == v;
+    }
+};
+
+class dialog_t : public nativePointerWrapper_t<dialog_t>, public topLevelWindow_t
+{
+public:
+    enum flags_t
+    {
+        RESIZEABLE,
+        MINIMIZEABLE,
+        MAXIMIZEABLE,
+        NO_CLOSE,
+        NO_SYSMENU,
+        NO_CAPTION,
+        MAX_FLAGS
+    };
+    typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
+    typedef creationOptions_t<opt::text, opt::position, opt::size, flags1_t> options_t;
+    static options_t options() { return options_t(); }
+
+private:
+    typedef topLevelWindow_t parent_t;
+
+protected:
+    enum derived_t { DERIVED };
+    dialog_t(topLevelWindow_t& owner, derived_t);
+public:
+    dialog_t(topLevelWindow_t& owner, options_t setup);
+    dialog_t(application_t& app, options_t setup);
+    ~dialog_t();
+
+    typedef nativePointerWrapper_t<dialog_t> native_t;
+    void set_native_pointer(void* ptr);
+    void reset_native_pointer();
+
+    modal_result_t show_modal();
+    void end_modal(modal_result_t ret);
+};
+
+namespace dlg
+{
+
+/*! A simple dialog with only a message (+icon) and stock buttons.
+The buttons can be a combination of OK, CANCEL, YES, NO. OK is mutually exclusive with YES and NO;
+both YES and NO implicitly add also the other one (it is enough to specify one of them). 
+\note Call show_modal() to show the dialog. */
+class simple_t : public nativePointerWrapper_t<simple_t>, public dialog_t
+{
+public:
+    typedef opt::e<stock::icon_t> icon1_t;
+    typedef opt::e<stock::item_t> default1_t;
+    typedef creationOptions_t<opt::position, icon1_t, default1_t> options_t;
+    static options_t options() { return options_t(); }
+
+private:
+    typedef dialog_t parent_t;
+
+public:
+    simple_t(topLevelWindow_t& parent, const string_t& message, const string_t& title, options_t setup, std::initializer_list<stock::item_t> buttons);
+
+    typedef nativePointerWrapper_t<simple_t> native_t;
+    void set_native_pointer(void* ptr);
+    void reset_native_pointer();
+};
+
+/*! A dialog with OK, CANCEL and one text input field.
+\note Call show_modal() to show the dialog. */
+class input_t : public nativePointerWrapper_t<input_t>, public dialog_t
+{
+public:
+    enum flags_t
+    {
+        PASSWORD,
+        MAX_FLAGS
+    };
+    typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
+    typedef creationOptions_t<opt::position, opt::text, opt::title, flags1_t> options_t;
+    static options_t options() { return options_t(); }
+
+private:
+    typedef dialog_t parent_t;
+    bool isPsw_;
+
+public:
+    input_t(topLevelWindow_t& parent, const string_t& message, options_t setup);
+
+    typedef nativePointerWrapper_t<input_t> native_t;
+    void set_native_pointer(void* ptr);
+    void reset_native_pointer();
+
+    string_t text() const;
+};
+
+} // namespace dlg
 
 } // namespace gui
 } // namespace jj
