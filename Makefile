@@ -36,11 +36,31 @@ clean_all: clean clean_tests
 #$(call showhint,"hint")
 ifeq ($(SHOW_HINTS),1)
 define showhint
-	@echo $(1)
+	@echo -e $(1)
 endef
 else
 define showhint
 endef
+endif
+
+ifeq ($(COLOR_HINTS),1)
+COLOR_HL ?= \\e[1m
+COLOR_0 ?= \\e[0m
+COLOR_SUPPORT ?= \\e[34m
+COLOR_COMPILE ?= \\e[32m
+COLOR_STATLIB ?= \\e[36m
+COLOR_PROGRAM ?= \\e[36m
+COLOR_CLEAN ?= \\e[31m
+COLOR_INFO ?= \\e[1;33m
+else
+COLOR_HL :=
+COLOR_0 :=
+COLOR_SUPPORT :=
+COLOR_COMPILE :=
+COLOR_STATLIB :=
+COLOR_PROGRAM :=
+COLOR_CLEAN :=
+COLOR_INFO :=
 endif
 
 ifeq ($(HIDE_COMMANDS),1)
@@ -71,39 +91,39 @@ $(2): $(1)
 $(3): clean_$(1)
 $(1): $${RESULT_$(1)}
 clean_$(1):
-	$$(call showhint,"Clean all for $(1)")
+	$$(call showhint,"$${COLOR_CLEAN}=== Clean all for $${COLOR_HL}$(1)$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)rm -f $${RESULT_$(1)} $${OBJ_$(1)} $${DEP_$(1)}
 
 info_$(1):
-	@echo "SRCDIR_$(1) = [$$(SRCDIR_$(1))]"
-	@echo "SOURCE_$(1) = [$$(SOURCE_$(1))]"
-	@echo "DEFINE_$(1) = [$$(DEFINE_$(1))]"
-	@echo "INCDIR_$(1) = [$$(INCDIR_$(1))]"
-	@echo "OBJDIR_$(1) = [$$(OBJDIR_$(1))]"
-	@echo "DEPDIR_$(1) = [$$(DEPDIR_$(1))]"
-	@echo "SRC_$(1) = [$$(SRC_$(1))]"
-	@echo "OBJ_$(1) = [$$(OBJ_$(1))]"
-	@echo "DEP_$(1) = [$$(DEP_$(1))]"
+	@echo -e "SRCDIR_$(1) = [$${COLOR_INFO}$$(SRCDIR_$(1))$${COLOR_0}]"
+	@echo -e "SOURCE_$(1) = [$${COLOR_INFO}$$(SOURCE_$(1))$${COLOR_0}]"
+	@echo -e "DEFINE_$(1) = [$${COLOR_INFO}$$(DEFINE_$(1))$${COLOR_0}]"
+	@echo -e "INCDIR_$(1) = [$${COLOR_INFO}$$(INCDIR_$(1))$${COLOR_0}]"
+	@echo -e "OBJDIR_$(1) = [$${COLOR_INFO}$$(OBJDIR_$(1))$${COLOR_0}]"
+	@echo -e "DEPDIR_$(1) = [$${COLOR_INFO}$$(DEPDIR_$(1))$${COLOR_0}]"
+	@echo -e "SRC_$(1) = [$${COLOR_INFO}$$(SRC_$(1))$${COLOR_0}]"
+	@echo -e "OBJ_$(1) = [$${COLOR_INFO}$$(OBJ_$(1))$${COLOR_0}]"
+	@echo -e "DEP_$(1) = [$${COLOR_INFO}$$(DEP_$(1))$${COLOR_0}]"
 	@echo
-	@echo "Defines these rules: [$(1)] [clean_$(1)] [info_$(1)]"
-	@echo "Is part of these rules: [$(2)] [$(3)]"
+	@echo -e "Defines these rules: [$${COLOR_INFO}$(1)$${COLOR_0}] [$${COLOR_INFO}clean_$(1)$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
+	@echo -e "Is part of these rules: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
 
 $${DEPDIR_$(1)}/dircreated:
-	$$(call showhint,"Creating directory $${DEPDIR_$(1)}")
+	$$(call showhint,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${DEPDIR_$(1)}$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)mkdir -p $${DEPDIR_$(1)}
 	$(COMMAND_HIDE_PREFIX)touch $${DEPDIR_$(1)}/dircreated
 
 $${OBJDIR_$(1)}/dircreated:
-	$$(call showhint,"Creating directory $${OBJDIR_$(1)}")
+	$$(call showhint,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${OBJDIR_$(1)}$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)mkdir -p $${OBJDIR_$(1)}
 	$(COMMAND_HIDE_PREFIX)touch $${OBJDIR_$(1)}/dircreated
 
 $${DEPDIR_$(1)}/%.d : $${SRCDIR_$(1)}/%.cpp $${DEPDIR_$(1)}/dircreated
-	$$(call showhint,"Evaluating dependencies of $$(subst $$(ROOTDIR)/,,$$<)")
+	$$(call showhint,"$${COLOR_SUPPORT}=== Evaluating dependencies of $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)g++ ${COMMON_CPPFLAGS} $${DEFINE_$(1)} $${INCDIR_$(1)} -MM -MT $${OBJDIR_$(1)}/$$(notdir $$(@:.d=.o)) -MF $$@ $$<
 
 $${OBJDIR_$(1)}/%.o : $${SRCDIR_$(1)}/%.cpp $${DEPDIR_$(1)}/%.d $${OBJDIR_$(1)}/dircreated
-	$$(call showhint,"Compiling $$(subst $$(ROOTDIR)/,,$$<)")
+	$$(call showhint,"$${COLOR_COMPILE}=== Compiling $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)g++ ${COMMON_CPPFLAGS} $${DEFINE_$(1)} $${INCDIR_$(1)} -c -o $$@ $$<
 
 -include $${DEP_$(1)}
@@ -122,7 +142,7 @@ RESULT_$(1) ?= ${LIBDIR}/${BUILD_MODE}.${BUILD_ARCH}/$(1).a
 $(call define_common_part,$(1),$(2),$(3))
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
-	$$(call showhint,"Creating static library $$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})")
+	$$(call showhint,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)ar cr ${COMMON_ARFLAGS} $${RESULT_$(1)} $${OBJ_$(1)}
 endef
 
@@ -139,7 +159,7 @@ RESULT_$(1) ?= ${BINDIR}/${BUILD_MODE}.${BUILD_ARCH}/$(1)
 $(call define_common_part,$(1),$(2),$(3))
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
-	$$(call showhint, "Linking program $$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})")
+	$$(call showhint, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)g++ $${OBJ_$(1)} ${COMMON_LDFLAGS} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
 endef
 
