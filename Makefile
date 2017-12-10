@@ -85,6 +85,8 @@ SRC_$(1) := $$(addprefix $${SRCDIR_$(1)}/,$${SOURCE_$(1)})
 OBJ_$(1) := $$(addprefix $${OBJDIR_$(1)}/,$$(SOURCE_$(1):.cpp=.o))
 DEP_$(1) := $$(addprefix $${DEPDIR_$(1)}/,$$(SOURCE_$(1):.cpp=.d))
 
+-include $${DEP_$(1)}
+
 .PHONY: $(1) clean_$(1) info_$(1)
 
 $(2): $(1)
@@ -118,15 +120,11 @@ $${OBJDIR_$(1)}/dircreated:
 	$(COMMAND_HIDE_PREFIX)mkdir -p $${OBJDIR_$(1)}
 	$(COMMAND_HIDE_PREFIX)touch $${OBJDIR_$(1)}/dircreated
 
-$${DEPDIR_$(1)}/%.d : $${SRCDIR_$(1)}/%.cpp $${DEPDIR_$(1)}/dircreated
-	$$(call showhint,"$${COLOR_SUPPORT}=== Evaluating dependencies of $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)g++ ${COMMON_CPPFLAGS} $${DEFINE_$(1)} $${INCDIR_$(1)} -MM -MT $${OBJDIR_$(1)}/$$(notdir $$(@:.d=.o)) -MF $$@ $$<
+$${DEPDIR_$(1)}/%.d : ;
 
-$${OBJDIR_$(1)}/%.o : $${SRCDIR_$(1)}/%.cpp $${DEPDIR_$(1)}/%.d $${OBJDIR_$(1)}/dircreated
+$${OBJDIR_$(1)}/%.o : $${SRCDIR_$(1)}/%.cpp $${OBJDIR_$(1)}/dircreated $${DEPDIR_$(1)}/dircreated
 	$$(call showhint,"$${COLOR_COMPILE}=== Compiling $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)g++ ${COMMON_CPPFLAGS} $${DEFINE_$(1)} $${INCDIR_$(1)} -c -o $$@ $$<
-
--include $${DEP_$(1)}
+	$(COMMAND_HIDE_PREFIX)g++ ${COMMON_CPPFLAGS} $${DEFINE_$(1)} $${INCDIR_$(1)} -MMD -MT $$@ -MF $${DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
 endef
 
 # Defines all the undefined definitions and rules for a library unless already defined
