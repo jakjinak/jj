@@ -337,6 +337,8 @@
     <ClInclude Include="menu.h" />
     <ClInclude Include="sizer.h" />
     <ClInclude Include="sizer_wx.h" />
+    <ClInclude Include="stock.h" />
+    <ClInclude Include="stock_wx.h" />
     <ClInclude Include="textInput.h" />
     <ClInclude Include="textLabel.h" />
     <ClInclude Include="window.h" />

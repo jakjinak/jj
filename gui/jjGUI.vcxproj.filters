@@ -60,6 +60,12 @@
     <ClInclude Include="comboBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stock_wx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application_wx.cpp">
