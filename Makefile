@@ -16,7 +16,7 @@ OBJDIR := ${ROOTDIR}/.bin
 
 COMMON_CPPFLAGS := -std=c++11 -g
 COMMON_ARFLAGS := 
-COMMON_LDFLAGS := -std=c++11 -g
+COMMON_LDFLAGS := -std=c++11 -g -pthread
 ifeq ($(BUILD_MODE),release)
 COMMON_CPPFLAGS += -O2 -DNDEBUG
 COMMON_LDFLAGS += -O2 -DNDEBUG
@@ -74,8 +74,12 @@ endif
 # The first parameter is the name of the library and also the suffix of all defines,
 # the second parameter is the parent make rule, third is the parent clean rule.
 # The fourth parameter provides additional targets that the make rule depends on.
-# Assumes SRCDIR_<name>, SOURCE_<name> DEFINE_<name> and INCDIR_<name>, RESULT_<name> to be defined
-# Awaits OBJDIR_<name>, DEPDIR_<name> to be optionally defined, defines them if not found
+# Assumes SRCDIR_<name>, SOURCE_<name> and RESULT_<name> to be defined.
+# Awaits OBJDIR_<name>, DEPDIR_<name> to be optionally defined, defines them if not found.
+# Assumes any <*>FLAGS_<name> (where <*> stands for CPP, LD, AR,...) to be defined where
+# necessary; if not defined these will be defined to COMMON_<*>FLAGS, except that
+# undefined CPPFLAGS_<name> will be defined to COMMON_CPPFLAGS and INCDIR_<name>,
+# undefined LDFLAGS_<name> to COMMON_LDFLAGS and LIBS_<name>
 # Defines SRC_<name>, OBJ_<name> and DEP_<name> and all the rules (except the final one that produces the result)
 #(call define_common_part,name,makerule,cleanrule,adddeps)
 define define_common_part
@@ -85,6 +89,10 @@ DEPDIR_$(1) ?= ${OBJDIR}/${BUILD_MODE}.${BUILD_ARCH}/dep/$(1)
 SRC_$(1) := $$(addprefix $${SRCDIR_$(1)}/,$${SOURCE_$(1)})
 OBJ_$(1) := $$(addprefix $${OBJDIR_$(1)}/,$$(SOURCE_$(1):.cpp=.o))
 DEP_$(1) := $$(addprefix $${DEPDIR_$(1)}/,$$(SOURCE_$(1):.cpp=.d))
+
+CPPFLAGS_$(1) ?= ${COMMON_CPPFLAGS} $${INCDIR_$(1)}
+LDFLAGS_$(1) ?= ${COMMON_LDFLAGS} $${LIBS_$(1)}
+ARFLAGS_$(1) ?= ${COMMON_ARFLAGS}
 
 -include $${DEP_$(1)}
 
@@ -103,8 +111,9 @@ clean_$(1)_only:
 info_$(1):
 	@echo -e "SRCDIR_$(1) = [$${COLOR_INFO}$$(SRCDIR_$(1))$${COLOR_0}]"
 	@echo -e "SOURCE_$(1) = [$${COLOR_INFO}$$(SOURCE_$(1))$${COLOR_0}]"
-	@echo -e "DEFINE_$(1) = [$${COLOR_INFO}$$(DEFINE_$(1))$${COLOR_0}]"
-	@echo -e "INCDIR_$(1) = [$${COLOR_INFO}$$(INCDIR_$(1))$${COLOR_0}]"
+	@echo -e "CPPFLAGS_$(1) = [$${COLOR_INFO}$$(CPPFLAGS_$(1))$${COLOR_0}]"
+	@echo -e "ARFLAGS_$(1) = [$${COLOR_INFO}$$(ARFLAGS_$(1))$${COLOR_0}]"
+	@echo -e "LDFLAGS_$(1) = [$${COLOR_INFO}$$(LDFLAGS_$(1))$${COLOR_0}]"
 	@echo -e "OBJDIR_$(1) = [$${COLOR_INFO}$$(OBJDIR_$(1))$${COLOR_0}]"
 	@echo -e "DEPDIR_$(1) = [$${COLOR_INFO}$$(DEPDIR_$(1))$${COLOR_0}]"
 	@echo -e "SRC_$(1) = [$${COLOR_INFO}$$(SRC_$(1))$${COLOR_0}]"
@@ -129,16 +138,17 @@ $${DEPDIR_$(1)}/%.d : ;
 
 $${OBJDIR_$(1)}/%.o : $${SRCDIR_$(1)}/%.cpp $${OBJDIR_$(1)}/dircreated $${DEPDIR_$(1)}/dircreated
 	$$(call showhint,"$${COLOR_COMPILE}=== Compiling $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)g++ ${COMMON_CPPFLAGS} $${DEFINE_$(1)} $${INCDIR_$(1)} -MMD -MT $$@ -MF $${DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
+	$(COMMAND_HIDE_PREFIX)g++ $${CPPFLAGS_$(1)} -MMD -MT $$@ -MF $${DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
 endef
 
 # Defines all the undefined definitions and rules for a library unless already defined
 # The first parameter is the name of the library and also the suffix of all defines,
 # the second parameter is the parent make rule, third is the parent clean rule.
 # The fourth parameter provides additional targets that the make rule depends on.
-# Assumes SRCDIR_<name>, SOURCE_<name> DEFINE_<name> and INCDIR_<name> to be defined
+# Assumes SRCDIR_<name> and SOURCE_<name> to be defined.
 # Awaits RESULT_<name>, OBJDIR_<name>, DEPDIR_<name> to be optionally defined, defines if not found
 # Defines SRC_<name>, OBJ_<name> and DEP_<name> and all the rules
+# See define_common_part for descriptions on the <*>FLAGS_<name>.
 #(call define_static_library,name,makerule,cleanrule,adddeps)
 define define_static_library
 RESULT_$(1) ?= ${LIBDIR}/${BUILD_MODE}.${BUILD_ARCH}/$(1).a
@@ -147,16 +157,17 @@ $(call define_common_part,$(1),$(2),$(3),$(4))
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)ar cr ${COMMON_ARFLAGS} $${RESULT_$(1)} $${OBJ_$(1)}
+	$(COMMAND_HIDE_PREFIX)ar cr $${ARFLAGS_$(1)} $${RESULT_$(1)} $${OBJ_$(1)}
 endef
 
 # Defines all the undefined definitions and rules for a program unless already defined
 # The first parameter is the name of the program and also the suffix of all defines,
 # the second parameter is the parent make rule, third is the parent clean rule.
 # The fourth parameter provides additional targets that the make rule depends on.
-# Assumes SRCDIR_<name>, SOURCE_<name> DEFINE_<name> and INCDIR_<name> and LDFLAGS_<name> to be defined
+# Assumes SRCDIR_<name> and SOURCE_<name> to be defined.
 # Awaits RESULT_<name>, OBJDIR_<name>, DEPDIR_<name> to be optionally defined, defines if not found
 # Defines SRC_<name>, OBJ_<name> and DEP_<name> and all the rules
+# See define_common_part for descriptions on the <*>FLAGS_<name>.
 #(call define_program,name,makerule,cleanrule,adddeps)
 define define_program
 RESULT_$(1) ?= ${BINDIR}/${BUILD_MODE}.${BUILD_ARCH}/$(1)
@@ -165,7 +176,7 @@ $(call define_common_part,$(1),$(2),$(3),$(4))
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)g++ $${OBJ_$(1)} ${COMMON_LDFLAGS} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
+	$(COMMAND_HIDE_PREFIX)g++ $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
 endef
 
 
@@ -173,22 +184,20 @@ endef
 # jjbase
 SRCDIR_jjbase := $(realpath .)
 SOURCE_jjbase := stream.cpp
-DEFINE_jjbase := ${WXDEFINE}
-INCDIR_jjbase := -I$(realpath ${SRCDIR_jjbase}/..)
+CPPFLAGS_jjbase := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase}/..)
 $(eval $(call define_static_library,jjbase,libs,clean))
 
 ########################################
 # jjgui
 SRCDIR_jjgui := $(realpath gui)
 SOURCE_jjgui := common_wx.cpp application_wx.cpp window_wx.cpp menu_wx.cpp sizer_wx.cpp control_wx.cpp button_wx.cpp textLabel_wx.cpp textInput_wx.cpp comboBox_wx.cpp
-DEFINE_jjgui := ${WXDEFINE}
-INCDIR_jjgui := -I$(realpath ${SRCDIR_jjgui}/../..) ${WXINCDIR}
+CPPFLAGS_jjgui := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjgui}/../..) ${WXINCDIR}
 $(eval $(call define_static_library,jjgui,libs,clean))
 
 ########################################
 # TestApp
 SRCDIR_TestApp := $(realpath test)
 SOURCE_TestApp := TestAppMain.cpp
-LDFLAGS_TestApp := -pthread ${RESULT_jjgui} ${RESULT_jjbase} ${WXLIBS}
+LIBS_TestApp := ${RESULT_jjgui} ${RESULT_jjbase} ${WXLIBS}
 INCDIR_TestApp := -I$(realpath ${SRCDIR_TestApp}/../..)
 $(eval $(call define_program,TestApp,tests,clean_tests,jjbase jjgui))
