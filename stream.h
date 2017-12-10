@@ -55,6 +55,6 @@ public:
 } // namespace AUX
 } // namespace jj
 
-#define jjS(text) (jj::AUX::SStreamWrap<sstreamt_t>() << text).str()
+#define jjS(text) (jj::AUX::SStreamWrap<jj::sstreamt_t>() << text).str()
 
 #endif // JJ_STREAM_H
