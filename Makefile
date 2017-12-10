@@ -73,10 +73,11 @@ endif
 # Defines all the undefined definitions and rules that are needed in the macros below.
 # The first parameter is the name of the library and also the suffix of all defines,
 # the second parameter is the parent make rule, third is the parent clean rule.
+# The fourth parameter provides additional targets that the make rule depends on.
 # Assumes SRCDIR_<name>, SOURCE_<name> DEFINE_<name> and INCDIR_<name>, RESULT_<name> to be defined
 # Awaits OBJDIR_<name>, DEPDIR_<name> to be optionally defined, defines them if not found
 # Defines SRC_<name>, OBJ_<name> and DEP_<name> and all the rules (except the final one that produces the result)
-#(call define_common_part,name,makerule,cleanrule)
+#(call define_common_part,name,makerule,cleanrule,adddeps)
 define define_common_part
 OBJDIR_$(1) ?= ${OBJDIR}/${BUILD_MODE}.${BUILD_ARCH}/obj/$(1)
 DEPDIR_$(1) ?= ${OBJDIR}/${BUILD_MODE}.${BUILD_ARCH}/dep/$(1)
@@ -87,12 +88,15 @@ DEP_$(1) := $$(addprefix $${DEPDIR_$(1)}/,$$(SOURCE_$(1):.cpp=.d))
 
 -include $${DEP_$(1)}
 
-.PHONY: $(1) clean_$(1) info_$(1)
+.PHONY: $(1) $(1)_only clean_$(1) clean_$(1)_only info_$(1)
 
 $(2): $(1)
 $(3): clean_$(1)
-$(1): $${RESULT_$(1)}
-clean_$(1):
+$(1): $(4) $${RESULT_$(1)}
+$(1)_only: $${RESULT_$(1)}
+clean_$(1): clean_$(1)_only $(addprefix clean_,$(4))
+
+clean_$(1)_only:
 	$$(call showhint,"$${COLOR_CLEAN}=== Clean all for $${COLOR_HL}$(1)$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)rm -f $${RESULT_$(1)} $${OBJ_$(1)} $${DEP_$(1)}
 
@@ -107,7 +111,8 @@ info_$(1):
 	@echo -e "OBJ_$(1) = [$${COLOR_INFO}$$(OBJ_$(1))$${COLOR_0}]"
 	@echo -e "DEP_$(1) = [$${COLOR_INFO}$$(DEP_$(1))$${COLOR_0}]"
 	@echo
-	@echo -e "Defines these rules: [$${COLOR_INFO}$(1)$${COLOR_0}] [$${COLOR_INFO}clean_$(1)$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
+	@echo -e "Defines these rules: [$${COLOR_INFO}$(1) $(1)_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1) clean_$(1)_only$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
+	@echo -e "Depends on these rules: [$${COLOR_INFO}$(4)$${COLOR_0}]"
 	@echo -e "Is part of these rules: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
 
 $${DEPDIR_$(1)}/dircreated:
@@ -130,14 +135,15 @@ endef
 # Defines all the undefined definitions and rules for a library unless already defined
 # The first parameter is the name of the library and also the suffix of all defines,
 # the second parameter is the parent make rule, third is the parent clean rule.
+# The fourth parameter provides additional targets that the make rule depends on.
 # Assumes SRCDIR_<name>, SOURCE_<name> DEFINE_<name> and INCDIR_<name> to be defined
 # Awaits RESULT_<name>, OBJDIR_<name>, DEPDIR_<name> to be optionally defined, defines if not found
 # Defines SRC_<name>, OBJ_<name> and DEP_<name> and all the rules
-#(call define_static_library,name,makerule,cleanrule)
+#(call define_static_library,name,makerule,cleanrule,adddeps)
 define define_static_library
 RESULT_$(1) ?= ${LIBDIR}/${BUILD_MODE}.${BUILD_ARCH}/$(1).a
 
-$(call define_common_part,$(1),$(2),$(3))
+$(call define_common_part,$(1),$(2),$(3),$(4))
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
@@ -147,14 +153,15 @@ endef
 # Defines all the undefined definitions and rules for a program unless already defined
 # The first parameter is the name of the program and also the suffix of all defines,
 # the second parameter is the parent make rule, third is the parent clean rule.
+# The fourth parameter provides additional targets that the make rule depends on.
 # Assumes SRCDIR_<name>, SOURCE_<name> DEFINE_<name> and INCDIR_<name> and LDFLAGS_<name> to be defined
 # Awaits RESULT_<name>, OBJDIR_<name>, DEPDIR_<name> to be optionally defined, defines if not found
 # Defines SRC_<name>, OBJ_<name> and DEP_<name> and all the rules
-#(call define_program,name,makerule,cleanrule)
+#(call define_program,name,makerule,cleanrule,adddeps)
 define define_program
 RESULT_$(1) ?= ${BINDIR}/${BUILD_MODE}.${BUILD_ARCH}/$(1)
 
-$(call define_common_part,$(1),$(2),$(3))
+$(call define_common_part,$(1),$(2),$(3),$(4))
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
@@ -184,4 +191,4 @@ SRCDIR_TestApp := $(realpath test)
 SOURCE_TestApp := TestAppMain.cpp
 LDFLAGS_TestApp := -pthread ${RESULT_jjgui} ${RESULT_jjbase} ${WXLIBS}
 INCDIR_TestApp := -I$(realpath ${SRCDIR_TestApp}/../..)
-$(eval $(call define_program,TestApp,tests,clean_tests))
+$(eval $(call define_program,TestApp,tests,clean_tests,jjbase jjgui))
