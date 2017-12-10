@@ -14,7 +14,7 @@ the COUNT is a sentinel - assumed to be the last item (not counted into the flag
 template<typename T, T COUNT>
 class flagSet_t
 {
-    std::bitset<COUNT> bits_; //!< internal storage
+    std::bitset<size_t(COUNT)> bits_; //!< internal storage
 public:
     /*! Constructor - initializes to no flag set. */
     flagSet_t() {}
