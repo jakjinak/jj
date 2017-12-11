@@ -38,6 +38,8 @@ template<> struct COGET<menuBar_t> { typedef wxMenuBar TYPE; };
 template<> struct COGET<statusBar_t> { typedef wxStatusBar TYPE; };
 template<> struct COGET<dialog_t> { typedef wxDialog TYPE; };
 template<> struct COGET<dlg::simple_t> { typedef wxMessageDialog TYPE; };
+template<> struct COGET<dlg::openFile_t> { typedef wxFileDialog TYPE; };
+template<> struct COGET<dlg::saveFile_t> { typedef wxFileDialog TYPE; };
 
 } // namespace AUX
 
@@ -648,7 +650,7 @@ input_t::input_t(topLevelWindow_t& parent, const string_t& message, options_t se
             message, (setup.Title.empty() ? wxGetPasswordFromUserPromptStr : wxString(setup.Title)),
             setup.Text, wxTextEntryDialogStyle,
             wxPoint(setup.Position.Column, setup.Position.Row)
-            );
+        );
         set_native_pointer(static_cast<wxPasswordEntryDialog*>(tmp));
     }
     else
@@ -683,6 +685,110 @@ string_t input_t::text() const
 {
     wxTextEntryDialog* d = (isPsw_ ? GET<wxTextEntryDialog>::AS<wxPasswordEntryDialog>::from(this) : GET<wxTextEntryDialog>::AS<wxTextEntryDialog>::from(this));
     return wxs2s<string_t>::cvt(d->GetValue());
+}
+
+namespace // <anonymous>
+{
+template<typename T>
+struct wrFileDialog : public nativeWrapper_t<T, wxFileDialog>
+{
+    template<typename ... Ps>
+    wrFileDialog(T& owner, Ps... ps)
+        : nativeWrapper_t(owner, ps...)
+    {
+    }
+};
+long off2wxfds(const openFile_t::flags1_t& v)
+{
+    long ret = 0;
+    if (v*openFile_t::MUST_EXIST) ret |= wxFD_FILE_MUST_EXIST;
+    if (v*openFile_t::MULTIPLE) ret |= wxFD_MULTIPLE;
+    if (v*openFile_t::CHANGE_DIR) ret |= wxFD_CHANGE_DIR;
+    if (v*openFile_t::PREVIEW) ret |= wxFD_PREVIEW;
+    return ret;
+}
+long sff2wxfds(const saveFile_t::flags1_t& v)
+{
+    long ret = 0;
+    if (v*saveFile_t::OVERWRITE) ret |= wxFD_OVERWRITE_PROMPT;
+    if (v*saveFile_t::CHANGE_DIR) ret |= wxFD_CHANGE_DIR;
+    if (v*saveFile_t::PREVIEW) ret |= wxFD_PREVIEW;
+    return ret;
+}
+} // namespace <anonymous>
+
+openFile_t::openFile_t(topLevelWindow_t& parent, options_t setup)
+    : parent_t(parent, DERIVED)
+{
+    wrFileDialog<openFile_t>* tmp = new wrFileDialog<openFile_t>(
+        *this, GET<wxTopLevelWindow>::from(&parent),
+        setup.Title.empty() ? wxFileSelectorPromptStr : wxString(setup.Title),
+        setup.Directory, setup.File,
+        setup.Wildcard.empty() ? wxFileSelectorDefaultWildcardStr : wxString(setup.Wildcard),
+        wxFD_OPEN | off2wxfds(setup),
+        wxPoint(setup.Position.Column, setup.Position.Row),
+        wxSize(setup.Size.Width, setup.Size.Height)
+        );
+    set_native_pointer(static_cast<wxFileDialog*>(tmp));
+}
+
+void openFile_t::set_native_pointer(void* ptr)
+{
+    native_t::set_native_pointer(ptr);
+    parent_t::set_native_pointer(GET<wxDialog>::from(this));
+}
+
+void openFile_t::reset_native_pointer()
+{
+    native_t::reset_native_pointer();
+    parent_t::reset_native_pointer();
+}
+
+string_t openFile_t::file() const
+{
+    return wxs2s<string_t>::cvt(GET<wxFileDialog>::from(this)->GetPath());
+}
+
+std::vector<string_t> openFile_t::files() const
+{
+    wxArrayString fns;
+    GET<wxFileDialog>::from(this)->GetPaths(fns);
+    std::vector<string_t> ret;
+    for (const wxString& fn : fns)
+        ret.push_back(wxs2s<string_t>::cvt(fn));
+    return ret;
+}
+
+saveFile_t::saveFile_t(topLevelWindow_t& parent, options_t setup)
+    : parent_t(parent, DERIVED)
+{
+    wrFileDialog<saveFile_t>* tmp = new wrFileDialog<saveFile_t>(
+        *this, GET<wxTopLevelWindow>::from(&parent),
+        setup.Title.empty() ? wxFileSelectorPromptStr : wxString(setup.Title),
+        setup.Directory, setup.File,
+        setup.Wildcard.empty() ? wxFileSelectorDefaultWildcardStr : wxString(setup.Wildcard),
+        wxFD_SAVE | sff2wxfds(setup),
+        wxPoint(setup.Position.Column, setup.Position.Row),
+        wxSize(setup.Size.Width, setup.Size.Height)
+        );
+    set_native_pointer(static_cast<wxFileDialog*>(tmp));
+}
+
+void saveFile_t::set_native_pointer(void* ptr)
+{
+    native_t::set_native_pointer(ptr);
+    parent_t::set_native_pointer(GET<wxDialog>::from(this));
+}
+
+void saveFile_t::reset_native_pointer()
+{
+    native_t::reset_native_pointer();
+    parent_t::reset_native_pointer();
+}
+
+string_t saveFile_t::file() const
+{
+    return wxs2s<string_t>::cvt(GET<wxFileDialog>::from(this)->GetPath());
 }
 
 } // namespace dlg

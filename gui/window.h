@@ -298,6 +298,73 @@ public:
 
     string_t text() const;
 };
+} // namespace dlg
+
+namespace opt
+{
+struct file { string_t File; file() {} file(string_t afile) : File(afile) {} };
+struct directory { string_t Directory; directory() {} directory(string_t adir) : Directory(adir) {} };
+struct wildcard { string_t Wildcard; wildcard() {} wildcard(string_t awildcard) : Wildcard(awildcard) {} };
+} // namespace opt
+
+namespace dlg
+{
+
+class openFile_t : public nativePointerWrapper_t<openFile_t>, public dialog_t
+{
+public:
+    enum flags_t
+    {
+        MUST_EXIST,
+        MULTIPLE,
+        CHANGE_DIR,
+        PREVIEW,
+        MAX_FLAGS
+    };
+    typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
+    typedef creationOptions_t<opt::position, opt::size, opt::title, opt::file, opt::directory, opt::wildcard, flags1_t> options_t;
+    static options_t options() { return options_t(); }
+
+private:
+    typedef dialog_t parent_t;
+
+public:
+    openFile_t(topLevelWindow_t& parent, options_t setup);
+
+    typedef nativePointerWrapper_t<openFile_t> native_t;
+    void set_native_pointer(void* ptr);
+    void reset_native_pointer();
+
+    string_t file() const;
+    std::vector<string_t> files() const;
+};
+
+class saveFile_t : public nativePointerWrapper_t<saveFile_t>, public dialog_t
+{
+public:
+    enum flags_t
+    {
+        OVERWRITE,
+        CHANGE_DIR,
+        PREVIEW,
+        MAX_FLAGS
+    };
+    typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
+    typedef creationOptions_t<opt::position, opt::size, opt::title, opt::file, opt::directory, opt::wildcard, flags1_t> options_t;
+    static options_t options() { return options_t(); }
+
+private:
+    typedef dialog_t parent_t;
+
+public:
+    saveFile_t(topLevelWindow_t& parent, options_t setup);
+
+    typedef nativePointerWrapper_t<saveFile_t> native_t;
+    void set_native_pointer(void* ptr);
+    void reset_native_pointer();
+
+    string_t file() const;
+};
 
 } // namespace dlg
 

@@ -154,6 +154,33 @@ public:
             else
                 t2->text(jjS(jjT("The result was a regular result ") << result.regular()));
         });
+        m4->append(menuItem_t::SEPARATOR);
+        m4->append(menuItem_t::options() << opt::text(jjT("open")))
+            .lock()->OnClick.add([this](menuItem_t&) {
+                dlg::openFile_t x(*this, dlg::openFile_t::options());
+                if (x.show_modal() == stock::item_t::OK)
+                    t2->text(jjS(jjT("[") << x.file() << jjT("] selected in dialog")));
+            });
+        m4->append(menuItem_t::options() << opt::text(jjT("open many")))
+            .lock()->OnClick.add([this](menuItem_t&) {
+            dlg::openFile_t x(*this, dlg::openFile_t::options() << dlg::openFile_t::MULTIPLE << dlg::openFile_t::MUST_EXIST);
+            if (x.show_modal() == stock::item_t::OK)
+            {
+                jj::string_t t;
+                for (const jj::string_t& s : x.files())
+                    t = t + jjT('[') + s + jjT("] ");
+                if (t.empty())
+                    t = jjT("Nothing ");
+                t += jjT("selected in dialog");
+                t2->text(t);
+            }
+        });
+        m4->append(menuItem_t::options() << opt::text(jjT("save")))
+            .lock()->OnClick.add([this](menuItem_t&) {
+            dlg::saveFile_t x(*this, dlg::saveFile_t::options() << dlg::saveFile_t::OVERWRITE);
+            if (x.show_modal() == stock::item_t::OK)
+                t2->text(jjS(jjT("[") << x.file() << jjT("] selected in dialog")));
+        });
         m2->append(m3 = new menu_t(*this), jjT("sub"));
         auto m22 = m2->append(menuItem_t::options() << opt::text(jjT("M2")) << menuItem_t::CHECK);
         m2->append(menuItem_t::options() << opt::text(jjT("M3")) << menuItem_t::CHECK)
