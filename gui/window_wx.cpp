@@ -40,6 +40,7 @@ template<> struct COGET<dialog_t> { typedef wxDialog TYPE; };
 template<> struct COGET<dlg::simple_t> { typedef wxMessageDialog TYPE; };
 template<> struct COGET<dlg::openFile_t> { typedef wxFileDialog TYPE; };
 template<> struct COGET<dlg::saveFile_t> { typedef wxFileDialog TYPE; };
+template<> struct COGET<dlg::selectDir_t> { typedef wxDirDialog TYPE; };
 
 } // namespace AUX
 
@@ -698,6 +699,14 @@ struct wrFileDialog : public nativeWrapper_t<T, wxFileDialog>
     {
     }
 };
+struct wrDirDialog : public nativeWrapper_t<selectDir_t, wxDirDialog>
+{
+    template<typename ... Ps>
+    wrDirDialog(selectDir_t& owner, Ps... ps)
+        : nativeWrapper_t(owner, ps...)
+    {
+    }
+};
 long off2wxfds(const openFile_t::flags1_t& v)
 {
     long ret = 0;
@@ -713,6 +722,13 @@ long sff2wxfds(const saveFile_t::flags1_t& v)
     if (v*saveFile_t::OVERWRITE) ret |= wxFD_OVERWRITE_PROMPT;
     if (v*saveFile_t::CHANGE_DIR) ret |= wxFD_CHANGE_DIR;
     if (v*saveFile_t::PREVIEW) ret |= wxFD_PREVIEW;
+    return ret;
+}
+long sdf2wxdds(const selectDir_t::flags1_t& v)
+{
+    long ret = wxDD_DEFAULT_STYLE;
+    if (v*selectDir_t::MUST_EXIST) ret |= wxDD_DIR_MUST_EXIST;
+    if (v*selectDir_t::CHANGE_DIR) ret |= wxDD_CHANGE_DIR;
     return ret;
 }
 } // namespace <anonymous>
@@ -789,6 +805,35 @@ void saveFile_t::reset_native_pointer()
 string_t saveFile_t::file() const
 {
     return wxs2s<string_t>::cvt(GET<wxFileDialog>::from(this)->GetPath());
+}
+
+selectDir_t::selectDir_t(topLevelWindow_t& parent, options_t setup)
+    : parent_t(parent, DERIVED)
+{
+    wrDirDialog* tmp = new wrDirDialog(
+        *this, GET<wxTopLevelWindow>::from(&parent),
+        setup.Title.empty() ? wxDirSelectorPromptStr : wxString(setup.Title),
+        setup.Directory, sdf2wxdds(setup),
+        wxPoint(setup.Position.Column, setup.Position.Row),
+        wxSize(setup.Size.Width, setup.Size.Height)
+        );
+    set_native_pointer(static_cast<wxDirDialog*>(tmp));
+}
+
+void selectDir_t::set_native_pointer(void* ptr)
+{
+    native_t::set_native_pointer(ptr);
+    parent_t::set_native_pointer(GET<wxDialog>::from(this));
+}
+void selectDir_t::reset_native_pointer()
+{
+    native_t::reset_native_pointer();
+    parent_t::reset_native_pointer();
+}
+
+string_t selectDir_t::dir() const
+{
+    return wxs2s<string_t>::cvt(GET<wxDirDialog>::from(this)->GetPath());
 }
 
 } // namespace dlg

@@ -43,6 +43,7 @@ template<typename P> struct GETTER<wxMessageDialog, P> { inline static P* get(wx
 template<typename P> struct GETTER<wxTextEntryDialog, P> { inline static P* get(wxTextEntryDialog* p) { return p; } };
 template<typename P> struct GETTER<wxPasswordEntryDialog, P> { inline static P* get(wxPasswordEntryDialog* p) { return p; } };
 template<typename P> struct GETTER<wxFileDialog, P> { inline static P* get(wxFileDialog* p) { return p; } };
+template<typename P> struct GETTER<wxDirDialog, P> { inline static P* get(wxDirDialog* p) { return p; } };
 
 /** Converts given type T representing a class containing a void* to the native type actually meant.
 Ie. ptr frame_t always holds a wxFrame pointer (even if it is void*), content_holder_t holds wxWindow* (even if void*), etc. */

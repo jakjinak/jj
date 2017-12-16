@@ -366,6 +366,32 @@ public:
     string_t file() const;
 };
 
+class selectDir_t : public nativePointerWrapper_t<selectDir_t>, public dialog_t
+{
+public:
+    enum flags_t
+    {
+        MUST_EXIST,
+        CHANGE_DIR,
+        MAX_FLAGS
+    };
+    typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
+    typedef creationOptions_t<opt::position, opt::size, opt::title, opt::directory, flags1_t> options_t;
+    static options_t options() { return options_t(); }
+
+private:
+    typedef dialog_t parent_t;
+
+public:
+    selectDir_t(topLevelWindow_t& parent, options_t setup);
+
+    typedef nativePointerWrapper_t<selectDir_t> native_t;
+    void set_native_pointer(void* ptr);
+    void reset_native_pointer();
+
+    string_t dir() const;
+};
+
 } // namespace dlg
 
 } // namespace gui

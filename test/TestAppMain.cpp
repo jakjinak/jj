@@ -181,6 +181,12 @@ public:
             if (x.show_modal() == stock::item_t::OK)
                 t2->text(jjS(jjT("[") << x.file() << jjT("] selected in dialog")));
         });
+        m4->append(menuItem_t::options() << opt::text(jjT("get dir")))
+            .lock()->OnClick.add([this](menuItem_t&) {
+            dlg::selectDir_t x(*this, dlg::selectDir_t::options());
+            if (x.show_modal() == stock::item_t::OK)
+                t2->text(jjS(jjT("[") << x.dir() << jjT("] selected in dialog")));
+        });
         m2->append(m3 = new menu_t(*this), jjT("sub"));
         auto m22 = m2->append(menuItem_t::options() << opt::text(jjT("M2")) << menuItem_t::CHECK);
         m2->append(menuItem_t::options() << opt::text(jjT("M3")) << menuItem_t::CHECK)
