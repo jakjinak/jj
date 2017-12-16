@@ -695,7 +695,7 @@ struct wrFileDialog : public nativeWrapper_t<T, wxFileDialog>
 {
     template<typename ... Ps>
     wrFileDialog(T& owner, Ps... ps)
-        : nativeWrapper_t(owner, ps...)
+        : nativeWrapper_t<T, wxFileDialog>(owner, ps...)
     {
     }
 };
