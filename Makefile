@@ -27,6 +27,7 @@ endif
 
 .PHONY: all libs tests clean_all clean clean_tests
 
+libs:
 all: libs tests
 clean_all: clean clean_tests
 
