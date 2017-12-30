@@ -64,9 +64,10 @@ class wnd : public jj::gui::frame_t
 
 public:
     wnd(jj::gui::application_t& app)
-        : jj::gui::frame_t(app, jj::gui::frame_t::options() << jj::gui::opt::text(jjT("First One")) << jj::gui::opt::size(600, 280) << jj::gui::frame_t::NO_MAXIMIZE)
+        : jj::gui::frame_t(app, jj::gui::frame_t::options() << jj::opt::text(jjT("First One")) << jj::opt::size(600, 280) << jj::gui::frame_t::NO_MAXIMIZE)
         , o(nullptr), dlg(nullptr)
     {
+        using namespace jj;
         using namespace jj::gui;
 
         onCreateSizer = [this] { return new boxSizer_t(*this, boxSizer_t::VERTICAL); };
@@ -239,7 +240,7 @@ class app : public jj::gui::application_t
         f = new wnd(*this);
         f->show();
 
-        f->o = new jj::gui::frame_t(*this, jj::gui::frame_t::options() << jj::gui::opt::text(jjT("Child")) << jj::gui::frame_t::NO_MINIMIZE);
+        f->o = new jj::gui::frame_t(*this, jj::gui::frame_t::options() << jj::opt::text(jjT("Child")) << jj::gui::frame_t::NO_MINIMIZE);
         f->o->OnClose.add(*this, &app::ono);
         f->o->show();
 

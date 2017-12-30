@@ -11,6 +11,13 @@
 
 namespace jj
 {
+namespace opt
+{
+struct file { string_t File; file() {} file(string_t afile) : File(afile) {} };
+struct directory { string_t Directory; directory() {} directory(string_t adir) : Directory(adir) {} };
+struct wildcard { string_t Wildcard; wildcard() {} wildcard(string_t awildcard) : Wildcard(awildcard) {} };
+} // namespace opt
+
 namespace gui
 {
 
@@ -131,7 +138,7 @@ public:
         MAX_FLAGS
     };
     typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
-    typedef creationOptions_t<opt::text, opt::position, opt::size, flags1_t> options_t;
+    typedef options_t<opt::text, opt::position, opt::size, flags1_t> options_t;
     static options_t options() { return options_t(); }
 
 private:
@@ -223,7 +230,7 @@ public:
         MAX_FLAGS
     };
     typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
-    typedef creationOptions_t<opt::text, opt::position, opt::size, flags1_t> options_t;
+    typedef options_t<opt::text, opt::position, opt::size, flags1_t> options_t;
     static options_t options() { return options_t(); }
 
 private:
@@ -257,7 +264,7 @@ class simple_t : public nativePointerWrapper_t<simple_t>, public dialog_t
 public:
     typedef opt::e<stock::icon_t> icon1_t;
     typedef opt::e<stock::item_t> default1_t;
-    typedef creationOptions_t<opt::position, icon1_t, default1_t> options_t;
+    typedef jj::options_t<opt::position, icon1_t, default1_t> options_t;
     static options_t options() { return options_t(); }
 
 private:
@@ -282,7 +289,7 @@ public:
         MAX_FLAGS
     };
     typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
-    typedef creationOptions_t<opt::position, opt::text, opt::title, flags1_t> options_t;
+    typedef jj::options_t<opt::position, opt::text, opt::title, flags1_t> options_t;
     static options_t options() { return options_t(); }
 
 private:
@@ -298,17 +305,6 @@ public:
 
     string_t text() const;
 };
-} // namespace dlg
-
-namespace opt
-{
-struct file { string_t File; file() {} file(string_t afile) : File(afile) {} };
-struct directory { string_t Directory; directory() {} directory(string_t adir) : Directory(adir) {} };
-struct wildcard { string_t Wildcard; wildcard() {} wildcard(string_t awildcard) : Wildcard(awildcard) {} };
-} // namespace opt
-
-namespace dlg
-{
 
 class openFile_t : public nativePointerWrapper_t<openFile_t>, public dialog_t
 {
@@ -322,7 +318,7 @@ public:
         MAX_FLAGS
     };
     typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
-    typedef creationOptions_t<opt::position, opt::size, opt::title, opt::file, opt::directory, opt::wildcard, flags1_t> options_t;
+    typedef jj::options_t<opt::position, opt::size, opt::title, opt::file, opt::directory, opt::wildcard, flags1_t> options_t;
     static options_t options() { return options_t(); }
 
 private:
@@ -350,7 +346,7 @@ public:
         MAX_FLAGS
     };
     typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
-    typedef creationOptions_t<opt::position, opt::size, opt::title, opt::file, opt::directory, opt::wildcard, flags1_t> options_t;
+    typedef jj::options_t<opt::position, opt::size, opt::title, opt::file, opt::directory, opt::wildcard, flags1_t> options_t;
     static options_t options() { return options_t(); }
 
 private:
@@ -376,7 +372,7 @@ public:
         MAX_FLAGS
     };
     typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
-    typedef creationOptions_t<opt::position, opt::size, opt::title, opt::directory, flags1_t> options_t;
+    typedef jj::options_t<opt::position, opt::size, opt::title, opt::directory, flags1_t> options_t;
     static options_t options() { return options_t(); }
 
 private:

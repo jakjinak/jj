@@ -30,9 +30,9 @@ public:
     enum kind_t { NORMAL, RADIO, CHECK };
     enum separator_t { SEPARATOR };
 
-    typedef creationOptions_t<opt::text, opt::accelerator, opt::e<kind_t>> options_t;
+    typedef jj::options_t<opt::text, opt::accelerator, opt::e<kind_t>> options_t;
     static options_t options() { return options_t(); }
-    typedef creationOptions_t<opt::text> submenuOptions_t;
+    typedef jj::options_t<opt::text> submenuOptions_t;
     static submenuOptions_t submenu_options() { return submenuOptions_t(); }
 
     bool checked() const;

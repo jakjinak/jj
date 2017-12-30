@@ -322,6 +322,7 @@
     <ClInclude Include="functionBag.h" />
     <ClInclude Include="geometry.h" />
     <ClInclude Include="idGenerator.h" />
+    <ClInclude Include="options.h" />
     <ClInclude Include="stream.h" />
     <ClInclude Include="string.h" />
   </ItemGroup>

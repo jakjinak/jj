@@ -8,18 +8,13 @@
 #include "jj/string.h"
 #include "jj/idGenerator.h"
 #include "jj/geometry.h"
-#include "jj/flagSet.h"
+#include "jj/options.h"
 
 #include <set>
 #include <functional>
 
 namespace jj
 {
-namespace gui
-{
-
-enum class align_t { LEFT, CENTER, RIGHT };
-enum class alignv_t { TOP, MIDDLE, BOTTOM };
 
 namespace opt
 {
@@ -27,51 +22,13 @@ struct title { string_t Title; title() {} title(string_t atitle) : Title(atitle)
 struct text { string_t Text; text() {} text(string_t atext) : Text(atext) {} };
 struct position { screen_point_t Position; position(); position(screen_point_t p) : Position(p) {} position(int left, int top) : Position(left, top) {} position(const position& other) : Position(other.Position) {} };
 struct size { screen_point_t Size; size(); size(screen_point_t s) : Size(s) {} size(int width, int height) : Size(width, height) {} };
-template<typename T> struct e { T Value; e() : Value() {} e(T v) : Value(v) {} };
-template<typename T, T COUNT> struct f : jj::flagSet_t<T, COUNT> { f() : flagSet_t<T, COUNT>() {} f(std::initializer_list<T> init) : flagSet_t<T, COUNT>(init) {} };
 } // namespace opt
 
-template<typename ... Ts>
-class creationOptions_t : public Ts...
+namespace gui
 {
-    template<typename T, typename S, typename ... Ss>
-    struct SEARCHER : SEARCHER<T, Ss...> 
-    {
-        // just forward to next type
-    };
-    template<typename T, typename ... Ss>
-    struct SEARCHER<T, T, Ss...>
-    {
-        typedef T type;
-        static void adopt(type& t, const T v) { t = v; }
-    };
-    template<typename T, typename ... Ss>
-    struct SEARCHER<T, opt::e<T>, Ss...>
-    {
-        typedef opt::e<T> type;
-        static void adopt(type& t, const T v) { t = v; }
-    };
-    template<typename T, T COUNT, typename ... Ss>
-    struct SEARCHER<T, opt::f<T, COUNT>, Ss...>
-    {
-        typedef opt::f<T, COUNT> type;
-        static void adopt(type& t, const T v) { t |= v; }
-    };
-    template<typename T>
-    struct SEARCHER<T, void> : T::noMatchingTypeFoundInTemplateParameterList
-    {
-        // the sentinel if no match was found in the type list
-    };
 
-public:
-    template<typename T>
-    creationOptions_t& operator<<(const T v)
-    {
-        typename SEARCHER<T, Ts..., void>::type& t = *this;
-        SEARCHER<T, Ts..., void>::adopt(t, v);
-        return *this;
-    }
-};
+enum class align_t { LEFT, CENTER, RIGHT };
+enum class alignv_t { TOP, MIDDLE, BOTTOM };
 
 template<typename T>
 class nativePointerWrapper_t

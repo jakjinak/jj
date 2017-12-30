@@ -7,15 +7,14 @@
 
 namespace jj
 {
-namespace gui
-{
-
 namespace opt
 {
-position::position() : Position(pt2p(wxDefaultPosition)) {}
-size::size() : Size(siz2p(wxDefaultSize)) {}
+position::position() : Position(gui::pt2p(wxDefaultPosition)) {}
+size::size() : Size(gui::siz2p(wxDefaultSize)) {}
 } // namespace opt
 
+namespace gui
+{
 
 contentHolder_t::contentHolder_t()
     : sizer_(nullptr), onCreateSizer([this] { return new boxSizer_t(*this, boxSizer_t::VERTICAL); })

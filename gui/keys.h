@@ -57,12 +57,12 @@ private:
 };
 
 } // namespace keys
+} // namespace gui
 
 namespace opt
 {
-struct accelerator { keys::accelerator_t Accelerator; accelerator() {} accelerator(keys::accelerator_t v) : Accelerator(v) {} };
+struct accelerator { gui::keys::accelerator_t Accelerator; accelerator() {} accelerator(gui::keys::accelerator_t v) : Accelerator(v) {} };
 } // namespace opt
-} // namespace gui
 } // namespace jj
 
 #endif // JJ_USE_GUI
