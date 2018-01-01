@@ -184,7 +184,7 @@ endef
 ########################################
 # jjbase
 SRCDIR_jjbase := $(realpath .)
-SOURCE_jjbase := stream.cpp
+SOURCE_jjbase := string.cpp stream.cpp cmdLine.cpp
 CPPFLAGS_jjbase := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase}/..)
 $(eval $(call define_static_library,jjbase,libs,clean))
 
