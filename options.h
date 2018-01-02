@@ -24,12 +24,12 @@ Note that there are opt::e and opt::f helpers for "one of"/"any of".
 Eg. like this:
 class myClass_t
 { ...
-  typedef options_t<opt::pos, opt::size, myoption1, opt::e<myenum>, opt::f<myenum2> options_t;
+  typedef options_T<opt::pos, opt::size, myoption1, opt::e<myenum>, opt::f<myenum2> options_t;
   static options_t options() { return options_t() << myenum::value << opt::size(100,300) << myenum2::value; }
   ...
 }; */
 template<typename ... Ts>
-class options_t : public Ts...
+class options_T : public Ts...
 {
     template<typename T, typename S, typename ... Ss>
     struct SEARCHER : SEARCHER<T, Ss...>
@@ -68,7 +68,7 @@ public:
     Note that for opt::f the flags can only be set, not unset. For other types any new value simply overwrites the previous one.
     */
     template<typename T>
-    options_t& operator<<(const T v)
+    options_T& operator<<(const T v)
     {
         typename SEARCHER<T, Ts..., void>::type& t = *this;
         SEARCHER<T, Ts..., void>::adopt(t, v);

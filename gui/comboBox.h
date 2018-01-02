@@ -21,7 +21,7 @@ public:
         MAX_FLAGS
     };
     typedef opt::f<flags_t, MAX_FLAGS> flags1_t;
-    typedef options_t<opt::text, opt::position, opt::size, flags1_t> options_t;
+    typedef options_T<opt::text, opt::position, opt::size, flags1_t> options_t;
     static options_t options() { return options_t(); }
 
 private:

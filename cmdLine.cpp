@@ -15,8 +15,8 @@ bool nameCompare_t::compare_icase(const string_t& a, const string_t& b)
 {
     // TODO do per-character and move to string.h
     string_t ta(a), tb(b);
-    std::transform(ta.begin(), ta.end(), ta.begin(), std::tolower);
-    std::transform(tb.begin(), tb.end(), tb.begin(), std::tolower);
+    std::transform(ta.begin(), ta.end(), ta.begin(), [](char_t ch) { return std::tolower(ch); });
+    std::transform(tb.begin(), tb.end(), tb.begin(), [](char_t ch) { return std::tolower(ch); });
     return ta < tb;
 }
 

@@ -235,7 +235,7 @@ struct arguments_t
 {
     arguments_t();
 
-    typedef jj::options_t<opt::f<flags_t, flags_t::MAX_FLAGS>, opt::e<stackOptionValues_t>> parserOptions_t;
+    typedef jj::options_T<opt::f<flags_t, flags_t::MAX_FLAGS>, opt::e<stackOptionValues_t>> parserOptions_t;
     parserOptions_t ParserOptions; //!< options of the parser
     case_t OptionCase, //!< whether option names shall be treated case-sensitively
         VariableCase; //!< whether variable names shall be treated case-sensitively

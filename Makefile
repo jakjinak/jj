@@ -2,21 +2,28 @@
 BUILD_MODE ?= debug
 BUILD_ARCH ?= x86_64
 
-WXDIR := $(realpath ../../../wxwidgets/wxWidgets-3.0.3)
+WXDIR ?= $(realpath ../../../src/wxWidgets-3.0.3)
 
 WXDEFINE := -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__
 WXINCDIR := -isystem ${WXDIR}/include -isystem ${WXDIR}/lib/wx/include/gtk2-unicode-3.0/ -I/usr/include/gtk-unix-print-2.0 -I/usr/include/gtk-2.0 -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/pango-1.0 -I/usr/lib64/gtk-2.0/include -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/harfbuzz -I/usr/include/freetype2 -I/usr/include/pixman-1 -I/usr/include/libpng15 -I/usr/include/libdrm
 WXLIBDIR := -L${WXDIR}/lib
-WXLIBS := -L/home/jakjinak/wxwidgets/wxWidgets-3.0.3/lib -pthread -Wl,-rpath,/home/jakjinak/wxwidgets/wxWidgets-3.0.3/lib -lwx_gtk2u_xrc-3.0 -lwx_gtk2u_html-3.0 -lwx_gtk2u_qa-3.0 -lwx_gtk2u_adv-3.0 -lwx_gtk2u_core-3.0 -lwx_baseu_xml-3.0 -lwx_baseu_net-3.0 -lwx_baseu-3.0
+WXLIBS := -L${WXDIR}/lib -pthread -Wl,-rpath,${WXDIR}/lib -lwx_gtk2u_xrc-3.0 -lwx_gtk2u_html-3.0 -lwx_gtk2u_qa-3.0 -lwx_gtk2u_adv-3.0 -lwx_gtk2u_core-3.0 -lwx_baseu_xml-3.0 -lwx_baseu_net-3.0 -lwx_baseu-3.0
 
 ROOTDIR := $(realpath .)
 BINDIR := ${ROOTDIR}/.bin
 LIBDIR := ${ROOTDIR}/.bin
 OBJDIR := ${ROOTDIR}/.bin
 
+TOOL_AR ?= ar
+TOOL_CXX ?= g++
+#/opt/gcc-5.5/bin/g++
+#/opt/gcc-7.2/bin/g++
+
 COMMON_CPPFLAGS := -std=c++11 -g
 COMMON_ARFLAGS := 
 COMMON_LDFLAGS := -std=c++11 -g -pthread
+# -static-libgcc -static-libstdc++
+
 ifeq ($(BUILD_MODE),release)
 COMMON_CPPFLAGS += -O2 -DNDEBUG
 COMMON_LDFLAGS += -O2 -DNDEBUG
@@ -139,7 +146,7 @@ $${DEPDIR_$(1)}/%.d : ;
 
 $${OBJDIR_$(1)}/%.o : $${SRCDIR_$(1)}/%.cpp $${OBJDIR_$(1)}/dircreated $${DEPDIR_$(1)}/dircreated
 	$$(call showhint,"$${COLOR_COMPILE}=== Compiling $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)g++ $${CPPFLAGS_$(1)} -MMD -MT $$@ -MF $${DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
+	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${CPPFLAGS_$(1)} -MMD -MT $$@ -MF $${DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
 endef
 
 # Defines all the undefined definitions and rules for a library unless already defined
@@ -158,7 +165,7 @@ $(call define_common_part,$(1),$(2),$(3),$(4))
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)ar cr $${ARFLAGS_$(1)} $${RESULT_$(1)} $${OBJ_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_AR} cr $${ARFLAGS_$(1)} $${RESULT_$(1)} $${OBJ_$(1)}
 endef
 
 # Defines all the undefined definitions and rules for a program unless already defined
@@ -177,7 +184,7 @@ $(call define_common_part,$(1),$(2),$(3),$(4))
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)g++ $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
 endef
 
 
