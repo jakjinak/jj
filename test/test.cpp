@@ -1,4 +1,5 @@
 #include "jj/test/test.h"
+#include "jj/cmdLine.h"
 #include <iostream>
 
 namespace jj
@@ -55,9 +56,52 @@ void db_t::run()
     for (testclasses_t::value_type& i : testclasses_)
     {
         for (testclass_variants_t::value_type& v : i.second.first)
+        {
+            std::cout << "class " << i.first << v.first << " | entering\n";
             (v.second)();
+            std::cout << "class " << i.first << v.first << " | leaving\n";
+        }
     }
 }
 
 } // namespace test
 } // namespace jj
+
+#if defined(_WINDOWS) || defined(_WIN32)
+int wmain(int argc, const wchar_t** argv)
+#else
+int main(int argc, const char** argv)
+#endif
+{
+    jj::test::db_t& DB = jj::test::db_t::instance();
+    using namespace jj::cmdLine;
+    definitions_t argdefs;
+    argdefs.Options.push_back({{name_t(jjT('t')), name_t(jjT("run")), name_t(jjT("run-tests"))}, jjT("Give any number of these to specify which tests shall run."), 1u, multiple_t::JOIN, nullptr});
+    argdefs.Options.push_back({{name_t(jjT("class-names"))}, jjT("Prints information about entering/leaving testclass."), 0u, multiple_t::OVERRIDE, nullptr});
+    argdefs.Options.push_back({{name_t(jjT("case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE, nullptr});
+    arguments_t args;
+    try
+    {
+        args.parse(argdefs, argc, argv);
+        DB.run();
+    }
+    catch (const jj::test::testFailed_t& ex)
+    {
+        return 1;
+    }
+    catch (const std::exception& ex)
+    {
+        std::cout << "Exception caught: " << ex.what() << "\n";
+        return 2;
+    }
+    catch (const std::string& ex)
+    {
+        std::cout << "Exception caught: " << ex << "\n";
+        return 2;
+    }
+    catch (...)
+    {
+        std::cout << "Unknown exception caught!\n";
+        return 2;
+    }
+}

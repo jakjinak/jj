@@ -2,13 +2,23 @@
 #define JJ_TEST_H
 
 #include "jj/string.h"
+#include "jj/stream.h"
+#include "jj/exception.h"
 #include <map>
 #include <list>
+#include <iostream>
 
 namespace jj
 {
 namespace test
 {
+
+/*! A simple wrapper over logic error. */
+struct testFailed_t : public std::logic_error
+{
+    testFailed_t() : std::logic_error("Test failed!") {}
+};
+
 
 namespace AUX
 {
@@ -241,5 +251,20 @@ For all other see description of JJ_TEST_CLASS. */
         JJ___TEST_CASE_REGS(name, __VA_ARGS__) \
     } \
     void name args
+
+
+#define JJ___DO_TEST(cnd, msg, exc) \
+    if (!(cnd)) { \
+        jj::cout << jjT("Test failed: ") << msg << jjT('\n'); \
+        exc \
+    }
+
+#define JJ_TEST_X(cond) JJ___DO_TEST(cond, #cond,)
+#define JJ_TEST_MSG(cond,msg) JJ___DO_TEST(cond, msg,)
+#define JJ_TEST(...) JJ_PP_SELECTOR(dummy1, dummy2, dummy3, dummy4, dummy5, dummy6, dummy7, __VA_ARGS__, JJ_TEST_MSG, JJ_TEST_X)(__VA_ARGS__)
+
+#define JJ_ENSURE_X(cond) JJ___DO_TEST(cond, #cond, throw jj::test::testFailed_t();)
+#define JJ_ENSURE_MSG(cond,msg) JJ___DO_TEST(cond,msg,throw jj::test::testFailed_t();)
+#define JJ_ENSURE(...) JJ_PP_SELECTOR(dummy1, dummy2, dummy3, dummy4, dummy5, dummy6, dummy7, __VA_ARGS__, JJ_ENSURE_MSG, JJ_ENSURE_X)(__VA_ARGS__)
 
 #endif // JJ_TEST_H
