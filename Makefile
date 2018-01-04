@@ -203,8 +203,27 @@ CPPFLAGS_jjgui := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjgui}/..
 $(eval $(call define_static_library,jjgui,libs,clean))
 
 ########################################
+# jjtest
+SRCDIR_jjtest := $(realpath test)
+SOURCE_jjtest := test.cpp
+CPPFLAGS_jjtest := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest}/../..)
+$(eval $(call define_static_library,jjtest,libs,clean))
+
+
+
+########################################
+# jjbase-tests
+SRCDIR_jjbase-tests := $(realpath tests)
+SOURCE_jjbase-tests := string_tests.cpp
+CPPFLAGS_jjbase-tests := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
+LIBS_jjbase-tests := ${RESULT_jjtest} ${RESULT_jjbase}
+$(eval $(call define_program,jjbase-tests,tests,clean_tests,jjbase jjtest))
+
+
+
+########################################
 # TestApp
-SRCDIR_TestApp := $(realpath test)
+SRCDIR_TestApp := $(realpath tests)
 SOURCE_TestApp := TestAppMain.cpp
 LIBS_TestApp := ${RESULT_jjgui} ${RESULT_jjbase} ${WXLIBS}
 INCDIR_TestApp := -I$(realpath ${SRCDIR_TestApp}/../..)
