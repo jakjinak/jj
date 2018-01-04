@@ -295,7 +295,7 @@ private:
 
     const definitions_t* defs_; //!< definitions as passed to parse()
 
-    void clean_data();
+    void clear_data();
     typedef std::deque<options_t::value_type> missingValues_t;
     void add_option(options_t::value_type& opt);
     void add_option_value(missingValues_t& mv, const char_t* value);

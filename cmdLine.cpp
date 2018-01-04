@@ -4,12 +4,14 @@
 #include <exception>
 #include "jj/stream.h"
 #include <sstream>
-#include <cstring>
 
 namespace jj
 {
 namespace cmdLine
 {
+
+name_t::defaultPolicy_t name_t::DefaultPolicy(DASH);
+string_t name_t::DefaultPrefix;
 
 bool nameCompare_t::compare_icase(const string_t& a, const string_t& b)
 {
@@ -21,7 +23,7 @@ bool nameCompare_t::compare_icase(const string_t& a, const string_t& b)
 }
 
 arguments_t::arguments_t()
-    : OptionCase(case_t::SENSITIVE), VariableCase(case_t::SENSITIVE), ParseStart(1), Options(nameCompare_t(case_t::SENSITIVE)), opts_(nameCompare_t(case_t::SENSITIVE)), vars_(nameCompare_t(case_t::SENSITIVE))
+    : OptionCase(case_t::SENSITIVE), VariableCase(case_t::SENSITIVE), ParseStart(1), Options(nameCompare_t(case_t::SENSITIVE)), opts_(nameCompare_t(case_t::SENSITIVE)), vars_(nameCompare_t(case_t::SENSITIVE)), defs_(nullptr)
 {
     ParserOptions << flags_t::ALLOW_STACKS << flags_t::ALLOW_SHORT_ASSIGN << flags_t::ALLOW_LONG_ASSIGN; 
     setup_basic_prefixes();
@@ -91,6 +93,7 @@ void arguments_t::parse(const definitions_t& defs)
         if (!ret)
             throw std::runtime_error(strcvt::to_string(jjS(jjT("Duplicate definition for variable '") << v.Name << jjT("'"))));
     }
+    defs_ = &defs;
 }
 
 void arguments_t::parse(int argc, const char_t** argv)
@@ -100,9 +103,9 @@ void arguments_t::parse(int argc, const char_t** argv)
     if (argc == 0 || argv == nullptr)
         throw std::runtime_error("Empty argument list");
 
-    clean_data();
+    clear_data();
 
-    definitions_t::poss_t::const_iterator currentPositional = defs_->Positionals.cbegin();
+    definitions_t::poss_t::const_iterator currentPositional = defs_->Positionals.begin();
     bool inPositionals = false;
 
     missingValues_t missingValues;
@@ -179,6 +182,14 @@ void arguments_t::parse(int argc, const char_t** argv)
     for (; currentPositional != defs_->Positionals.cend(); ++currentPositional)
         if (currentPositional->Mandatory)
             throw std::runtime_error(strcvt::to_string(jjS(jjT("Mandatory positional argument '") << currentPositional->Shorthand << jjT("' missing."))));
+}
+
+void arguments_t::clear_data()
+{
+    Options = options_t(nameCompare_t(OptionCase));
+    Positionals.clear();
+    for (varmap_t::value_type& v : vars_)
+        v.second.Value = v.second.Var->Default;
 }
 
 void arguments_t::add_option(options_t::value_type& opt)
