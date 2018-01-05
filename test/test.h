@@ -6,7 +6,8 @@
 #include "jj/exception.h"
 #include <map>
 #include <list>
-#include <iostream>
+#include <memory>
+#include <sstream>
 
 namespace jj
 {
@@ -19,9 +20,82 @@ struct testFailed_t : public std::logic_error
     testFailed_t() : std::logic_error("Test failed!") {}
 };
 
+class options_t
+{
+public:
+    bool ClassNames, CaseNames;
+    bool Colors;
+
+    options_t() : ClassNames(false), CaseNames(false), Colors(false) {}
+};
+
+class output_t
+{
+public:
+    virtual ~output_t() {}
+    virtual void enter_class(const string_t& name, const string_t& variant) =0;
+    virtual void leave_class(const string_t& name, const string_t& variant) =0;
+    virtual void enter_case(const string_t& name, const string_t& variant) =0;
+    virtual void leave_case(const string_t& name, const string_t& variant) =0;
+    virtual void test_ok(const string_t& text) =0;
+    virtual void test_fail(const string_t& text) =0;
+};
 
 namespace AUX
 {
+
+struct defaultOutput_t : public output_t
+{
+    defaultOutput_t(options_t& opt) : opt_(opt) {}
+
+    virtual void enter_class(const string_t& name, const string_t& variant);
+    virtual void leave_class(const string_t& name, const string_t& variant);
+    virtual void enter_case(const string_t& name, const string_t& variant);
+    virtual void leave_case(const string_t& name, const string_t& variant);
+    virtual void test_ok(const string_t& text);
+    virtual void test_fail(const string_t& text);
+
+private:
+    options_t& opt_;
+};
+
+struct db_output_t : public output_t
+{
+    typedef std::shared_ptr<output_t> outptr_t;
+    typedef std::list<outptr_t> outlist_t;
+    outlist_t Outputs;
+
+    virtual void enter_class(const string_t& name, const string_t& variant)
+    {
+        for (auto& o : Outputs)
+            o->enter_class(name, variant);
+    }
+    virtual void leave_class(const string_t& name, const string_t& variant)
+    {
+        for (auto& o : Outputs)
+            o->leave_class(name, variant);
+    }
+    virtual void enter_case(const string_t& name, const string_t& variant)
+    {
+        for (auto& o : Outputs)
+            o->enter_case(name, variant);
+    }
+    virtual void leave_case(const string_t& name, const string_t& variant)
+    {
+        for (auto& o : Outputs)
+            o->leave_case(name, variant);
+    }
+    virtual void test_ok(const string_t& text)
+    {
+        for (auto& o : Outputs)
+            o->test_ok(text);
+    }
+    virtual void test_fail(const string_t& text)
+    {
+        for (auto& o : Outputs)
+            o->test_fail(text);
+    }
+};
 
 class testclass_base_t;
 
@@ -81,22 +155,13 @@ public:
                     print(i.first);
             }
         }
-        void run(parent_t& testclass)
-        {
-            for (typename JJ_TESTCASE_list_t::value_type& i : list_)
-            {
-                for (typename JJ_TESTCASE_variants_t::value_type& v : i.second)
-                {
-                    (v.second)(testclass);
-                }
-            }
-        }
+        void run(parent_t& testclass);
     };
 };
 
 } // namespace AUX
 
-class db_t
+class db_t : public options_t, public AUX::db_output_t
 {
     typedef void(*runner_fn)();
 
@@ -110,6 +175,7 @@ class db_t
     void do_list(const testclasses_t::value_type& testclass, bool classvariants, bool tests, bool testvariants=false) const;
 
 public:
+    db_t() { Outputs.push_back(outptr_t(new AUX::defaultOutput_t(*this))); }
     static db_t& instance() { static db_t inst; return inst; }
 
     void register_testclass(runner_fn fn, const char_t* name, const char_t* args)
@@ -132,6 +198,23 @@ public:
     void run(); // TODO take filters and other options into account
 };
 
+namespace AUX
+{
+template<typename T>
+void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass)
+{
+    db_t& db = db_t::instance();
+    for (typename JJ_TESTCASE_list_t::value_type& i : list_)
+    {
+        for (typename JJ_TESTCASE_variants_t::value_type& v : i.second)
+        {
+            db.enter_case(i.first, v.first);
+            (v.second)(testclass);
+            db.leave_case(i.first, v.first);
+        }
+    }
+}
+} // namespace AUX
 } // namespace test
 } // namespace jj
 
