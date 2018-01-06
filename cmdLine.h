@@ -231,8 +231,10 @@ struct prefixInfo_t
     type_t Type; //!< type of option with this prefix
 };
 
+/*! The actual parser (and holder) of command line arguments. */
 struct arguments_t
 {
+    /*! Ctor */
     arguments_t();
 
     typedef jj::options_T<opt::f<flags_t, flags_t::MAX_FLAGS>, opt::e<stackOptionValues_t>> parserOptions_t;
