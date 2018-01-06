@@ -78,12 +78,34 @@ void defaultOutput_t::leave_case(const string_t& name, const string_t& variant)
 
 void defaultOutput_t::test_ok(const string_t& text)
 {
-    jj::cout << jjT("test '") << text << jjT("' passed\n");
+    if (opt_.Colors)
+        jj::cout << jjT("\033[32m");
+    jj::cout << jjT("test '");
+    if (opt_.Colors)
+        jj::cout << jjT("\033[1m");
+    jj::cout << text;
+    if (opt_.Colors)
+        jj::cout << jjT("\033[22m");
+    jj::cout << jjT("' passed");
+    if (opt_.Colors)
+        jj::cout << jjT("\033[0m");
+    jj::cout << jjT('\n');
 }
 
 void defaultOutput_t::test_fail(const string_t& text)
 {
-    jj::cout << jjT("test '") << text << jjT("' failed\n");
+    if (opt_.Colors)
+        jj::cout << jjT("\033[31m");
+    jj::cout << jjT("test '");
+    if (opt_.Colors)
+        jj::cout << jjT("\033[1m");
+    jj::cout << text;
+    if (opt_.Colors)
+        jj::cout << jjT("\033[22m");
+    jj::cout << jjT("' failed");
+    if (opt_.Colors)
+        jj::cout << jjT("\033[0m");
+    jj::cout << jjT('\n');
 }
 
 void holder_base_t::print(const string_t& name)
@@ -158,14 +180,30 @@ int main(int argc, const char** argv)
     argdefs.Options.push_back({{name_t(jjT("case-names"))}, jjT("Prints information about testcase being run."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTER; return true; } });
     argdefs.Options.push_back({{name_t(jjT("full-case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTERLEAVE; return true; } });
     argdefs.Options.push_back({{name_t(jjT("in-color"))}, jjT("Prints output in colors."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.Colors = true; return true; } });
+    argdefs.Options.push_back({{name_t(jjT("results"))}, jjT("Based on provided value prints results of individual tests within testcases; none means no results shown, fails shows only failed tests, all shows failed and passed conditions."), 1u, multiple_t::OVERRIDE,
+        [&DB](const optionDefinition_t&, values_t& v) {
+            if (v.Values.size()==0) throw std::runtime_error("Invalid number of arg values.");
+            jj::string_t& s = v.Values.front();
+            if (s==jjT("none")) DB.Tests = jj::test::options_t::testResults_t::NONE;
+            else if (s==jjT("fails")) DB.Tests = jj::test::options_t::testResults_t::FAILS;
+            else if (s==jjT("all")) DB.Tests = jj::test::options_t::testResults_t::ALL;
+            else throw std::runtime_error("Value in --results can be one of none|fails|all.");
+            return true; } });
+
     arguments_t args;
     try
     {
         args.parse(argdefs, argc, argv);
         DB.run();
     }
+    catch (const jj::test::testingFailed_t& ex)
+    {
+        // TODO provide extra message (callback to output_t) about fatal failure
+        return 1;
+    }
     catch (const jj::test::testFailed_t& ex)
     {
+        // TODO move to single test execution
         return 1;
     }
     catch (const std::exception& ex)

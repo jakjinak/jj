@@ -41,10 +41,18 @@ public:
         ENTER, //!< name of test being run; implied by the --case-names argument
         ENTERLEAVE //!< showing when test started and ended; implied by the --full-case-names
     };
+    /*! How are results of TEST/ENSURE/MUSTBE conditions presented. */
+    enum class testResults_t
+    {
+        NONE, //!< no information is shown even if tests fail
+        FAILS, //!< only failed conditions are shown
+        ALL //!< all results are shown
+    };
 
     bool ClassNames; //!< whether test classes should be shown; implied by the --class-names argument
     caseNames_t CaseNames; //!< whether test cases should be shown
     bool Colors; //!< whether output shall be in colors; implied by the --in-color argument
+    testResults_t Tests; //!< how test condition results are presented; set using the --results=(none|fails|all) argument
 
     /*! Ctor */
     options_t() : ClassNames(false), CaseNames(caseNames_t::OFF), Colors(false) {}
@@ -477,8 +485,12 @@ For all other see description of JJ_TEST_CLASS. */
 
 
 #define JJ___DO_TEST(cnd, msg, exc) \
-    if (!(cnd)) { \
-        jj::cout << jjT("Test failed: ") << msg << jjT('\n'); \
+    if (cnd) { \
+        if (jj::test::db_t::instance().Tests == jj::test::options_t::testResults_t::ALL) \
+            jj::test::db_t::instance().test_ok(jjS(msg)); \
+    } else { \
+        if (jj::test::db_t::instance().Tests != jj::test::options_t::testResults_t::NONE) \
+            jj::test::db_t::instance().test_fail(jjS(msg)); \
         exc \
     }
 
@@ -489,5 +501,9 @@ For all other see description of JJ_TEST_CLASS. */
 #define JJ_ENSURE_X(cond) JJ___DO_TEST(cond, #cond, throw jj::test::testFailed_t();)
 #define JJ_ENSURE_MSG(cond,msg) JJ___DO_TEST(cond,msg,throw jj::test::testFailed_t();)
 #define JJ_ENSURE(...) JJ_PP_SELECTOR2(__VA_ARGS__, JJ_ENSURE_MSG, JJ_ENSURE_X)(__VA_ARGS__)
+
+#define JJ_MUSTBE_X(cond) JJ___DO_TEST(cond, #cond, throw jj::test::testingFailed_t();)
+#define JJ_MUSTBE_MSG(cond,msg) JJ___DO_TEST(cond,msg,throw jj::test::testingFailed_t();)
+#define JJ_MUSTBE(...) JJ_PP_SELECTOR2(__VA_ARGS__, JJ_MUSTBE_MSG, JJ_MUSTBE_X)(__VA_ARGS__)
 
 #endif // JJ_TEST_H
