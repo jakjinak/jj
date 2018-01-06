@@ -58,6 +58,18 @@ public:
     options_t() : ClassNames(false), CaseNames(caseNames_t::OFF), Colors(false) {}
 };
 
+/*! Abstracts a class that is called to initialize the db_t (and whatever else needs to be initialized).
+
+Note that by default db_t sets up a defaultInitializer_t to perform the default parsing of cmdline args.
+Override by modifying db_t::instance().Initializers (adding your own and/or removing the default one)
+usually as a side effect of a global variable initialization. */
+class initializer_t
+{
+public:
+    virtual ~initializer_t() {}
+    virtual void on_init(int argc, const char_t** argv) =0;
+};
+
 /*! Abstracts the interface a class has to implement to act as an outputter during the db_t::run().
 
 Note that by default the db_t instantiates a defaultOutput_t to print to the terminal. */
@@ -83,6 +95,12 @@ public:
 
 namespace AUX
 {
+
+/*! Parses the default command line arguments and sets up options_t accordingly. */
+struct defaultInitializer_t : public initializer_t
+{
+    void on_init(int argc, const char_t** argv);
+};
 
 /*! Prints to stdout. Honours the values in options_t. When using colors it uses the ANSI color codes. */
 struct defaultOutput_t : public output_t
@@ -217,8 +235,16 @@ class db_t : public options_t, public AUX::db_output_t
     void do_list(const testclasses_t::value_type& testclass, bool classvariants, bool tests, bool testvariants=false) const;
 
 public:
-    db_t() { Outputs.push_back(outptr_t(new AUX::defaultOutput_t(*this))); }
+    db_t()
+    {
+        Initializers.push_back(initptr_t(new AUX::defaultInitializer_t));
+        Outputs.push_back(outptr_t(new AUX::defaultOutput_t(*this)));
+    }
     static db_t& instance() { static db_t inst; return inst; }
+
+    typedef std::shared_ptr<initializer_t> initptr_t;
+    typedef std::list<initptr_t> initlist_t;
+    initlist_t Initializers;
 
     void register_testclass(runner_fn fn, const char_t* name, const char_t* args)
     {

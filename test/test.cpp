@@ -9,6 +9,44 @@ namespace test
 
 namespace AUX
 {
+void defaultInitializer_t::on_init(int argc, const char_t** argv)
+{
+    jj::test::db_t& DB = jj::test::db_t::instance();
+    using namespace jj::cmdLine;
+    definitions_t argdefs;
+    argdefs.Options.push_back({{name_t(jjT('t')), name_t(jjT("run")), name_t(jjT("run-tests"))}, jjT("Give any number of these to specify which tests shall run."), 1u, multiple_t::JOIN, nullptr});
+    argdefs.Options.push_back({{name_t(jjT("class-names"))}, jjT("Prints information about entering/leaving testclass."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.ClassNames = true; return true; } });
+    argdefs.Options.push_back({{name_t(jjT("case-names"))}, jjT("Prints information about testcase being run."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTER; return true; } });
+    argdefs.Options.push_back({{name_t(jjT("full-case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTERLEAVE; return true; } });
+    argdefs.Options.push_back({{name_t(jjT("in-color"))}, jjT("Prints output in colors."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.Colors = true; return true; } });
+    argdefs.Options.push_back({{name_t(jjT("results"))}, jjT("Based on provided value prints results of individual tests within testcases; none means no results shown, fails shows only failed tests, all shows failed and passed conditions."), 1u, multiple_t::OVERRIDE,
+        [&DB](const optionDefinition_t&, values_t& v) {
+            if (v.Values.size()==0) throw std::runtime_error("Invalid number of arg values.");
+            jj::string_t& s = v.Values.front();
+            if (s==jjT("none")) DB.Tests = jj::test::options_t::testResults_t::NONE;
+            else if (s==jjT("fails")) DB.Tests = jj::test::options_t::testResults_t::FAILS;
+            else if (s==jjT("all")) DB.Tests = jj::test::options_t::testResults_t::ALL;
+            else throw std::runtime_error("Value in --results can be one of none|fails|all.");
+            return true; } });
+
+    arguments_t args;
+    try
+    {
+        args.parse(argdefs, argc, argv);
+    }
+    catch (const std::exception& ex)
+    {
+        std::cout << "Exception caught: " << ex.what() << "\n";
+        // TODO print help
+        exit(1);
+    }
+    catch (...)
+    {
+        std::cout << "Unknown exception caught!\n";
+        exit(2);
+    }
+}
+
 void defaultOutput_t::enter_class(const string_t& name, const string_t& variant)
 {
     if (!opt_.ClassNames)
@@ -172,28 +210,13 @@ int wmain(int argc, const wchar_t** argv)
 int main(int argc, const char** argv)
 #endif
 {
-    jj::test::db_t& DB = jj::test::db_t::instance();
-    using namespace jj::cmdLine;
-    definitions_t argdefs;
-    argdefs.Options.push_back({{name_t(jjT('t')), name_t(jjT("run")), name_t(jjT("run-tests"))}, jjT("Give any number of these to specify which tests shall run."), 1u, multiple_t::JOIN, nullptr});
-    argdefs.Options.push_back({{name_t(jjT("class-names"))}, jjT("Prints information about entering/leaving testclass."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.ClassNames = true; return true; } });
-    argdefs.Options.push_back({{name_t(jjT("case-names"))}, jjT("Prints information about testcase being run."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTER; return true; } });
-    argdefs.Options.push_back({{name_t(jjT("full-case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTERLEAVE; return true; } });
-    argdefs.Options.push_back({{name_t(jjT("in-color"))}, jjT("Prints output in colors."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.Colors = true; return true; } });
-    argdefs.Options.push_back({{name_t(jjT("results"))}, jjT("Based on provided value prints results of individual tests within testcases; none means no results shown, fails shows only failed tests, all shows failed and passed conditions."), 1u, multiple_t::OVERRIDE,
-        [&DB](const optionDefinition_t&, values_t& v) {
-            if (v.Values.size()==0) throw std::runtime_error("Invalid number of arg values.");
-            jj::string_t& s = v.Values.front();
-            if (s==jjT("none")) DB.Tests = jj::test::options_t::testResults_t::NONE;
-            else if (s==jjT("fails")) DB.Tests = jj::test::options_t::testResults_t::FAILS;
-            else if (s==jjT("all")) DB.Tests = jj::test::options_t::testResults_t::ALL;
-            else throw std::runtime_error("Value in --results can be one of none|fails|all.");
-            return true; } });
-
-    arguments_t args;
     try
     {
-        args.parse(argdefs, argc, argv);
+        jj::test::db_t& DB = jj::test::db_t::instance();
+        for (auto i : DB.Initializers)
+        {
+            i->on_init(argc, argv);
+        }
         DB.run();
     }
     catch (const jj::test::testingFailed_t& ex)
