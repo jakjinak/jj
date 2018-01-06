@@ -11,8 +11,16 @@
 
 namespace jj
 {
+
+namespace cmdLine
+{
+struct definitions_t;
+struct arguments_t;
+} // namespace cmdLine
+
 namespace test
 {
+class db_t;
 
 /*! A simple wrapper over logic error.
 Thrown if a ENSURE check fails. Makes framework to skip to the next testcase. */
@@ -62,12 +70,17 @@ public:
 
 Note that by default db_t sets up a defaultInitializer_t to perform the default parsing of cmdline args.
 Override by modifying db_t::instance().Initializers (adding your own and/or removing the default one)
-usually as a side effect of a global variable initialization. */
+usually as a side effect of a global variable initialization.
+If you want to modify the commandline args, just add your initializer after the default one and in on_init()
+update its argument definitions. */
 class initializer_t
 {
 public:
     virtual ~initializer_t() {}
-    virtual void on_init(int argc, const char_t** argv) =0;
+    /*! Called to setup the initializers themselves. Do not call db_t::instance() here, rather use the given parameter. */
+    virtual void on_init(db_t& DB) =0;
+    /*! Called to parse the command line arguments. (Calling db_t::instance() is not limited here.) */
+    virtual void on_setup(int argc, const char_t** argv) =0;
 };
 
 /*! Abstracts the interface a class has to implement to act as an outputter during the db_t::run().
@@ -99,7 +112,11 @@ namespace AUX
 /*! Parses the default command line arguments and sets up options_t accordingly. */
 struct defaultInitializer_t : public initializer_t
 {
-    void on_init(int argc, const char_t** argv);
+    defaultInitializer_t();
+    virtual void on_init(db_t& DB);
+    virtual void on_setup(int argc, const char_t** argv);
+    std::shared_ptr<cmdLine::definitions_t> ArgumentDefinitions;
+    std::shared_ptr<cmdLine::arguments_t> Arguments;
 };
 
 /*! Prints to stdout. Honours the values in options_t. When using colors it uses the ANSI color codes. */

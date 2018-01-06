@@ -9,17 +9,20 @@ namespace test
 
 namespace AUX
 {
-void defaultInitializer_t::on_init(int argc, const char_t** argv)
+defaultInitializer_t::defaultInitializer_t()
+    : ArgumentDefinitions(new cmdLine::definitions_t), Arguments(new cmdLine::arguments_t)
 {
-    jj::test::db_t& DB = jj::test::db_t::instance();
+}
+
+void defaultInitializer_t::on_init(db_t& DB)
+{
     using namespace jj::cmdLine;
-    definitions_t argdefs;
-    argdefs.Options.push_back({{name_t(jjT('t')), name_t(jjT("run")), name_t(jjT("run-tests"))}, jjT("Give any number of these to specify which tests shall run."), 1u, multiple_t::JOIN, nullptr});
-    argdefs.Options.push_back({{name_t(jjT("class-names"))}, jjT("Prints information about entering/leaving testclass."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.ClassNames = true; return true; } });
-    argdefs.Options.push_back({{name_t(jjT("case-names"))}, jjT("Prints information about testcase being run."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTER; return true; } });
-    argdefs.Options.push_back({{name_t(jjT("full-case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTERLEAVE; return true; } });
-    argdefs.Options.push_back({{name_t(jjT("in-color"))}, jjT("Prints output in colors."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.Colors = true; return true; } });
-    argdefs.Options.push_back({{name_t(jjT("results"))}, jjT("Based on provided value prints results of individual tests within testcases; none means no results shown, fails shows only failed tests, all shows failed and passed conditions."), 1u, multiple_t::OVERRIDE,
+    ArgumentDefinitions->Options.push_back({{name_t(jjT('t')), name_t(jjT("run")), name_t(jjT("run-tests"))}, jjT("Give any number of these to specify which tests shall run."), 1u, multiple_t::JOIN, nullptr});
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("class-names"))}, jjT("Prints information about entering/leaving testclass."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.ClassNames = true; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("case-names"))}, jjT("Prints information about testcase being run."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTER; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("full-case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTERLEAVE; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("in-color"))}, jjT("Prints output in colors."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.Colors = true; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("results"))}, jjT("Based on provided value prints results of individual tests within testcases; none means no results shown, fails shows only failed tests, all shows failed and passed conditions."), 1u, multiple_t::OVERRIDE,
         [&DB](const optionDefinition_t&, values_t& v) {
             if (v.Values.size()==0) throw std::runtime_error("Invalid number of arg values.");
             jj::string_t& s = v.Values.front();
@@ -28,11 +31,13 @@ void defaultInitializer_t::on_init(int argc, const char_t** argv)
             else if (s==jjT("all")) DB.Tests = jj::test::options_t::testResults_t::ALL;
             else throw std::runtime_error("Value in --results can be one of none|fails|all.");
             return true; } });
+}
 
-    arguments_t args;
+void defaultInitializer_t::on_setup(int argc, const char_t** argv)
+{
     try
     {
-        args.parse(argdefs, argc, argv);
+        Arguments->parse(*ArgumentDefinitions, argc, argv);
     }
     catch (const std::exception& ex)
     {
@@ -214,9 +219,9 @@ int main(int argc, const char** argv)
     {
         jj::test::db_t& DB = jj::test::db_t::instance();
         for (auto i : DB.Initializers)
-        {
-            i->on_init(argc, argv);
-        }
+            i->on_init(DB);
+        for (auto i : DB.Initializers)
+            i->on_setup(argc, argv);
         DB.run();
     }
     catch (const jj::test::testingFailed_t& ex)
