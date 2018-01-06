@@ -4,7 +4,7 @@
 JJ_TEST_CLASS(stringTests_t)
 static const char* long_string;
 
-JJ_TEST_CASE_VARIANTS(charp2string,(const char* in, const char* out), ("", ""), ("a", "a"), (long_string,long_string))
+JJ_TEST_CASE_VARIANTS(charp2string,(const char* in, const char* out), ("", ""), ("a", "a"), (long_string,long_string),(nullptr,""))
 {
     JJ_TEST(jj::strcvt::to_string(in) == out);
 }
@@ -22,7 +22,7 @@ const char* stringTests_t::long_string = "AbC023as;lk/./.as2190";
 JJ_TEST_CLASS(wstringTests_t)
 static const wchar_t* long_wstring;
 
-JJ_TEST_CASE_VARIANTS(wcharp2wstring,(const wchar_t* in, const wchar_t* out), (L"", L""), (L"a", L"a"), (long_wstring,long_wstring))
+JJ_TEST_CASE_VARIANTS(wcharp2wstring,(const wchar_t* in, const wchar_t* out), (L"", L""), (L"a", L"a"), (long_wstring,long_wstring),(nullptr,L""))
 {
     JJ_TEST(jj::strcvt::to_wstring(in) == out);
 }
@@ -41,7 +41,7 @@ JJ_TEST_CLASS(xstringTests_t)
 static const char* long_string;
 static const wchar_t* long_wstring;
 
-JJ_TEST_CASE_VARIANTS(wcharp2string,(const wchar_t* in, const char* out), (L"", ""), (L"a", "a"), (long_wstring,long_string))
+JJ_TEST_CASE_VARIANTS(wcharp2string,(const wchar_t* in, const char* out), (L"", ""), (L"a", "a"), (long_wstring,long_string),(nullptr,""))
 {
     JJ_TEST(jj::strcvt::to_string(in) == out);
 }
@@ -51,7 +51,7 @@ JJ_TEST_CASE_VARIANTS(wstring2string,(const std::wstring& in, const char* out), 
     JJ_TEST(jj::strcvt::to_string(in) == out);
 }
 
-JJ_TEST_CASE_VARIANTS(charp2wstring,(const char* in, const wchar_t* out), ("", L""), ("a", L"a"), (long_string,long_wstring))
+JJ_TEST_CASE_VARIANTS(charp2wstring,(const char* in, const wchar_t* out), ("", L""), ("a", L"a"), (long_string,long_wstring),(nullptr,L""))
 {
     JJ_TEST(jj::strcvt::to_wstring(in) == out);
 }

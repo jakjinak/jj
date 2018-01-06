@@ -14,6 +14,8 @@ namespace stringcvt
 
 std::string to_string(const wchar_t* str)
 {
+    if (str == nullptr)
+        return "";
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     return converter.to_bytes(str);
 }
@@ -26,6 +28,8 @@ std::string to_string(const std::wstring& str)
 
 std::wstring to_wstring(const char* str)
 {
+    if (str == nullptr)
+        return L"";
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     return converter.from_bytes(str);
 }

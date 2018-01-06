@@ -23,22 +23,22 @@ namespace jj
 {
 namespace strcvt
 {
-inline std::string to_string(const char* str) { return str; }
+inline std::string to_string(const char* str) { if (str==nullptr) return ""; return str; }
 inline std::string to_string(const std::string& str) { return str; }
 std::string to_string(const wchar_t* str);
 std::string to_string(const std::wstring& str);
 std::wstring to_wstring(const char* str);
 std::wstring to_wstring(const std::string& str);
-inline std::wstring to_wstring(const wchar_t* str) { return str; }
+inline std::wstring to_wstring(const wchar_t* str) { if (str==nullptr) return L""; return str; }
 inline std::wstring to_wstring(const std::wstring& str) { return str; }
 
 #if defined(_WINDOWS) || defined(_WIN32)
 inline string_t to_string_t(const char* str) { return to_wstring(str); }
 inline string_t to_string_t(const std::string& str) { return to_wstring(str); }
-inline string_t to_string_t(const wchar_t* str) { return str; }
+inline string_t to_string_t(const wchar_t* str) { return to_wstring(str); }
 inline string_t to_string_t(const std::wstring& str) { return str; }
 #else
-inline string_t to_string_t(const char* str) { return str; }
+inline string_t to_string_t(const char* str) { return to_string(str); }
 inline string_t to_string_t(const std::string& str) { return str; }
 inline string_t to_string_t(const wchar_t* str) { return to_string(str); }
 inline string_t to_string_t(const std::wstring& str) { return to_string(str); }
