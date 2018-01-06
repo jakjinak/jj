@@ -50,7 +50,7 @@ void defaultOutput_t::enter_case(const string_t& name, const string_t& variant)
     if (!opt_.CaseNames)
         return;
     if (opt_.Colors)
-        jj::cout << jjT("\033[32;1m");
+        jj::cout << jjT("\033[34;1m");
     jj::cout << name << variant;
     if (opt_.Colors)
         jj::cout << jjT("\033[22m");
@@ -65,7 +65,7 @@ void defaultOutput_t::leave_case(const string_t& name, const string_t& variant)
     if (!opt_.CaseNames)
         return;
     if (opt_.Colors)
-        jj::cout << jjT("\033[32;1m");
+        jj::cout << jjT("\033[34;1m");
     jj::cout << name << variant;
     if (opt_.Colors)
         jj::cout << jjT("\033[22m");
