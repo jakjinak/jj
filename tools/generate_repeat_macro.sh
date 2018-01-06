@@ -5,13 +5,18 @@ cnt="$1"
 shift
 
 function generate_selector()
-{ echo -n '#define JJ_PP_SELECTOR('
-  while [[ $i -lt $cnt ]]
+{ while [[ $i -lt $cnt ]]
   do
-    echo -n "p$i, "
+    echo -n "#define JJ_PP_SELECTOR$i("
+    j=1
+    while [[ $j -le $i ]]
+    do
+      echo -n "p$j, "
+      j=$((j+1))
+    done
+    echo 'actual, ...) actual'
     i=$((i+1))
   done
-  echo 'actual, ...) actual'
 }
 
 function generate_merge()
@@ -35,7 +40,7 @@ function generate_merge()
     i=$((i+1))
   done
   i=$((cnt-1))
-  echo -n '#define jjM(...) JJ_PP_SELECTOR(__VA_ARGS__'
+  echo -n "#define jjM(...) JJ_PP_SELECTOR$i(__VA_ARGS__"
   while [[ $i -gt 0 ]]
   do
     echo -n ", jjM$i"
@@ -50,6 +55,7 @@ function generate_test_stuff()
     static void jjM2(JJ_TEST_CLASS_VARIANT_,no)(){ name inst args; JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().run(inst); } \
     static int jjM2(JJ_TEST_CLASS_REGISTRAR_,no)() { jj::test::db_t::instance().register_testclass(&name::jjM2(JJ_TEST_CLASS_VARIANT_,no), #name, #args); return no; }
 ENDOFBLOCK
+  s=$((cnt-1))
   i=1
   while [[ $i -lt $cnt ]]
   do
@@ -70,7 +76,7 @@ ENDOFBLOCK
     echo
     i=$((i+1))
   done
-  echo -n "#define JJ___TEST_CLASS_CALLS(name, ...) JJ_PP_SELECTOR(__VA_ARGS__"
+  echo -n "#define JJ___TEST_CLASS_CALLS(name, ...) JJ_PP_SELECTOR$s(__VA_ARGS__"
   j=$((cnt-1))
   while [[ $j -gt 0 ]]
   do
@@ -100,7 +106,7 @@ ENDOFBLOCK
     i=$((i+1))
     echo
   done
-  echo -n '#define JJ___TEST_CLASS_REGS(...) JJ_PP_SELECTOR(__VA_ARGS__'
+  echo -n "#define JJ___TEST_CLASS_REGS(...) JJ_PP_SELECTOR$s(__VA_ARGS__"
   i=$((cnt-1))
   while [[ $i -gt 0 ]]
   do
@@ -131,7 +137,7 @@ ENDOFBLOCK
     i=$((i+1))
   done
   i=$((cnt-1))
-  echo -n '#define JJ___TEST_CASE_DEFS(classname, ...) JJ_PP_SELECTOR(__VA_ARGS__'
+  echo -n "#define JJ___TEST_CASE_DEFS(classname, ...) JJ_PP_SELECTOR$s(__VA_ARGS__"
   while [[ $i -gt 0 ]]
   do
     echo -n ", JJ___TEST_CASE_${i}DEFS"
@@ -164,7 +170,7 @@ ENDOFBLOCK
     i=$((i+1))
   done
   j=$((cnt-1))
-  echo -n '#define JJ___TEST_CASE_CALLS(name, ...) JJ_PP_SELECTOR(__VA_ARGS__'
+  echo -n "#define JJ___TEST_CASE_CALLS(name, ...) JJ_PP_SELECTOR$s(__VA_ARGS__"
   while [[ $j -gt 0 ]]
   do
     echo -n ", JJ___TEST_CASE_${j}CALLS"
@@ -197,7 +203,7 @@ ENDOFBLOCK
     i=$((i+1))
   done
   i=$((cnt-1))
-  echo -n '#define JJ___TEST_CASE_REGS(name, ...) JJ_PP_SELECTOR(__VA_ARGS__'
+  echo -n "#define JJ___TEST_CASE_REGS(name, ...) JJ_PP_SELECTOR$s(__VA_ARGS__"
   while [[ $i -gt 0 ]]
   do
     echo -n ", JJ___TEST_CASE_${i}REGS"
