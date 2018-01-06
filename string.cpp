@@ -75,12 +75,6 @@ std::wstring to_wstring(const std::string& str)
 namespace str
 {
 
-bool starts_with(const char* str, const char* with)
-{
-    // TODO do better
-    return std::strstr(str, with) == str;
-}
-
 const char* find(const char* str, char what, size_t pos)
 {
     if (str == nullptr)
