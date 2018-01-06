@@ -47,14 +47,15 @@ void defaultOutput_t::leave_class(const string_t& name, const string_t& variant)
 
 void defaultOutput_t::enter_case(const string_t& name, const string_t& variant)
 {
-    if (!opt_.CaseNames)
+    if (opt_.CaseNames == options_t::caseNames_t::OFF)
         return;
     if (opt_.Colors)
         jj::cout << jjT("\033[34;1m");
     jj::cout << name << variant;
     if (opt_.Colors)
         jj::cout << jjT("\033[22m");
-    jj::cout << jjT(" | entering");
+    if (opt_.CaseNames == options_t::caseNames_t::ENTERLEAVE)
+        jj::cout << jjT(" | entering");
     if (opt_.Colors)
         jj::cout << jjT("\033[0m");
     jj::cout << jjT('\n');
@@ -62,7 +63,7 @@ void defaultOutput_t::enter_case(const string_t& name, const string_t& variant)
 
 void defaultOutput_t::leave_case(const string_t& name, const string_t& variant)
 {
-    if (!opt_.CaseNames)
+    if (opt_.CaseNames != options_t::caseNames_t::ENTERLEAVE)
         return;
     if (opt_.Colors)
         jj::cout << jjT("\033[34;1m");
@@ -154,7 +155,8 @@ int main(int argc, const char** argv)
     definitions_t argdefs;
     argdefs.Options.push_back({{name_t(jjT('t')), name_t(jjT("run")), name_t(jjT("run-tests"))}, jjT("Give any number of these to specify which tests shall run."), 1u, multiple_t::JOIN, nullptr});
     argdefs.Options.push_back({{name_t(jjT("class-names"))}, jjT("Prints information about entering/leaving testclass."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.ClassNames = true; return true; } });
-    argdefs.Options.push_back({{name_t(jjT("case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = true; return true; } });
+    argdefs.Options.push_back({{name_t(jjT("case-names"))}, jjT("Prints information about testcase being run."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTER; return true; } });
+    argdefs.Options.push_back({{name_t(jjT("full-case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTERLEAVE; return true; } });
     argdefs.Options.push_back({{name_t(jjT("in-color"))}, jjT("Prints output in colors."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.Colors = true; return true; } });
     arguments_t args;
     try

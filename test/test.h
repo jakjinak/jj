@@ -14,36 +14,69 @@ namespace jj
 namespace test
 {
 
-/*! A simple wrapper over logic error. */
+/*! A simple wrapper over logic error.
+Thrown if a ENSURE check fails. Makes framework to skip to the next testcase. */
 struct testFailed_t : public std::logic_error
 {
     testFailed_t() : std::logic_error("Test failed!") {}
 };
 
+/*! A simple wrapper over logic error.
+Thrown if a MUSTBE check fails. Causes the whole program to finish immediatelly. */
+struct testingFailed_t : public std::logic_error
+{
+    testingFailed_t() : std::logic_error("Testing failed!") {}
+};
+
+/*! Encapsulates all the possible options available for the testing framework. 
+
+Note that the outputs (and related settings) are directly in the db_t so that these options can apply to them as well independently. */
 class options_t
 {
 public:
-    bool ClassNames, CaseNames;
-    bool Colors;
+    /*! What is the desired format of presenting testcases being run. */
+    enum class caseNames_t
+    {
+        OFF, //!< no information desired
+        ENTER, //!< name of test being run; implied by the --case-names argument
+        ENTERLEAVE //!< showing when test started and ended; implied by the --full-case-names
+    };
 
-    options_t() : ClassNames(false), CaseNames(false), Colors(false) {}
+    bool ClassNames; //!< whether test classes should be shown; implied by the --class-names argument
+    caseNames_t CaseNames; //!< whether test cases should be shown
+    bool Colors; //!< whether output shall be in colors; implied by the --in-color argument
+
+    /*! Ctor */
+    options_t() : ClassNames(false), CaseNames(caseNames_t::OFF), Colors(false) {}
 };
 
+/*! Abstracts the interface a class has to implement to act as an outputter during the db_t::run().
+
+Note that by default the db_t instantiates a defaultOutput_t to print to the terminal. */
 class output_t
 {
 public:
+    /*! Dtor */
     virtual ~output_t() {}
+
+    /*! Called right before a new test class (or it's variant) is instantiated. */
     virtual void enter_class(const string_t& name, const string_t& variant) =0;
+    /*! Called right after a test class (or it's variant) is destroyed. */
     virtual void leave_class(const string_t& name, const string_t& variant) =0;
+    /*! Called right before a test case (or it's variant) is run. */
     virtual void enter_case(const string_t& name, const string_t& variant) =0;
+    /*! Called right after a test case (or it's variant) finishes. */
     virtual void leave_case(const string_t& name, const string_t& variant) =0;
+    /*! Called from within a TEST/ENSURE/MUSTBE checks if the condition passes. */
     virtual void test_ok(const string_t& text) =0;
+    /*! Called from within a TEST/ENSURE/MUSTBE checks if the condition fails. */
     virtual void test_fail(const string_t& text) =0;
 };
 
 namespace AUX
 {
 
+/*! Prints to stdout. Honours the values in options_t. When using colors it uses the ANSI color codes. */
 struct defaultOutput_t : public output_t
 {
     defaultOutput_t(options_t& opt) : opt_(opt) {}
@@ -59,6 +92,7 @@ private:
     options_t& opt_;
 };
 
+/*! Helper that only proxies the db_t (which derives from this) output calls to the individual registered outputs. */
 struct db_output_t : public output_t
 {
     typedef std::shared_ptr<output_t> outptr_t;
