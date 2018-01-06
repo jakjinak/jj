@@ -84,7 +84,55 @@ const char* find(const char* str, char what, size_t pos)
         --pos;
         ++str;
     }
+    if (pos>0)
+        return nullptr;
     return std::strchr(str, what);
+}
+
+const char* find(const char* str, const char* what, size_t pos)
+{
+    if (what == nullptr)
+        return str;
+    if (str == nullptr)
+        return nullptr;
+    while (pos>0 && *str!=0)
+    {
+        --pos;
+        ++str;
+    }
+    if (pos>0)
+        return nullptr;
+    return std::strstr(str, what);
+}
+
+const wchar_t* find(const wchar_t* str, wchar_t what, size_t pos)
+{
+    if (str == nullptr)
+        return nullptr;
+    while (pos>0 && *str!=0)
+    {
+        --pos;
+        ++str;
+    }
+    if (pos>0)
+        return nullptr;
+    return std::wcschr(str, what);
+}
+
+const wchar_t* find(const wchar_t* str, const wchar_t* what, size_t pos)
+{
+    if (what == nullptr)
+        return str;
+    if (str == nullptr)
+        return nullptr;
+    while (pos>0 && *str!=0)
+    {
+        --pos;
+        ++str;
+    }
+    if (pos>0)
+        return nullptr;
+    return std::wcsstr(str, what);
 }
 
 } // namespace str

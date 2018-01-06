@@ -99,18 +99,30 @@ inline bool starts_with(const wchar_t* str, const std::wstring& with) { return s
 /*! Returns whether given string str begins with given string with. */
 inline bool starts_with(const std::wstring& str, const std::wstring& with) { return starts_with(str.c_str(), with.c_str()); }
 
+/*! Returns pointer to first occurrence of what within str since position pos or nullptr if not found. */
 const char* find(const char* str, char what, size_t pos = 0);
+/*! Returns pointer to first occurrence of what within str since position pos or nullptr if not found. */
 const char* find(const char* str, const char* what, size_t pos = 0);
-const char* find(const char* str, const std::string& what, size_t pos = 0);
-size_t find(const std::string& str, char what, size_t pos = 0);
-size_t find(const std::string& str, const char* what, size_t pos = 0);
-size_t find(const std::string& str, const std::string& what, size_t pos = 0);
+/*! Returns pointer to first occurrence of what within str since position pos or nullptr if not found. */
+inline const char* find(const char* str, const std::string& what, size_t pos = 0) { return find(str, what.c_str(), pos); }
+/*! Returns position of first occurrence of what within str since position pos or npos if not found. */
+inline size_t find(const std::string& str, char what, size_t pos = 0) { return str.find(what, pos); }
+/*! Returns position of first occurrence of what within str since position pos or npos if not found. */
+inline size_t find(const std::string& str, const char* what, size_t pos = 0) { if (what==nullptr) return 0u; return str.find(what, pos); }
+/*! Returns position of first occurrence of what within str since position pos or npos if not found. */
+inline size_t find(const std::string& str, const std::string& what, size_t pos = 0) { return str.find(what, pos); }
+/*! Returns pointer to first occurrence of what within str since position pos or nullptr if not found. */
 const wchar_t* find(const wchar_t* str, wchar_t what, size_t pos = 0);
+/*! Returns pointer to first occurrence of what within str since position pos or nullptr if not found. */
 const wchar_t* find(const wchar_t* str, const wchar_t* what, size_t pos = 0);
-const wchar_t* find(const wchar_t* str, const std::wstring& what, size_t pos = 0);
-size_t find(const std::wstring& str, wchar_t what, size_t pos = 0);
-size_t find(const std::wstring& str, const wchar_t* what, size_t pos = 0);
-size_t find(const std::wstring& str, const std::wstring& what, size_t pos = 0);
+/*! Returns pointer to first occurrence of what within str since position pos or nullptr if not found. */
+inline const wchar_t* find(const wchar_t* str, const std::wstring& what, size_t pos = 0) { return find(str, what.c_str(), pos); }
+/*! Returns position of first occurrence of what within str since position pos or npos if not found. */
+inline size_t find(const std::wstring& str, wchar_t what, size_t pos = 0) { return str.find(what, pos); }
+/*! Returns position of first occurrence of what within str since position pos or npos if not found. */
+inline size_t find(const std::wstring& str, const wchar_t* what, size_t pos = 0) { if (what==nullptr) return 0u; return str.find(what, pos); }
+/*! Returns position of first occurrence of what within str since position pos or npos if not found. */
+inline size_t find(const std::wstring& str, const std::wstring& what, size_t pos = 0) { return str.find(what, pos); }
 } // namespace str
 
 } // namespace jj
