@@ -500,7 +500,8 @@ For all other see description of JJ_TEST_CLASS. */
 /*! Finishes the defition of a testclass without defining the global variables. (Can be used in header.) */
 #define JJ_TEST_CLASS_END_NODEF(name) \
      };
-/*! Defines the global variables associated with testclass. (Shall be used in source file if JJ_TEST_CLASS_END_NODEF used in header.) */
+/*! Defines the global variables associated with testclass. (Shall be used in source file if JJ_TEST_CLASS_END_NODEF used in header.)
+You have to name all the testcases as the additional parameters. */
 #define JJ_TEST_CLASS_DEF(name, ...) \
      struct jjM2(name,__DEF) \
      { \
@@ -511,7 +512,8 @@ For all other see description of JJ_TEST_CLASS. */
          } \
      }; \
      jjM2(name,__DEF) jjM3(g_,name,__DEF);
-/*! Finishes the definition of a testclass along with defining all the associated global variables. */
+/*! Finishes the definition of a testclass along with defining all the associated global variables.
+You have to name all the testcases as the additional parameters. */
 #define JJ_TEST_CLASS_END(name, ...) \
     JJ_TEST_CLASS_END_NODEF(name) \
     JJ_TEST_CLASS_DEF(name, __VA_ARGS__)
@@ -537,16 +539,33 @@ For all other see description of JJ_TEST_CLASS. */
         exc \
     }
 
+/*! Verifies a condition and logs it. */
 #define JJ_TEST_X(cond) JJ___DO_TEST(cond, #cond,)
+/*! Verifies a condition and logs the provided message instead. */
 #define JJ_TEST_MSG(cond,msg) JJ___DO_TEST(cond, msg,)
+/*! Verifies a condition and logs it or message provided as second parameter. */
 #define JJ_TEST(...) JJ_PP_SELECTOR2(__VA_ARGS__, JJ_TEST_MSG, JJ_TEST_X)(__VA_ARGS__)
 
+/*! Same as JJ_TEST_X but throws testFailed_t to skip to the end of test. */
 #define JJ_ENSURE_X(cond) JJ___DO_TEST(cond, #cond, throw jj::test::testFailed_t();)
+/*! Same as JJ_TEST_MSG but throws testFailed_t to skip to the end of test. */
 #define JJ_ENSURE_MSG(cond,msg) JJ___DO_TEST(cond,msg,throw jj::test::testFailed_t();)
+/*! Same as JJ_TEST but throws testFailed_t to skip to the end of test. */
 #define JJ_ENSURE(...) JJ_PP_SELECTOR2(__VA_ARGS__, JJ_ENSURE_MSG, JJ_ENSURE_X)(__VA_ARGS__)
 
+/*! Same as JJ_TEST_X but throws testingFailed_t to skip to the end of the test program. */
 #define JJ_MUSTBE_X(cond) JJ___DO_TEST(cond, #cond, throw jj::test::testingFailed_t();)
+/*! Same as JJ_TEST_MSG but throws testingFailed_t to skip to the end of the test program. */
 #define JJ_MUSTBE_MSG(cond,msg) JJ___DO_TEST(cond,msg,throw jj::test::testingFailed_t();)
+/*! Same as JJ_TEST but throws testingFailed_t to skip to the end of the test program. */
 #define JJ_MUSTBE(...) JJ_PP_SELECTOR2(__VA_ARGS__, JJ_MUSTBE_MSG, JJ_MUSTBE_X)(__VA_ARGS__)
 
+/*! Evaluates given expression and checks that given excetion was thrown. */
+#define JJ_TEST_THAT_THROWS(expr, exc) \
+    try { \
+        expr; \
+        JJ___DO_TEST(false, #expr << jjT(" throws ") << #exc,) \
+    } catch (const exc&) { \
+        JJ___DO_TEST(true, #expr << jjT(" throws ") << #exc,) \
+    }
 #endif // JJ_TEST_H
