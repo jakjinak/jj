@@ -63,7 +63,7 @@ public:
     testResults_t Tests; //!< how test condition results are presented; set using the --results=(none|fails|all) argument
 
     /*! Ctor */
-    options_t() : ClassNames(false), CaseNames(caseNames_t::OFF), Colors(false) {}
+    options_t() : ClassNames(false), CaseNames(caseNames_t::OFF), Colors(false), Tests(testResults_t::FAILS) {}
 };
 
 /*! Abstracts a class that is called to initialize the db_t (and whatever else needs to be initialized).
