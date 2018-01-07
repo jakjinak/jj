@@ -25,7 +25,7 @@ bool nameCompare_t::compare_icase(const string_t& a, const string_t& b)
 arguments_t::arguments_t()
     : OptionCase(case_t::SENSITIVE), VariableCase(case_t::SENSITIVE), ParseStart(1), Options(nameCompare_t(case_t::SENSITIVE)), opts_(nameCompare_t(case_t::SENSITIVE)), vars_(nameCompare_t(case_t::SENSITIVE)), defs_(nullptr)
 {
-    ParserOptions << flags_t::ALLOW_STACKS << flags_t::ALLOW_SHORT_ASSIGN << flags_t::ALLOW_LONG_ASSIGN; 
+    ParserOptions << flags_t::ALLOW_STACKS << flags_t::ALLOW_SHORT_ASSIGN << flags_t::ALLOW_LONG_ASSIGN;
     setup_basic_prefixes();
 }
 
@@ -358,6 +358,8 @@ void arguments_t::process_short_option(missingValues_t& mv, const string_t& pref
                 value = arg;
                 arg = jjT("");
             }
+            else
+                throw std::runtime_error(strcvt::to_string(jjS(jjT("Invalid characters '") << arg << jjT("' following '") << fnd->first.Prefix << fnd->first.Name << jjT("'. Did you mean to enter value as separate argument?"))));
         }
         if (*arg != 0 && !(ParserOptions*flags_t::ALLOW_STACKS))
             throw std::runtime_error(strcvt::to_string(jjS(jjT("Invalid characters '") << arg << jjT("' following '") << fnd->first.Prefix << fnd->first.Name << jjT("'. Did you mean separate options?"))));
