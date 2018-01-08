@@ -41,13 +41,13 @@ void defaultInitializer_t::on_setup(int argc, const char_t** argv)
     }
     catch (const std::exception& ex)
     {
-        std::cout << "Exception caught: " << ex.what() << "\n";
+        jj:cout << jjT("Exception caught: ") << jj::strcvt::to_string(ex.what()) << jjT("\n");
         // TODO print help
         exit(1);
     }
     catch (...)
     {
-        std::cout << "Unknown exception caught!\n";
+        jj::cout << jjT("Unknown exception caught!\n");
         exit(2);
     }
 }
@@ -119,33 +119,43 @@ void defaultOutput_t::leave_case(const string_t& name, const string_t& variant)
     jj::cout << jjT('\n');
 }
 
-void defaultOutput_t::test_ok(const string_t& text)
+void defaultOutput_t::test_result(test_result_t result, const string_t& text)
 {
+    const char_t* color = nullptr, *rtxt;
+    switch (result)
+    {
+    case FAILINFO:
+        if (opt_.Colors)
+            jj::cout << jjT("\033[31;1m");
+        std::cout << text;
+        if (opt_.Colors)
+            jj::cout << jjT("\033[0m");
+        jj::cout << jjT('\n');
+        return;
+    case PASSED:
+        color = jjT("\033[32m");
+        rtxt = jjT("passed");
+        break;
+    case WARNING:
+        color = jjT("\033[33m");
+        rtxt = jjT("failed (considered warning)");
+        break;
+    case FAILED:
+        color = jjT("\033[31m");
+        rtxt = jjT("failed");
+        break;
+    default:
+        return;
+    }
     if (opt_.Colors)
-        jj::cout << jjT("\033[32m");
+        jj::cout << color;
     jj::cout << jjT("test '");
     if (opt_.Colors)
         jj::cout << jjT("\033[1m");
     jj::cout << text;
     if (opt_.Colors)
         jj::cout << jjT("\033[22m");
-    jj::cout << jjT("' passed");
-    if (opt_.Colors)
-        jj::cout << jjT("\033[0m");
-    jj::cout << jjT('\n');
-}
-
-void defaultOutput_t::test_fail(const string_t& text)
-{
-    if (opt_.Colors)
-        jj::cout << jjT("\033[31m");
-    jj::cout << jjT("test '");
-    if (opt_.Colors)
-        jj::cout << jjT("\033[1m");
-    jj::cout << text;
-    if (opt_.Colors)
-        jj::cout << jjT("\033[22m");
-    jj::cout << jjT("' failed");
+    jj::cout << jjT("' ") << rtxt;
     if (opt_.Colors)
         jj::cout << jjT("\033[0m");
     jj::cout << jjT('\n');
@@ -153,20 +163,20 @@ void defaultOutput_t::test_fail(const string_t& text)
 
 void holder_base_t::print(const string_t& name)
 {
-    std::cout << '\t' << name << '\n';
+    jj::cout << jjT('\t') << name << jjT('\n');
 }
 void holder_base_t::print(const string_t& name, const string_t& variant)
 {
-    std::cout << '\t' << name << variant << '\n';
+    jj::cout << jjT('\t') << name << variant << jjT('\n');
 }
 } // namespace AUX
 
 void db_t::do_list(const testclasses_t::value_type& testclass, bool classvariants, bool tests, bool variants) const
 {
     if (testclass.second.first.size() == 1 || !classvariants)
-        std::cout << testclass.first << jjT('\n');
+        jj::cout << testclass.first << jjT('\n');
     else for (const testclass_variants_t::value_type& v : testclass.second.first)
-        std::cout << testclass.first << v.first << jjT('\n');
+        jj::cout << testclass.first << v.first << jjT('\n');
     if (!tests)
         return;
     AUX::holder_base_t* h = testclass.second.second;
@@ -193,6 +203,34 @@ void db_t::list_testcases(const string_t& testclass, bool classvariants, bool te
     do_list(*fnd, classvariants, true, testvariants);
 }
 
+void db_t::run_testcase(std::function<void()> tc)
+{
+    try
+    {
+        tc();
+    }
+    catch (const jj::test::testingFailed_t& ex)
+    {
+        throw; // propagate to main()
+    }
+    catch (const jj::test::testFailed_t& ex)
+    {
+        test_result(output_t::FAILINFO, jjS(jjT("The previous failure was considered crutial for the test case. Skipping to the end of test case.")));
+    }
+    catch (const std::exception& ex)
+    {
+        test_result(output_t::FAILINFO, jjS(jjT("Exception caught: ") << jj::strcvt::to_string_t(ex.what())));
+    }
+    catch (const std::string& ex)
+    {
+        test_result(output_t::FAILINFO, jjS(jjT("Exception caught: ") << jj::strcvt::to_string_t(ex)));
+    }
+    catch (...)
+    {
+        test_result(output_t::FAILINFO, jjT("Unknown exception caught!"));
+    }
+}
+
 void db_t::run()
 {
     for (testclasses_t::value_type& i : testclasses_)
@@ -215,9 +253,9 @@ int wmain(int argc, const wchar_t** argv)
 int main(int argc, const char** argv)
 #endif
 {
+    jj::test::db_t& DB = jj::test::db_t::instance();
     try
     {
-        jj::test::db_t& DB = jj::test::db_t::instance();
         for (auto i : DB.Initializers)
             i->on_init(DB);
         for (auto i : DB.Initializers)
@@ -226,12 +264,7 @@ int main(int argc, const char** argv)
     }
     catch (const jj::test::testingFailed_t& ex)
     {
-        // TODO provide extra message (callback to output_t) about fatal failure
-        return 1;
-    }
-    catch (const jj::test::testFailed_t& ex)
-    {
-        // TODO move to single test execution
+        DB.test_result(jj::test::output_t::FAILINFO, jjS(jjT("The previous failure was considered crutial for the test suite. Skipping to the end of test suite.")));
         return 1;
     }
     catch (const std::exception& ex)

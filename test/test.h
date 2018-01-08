@@ -92,6 +92,14 @@ public:
     /*! Dtor */
     virtual ~output_t() {}
 
+    enum test_result_t
+    {
+        PASSED, //!< the condition evaluated to true (=test passed)
+        WARNING, //!< the condition evaluated to false (in JJ_WARN*)
+        FAILED, //!< the condition evaluated to false (in JJ_TEST*, JJ_ENSURE* or JJ_MUSTBE*)
+        FAILINFO //!< a subsequent info for a failure (when testFailed_t or testingFailed_t is caught)
+    };
+
     /*! Called right before a new test class (or it's variant) is instantiated. */
     virtual void enter_class(const string_t& name, const string_t& variant) =0;
     /*! Called right after a test class (or it's variant) is destroyed. */
@@ -100,10 +108,8 @@ public:
     virtual void enter_case(const string_t& name, const string_t& variant) =0;
     /*! Called right after a test case (or it's variant) finishes. */
     virtual void leave_case(const string_t& name, const string_t& variant) =0;
-    /*! Called from within a TEST/ENSURE/MUSTBE checks if the condition passes. */
-    virtual void test_ok(const string_t& text) =0;
-    /*! Called from within a TEST/ENSURE/MUSTBE checks if the condition fails. */
-    virtual void test_fail(const string_t& text) =0;
+    /*! Called from within a TEST/ENSURE/MUSTBE checks, the first argument depends on the result of the condition. */
+    virtual void test_result(test_result_t result, const string_t& text) =0;
 };
 
 namespace AUX
@@ -128,8 +134,7 @@ struct defaultOutput_t : public output_t
     virtual void leave_class(const string_t& name, const string_t& variant);
     virtual void enter_case(const string_t& name, const string_t& variant);
     virtual void leave_case(const string_t& name, const string_t& variant);
-    virtual void test_ok(const string_t& text);
-    virtual void test_fail(const string_t& text);
+    virtual void test_result(test_result_t result, const string_t& text);
 
 private:
     options_t& opt_;
@@ -162,15 +167,10 @@ struct db_output_t : public output_t
         for (auto& o : Outputs)
             o->leave_case(name, variant);
     }
-    virtual void test_ok(const string_t& text)
+    virtual void test_result(test_result_t result, const string_t& text)
     {
         for (auto& o : Outputs)
-            o->test_ok(text);
-    }
-    virtual void test_fail(const string_t& text)
-    {
-        for (auto& o : Outputs)
-            o->test_fail(text);
+            o->test_result(result, text);
     }
 };
 
@@ -279,6 +279,9 @@ public:
     /*! Prints all test cases of a specific test class. */
     void list_testcases(const string_t& testclass, bool classvariants=false, bool testvariants=false) const;
 
+    /*! Runs a single testcase in its testclass instance taking care about exception handling and statistics. */
+    void run_testcase(std::function<void()> tc);
+
     /*! Runs all testcases. */
     void run(); // TODO take filters and other options into account
 };
@@ -294,7 +297,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass)
         for (typename JJ_TESTCASE_variants_t::value_type& v : i.second)
         {
             db.enter_case(i.first, v.first);
-            (v.second)(testclass);
+            db.run_testcase([&]{ (v.second)(testclass); });
             db.leave_case(i.first, v.first);
         }
     }
@@ -529,34 +532,42 @@ You have to name all the testcases as the additional parameters. */
     void name args
 
 
-#define JJ___DO_TEST(cnd, msg, exc) \
+#define JJ___DO_TEST(cnd, msg, rt, exc) \
     if (cnd) { \
         if (jj::test::db_t::instance().Tests == jj::test::options_t::testResults_t::ALL) \
-            jj::test::db_t::instance().test_ok(jjS(msg)); \
+            jj::test::db_t::instance().test_result(jj::test::output_t::PASSED, jjS(msg)); \
     } else { \
         if (jj::test::db_t::instance().Tests != jj::test::options_t::testResults_t::NONE) \
-            jj::test::db_t::instance().test_fail(jjS(msg)); \
+            jj::test::db_t::instance().test_result(jj::test::output_t::rt, jjS(msg)); \
         exc \
     }
 
+
+/*! Same as JJ_TEST_X but do not consider the test failed. */
+#define JJ_WARN_X(cond) JJ___DO_TEST(cond, #cond, WARNING,)
+/*! Same as JJ_TEST_MSG but do not consider the test failed. */
+#define JJ_WARN_MSG(cond,msg) JJ___DO_TEST(cond, msg, WARNING,)
+/*! Same as JJ_TEST but do not consider the test failed. */
+#define JJ_WARN(...) JJ_PP_SELECTOR2(__VA_ARGS__, JJ_WARN_MSG, JJ_WARN_X)(__VA_ARGS__)
+
 /*! Verifies a condition and logs it. */
-#define JJ_TEST_X(cond) JJ___DO_TEST(cond, #cond,)
+#define JJ_TEST_X(cond) JJ___DO_TEST(cond, #cond, FAILED,)
 /*! Verifies a condition and logs the provided message instead. */
-#define JJ_TEST_MSG(cond,msg) JJ___DO_TEST(cond, msg,)
+#define JJ_TEST_MSG(cond,msg) JJ___DO_TEST(cond, msg, FAILED,)
 /*! Verifies a condition and logs it or message provided as second parameter. */
 #define JJ_TEST(...) JJ_PP_SELECTOR2(__VA_ARGS__, JJ_TEST_MSG, JJ_TEST_X)(__VA_ARGS__)
 
 /*! Same as JJ_TEST_X but throws testFailed_t to skip to the end of test. */
-#define JJ_ENSURE_X(cond) JJ___DO_TEST(cond, #cond, throw jj::test::testFailed_t();)
+#define JJ_ENSURE_X(cond) JJ___DO_TEST(cond, #cond, FAILED, throw jj::test::testFailed_t();)
 /*! Same as JJ_TEST_MSG but throws testFailed_t to skip to the end of test. */
-#define JJ_ENSURE_MSG(cond,msg) JJ___DO_TEST(cond,msg,throw jj::test::testFailed_t();)
+#define JJ_ENSURE_MSG(cond,msg) JJ___DO_TEST(cond,msg,FAILED,throw jj::test::testFailed_t();)
 /*! Same as JJ_TEST but throws testFailed_t to skip to the end of test. */
 #define JJ_ENSURE(...) JJ_PP_SELECTOR2(__VA_ARGS__, JJ_ENSURE_MSG, JJ_ENSURE_X)(__VA_ARGS__)
 
 /*! Same as JJ_TEST_X but throws testingFailed_t to skip to the end of the test program. */
-#define JJ_MUSTBE_X(cond) JJ___DO_TEST(cond, #cond, throw jj::test::testingFailed_t();)
+#define JJ_MUSTBE_X(cond) JJ___DO_TEST(cond, #cond, FAILED, throw jj::test::testingFailed_t();)
 /*! Same as JJ_TEST_MSG but throws testingFailed_t to skip to the end of the test program. */
-#define JJ_MUSTBE_MSG(cond,msg) JJ___DO_TEST(cond,msg,throw jj::test::testingFailed_t();)
+#define JJ_MUSTBE_MSG(cond,msg) JJ___DO_TEST(cond,msg,FAILED,throw jj::test::testingFailed_t();)
 /*! Same as JJ_TEST but throws testingFailed_t to skip to the end of the test program. */
 #define JJ_MUSTBE(...) JJ_PP_SELECTOR2(__VA_ARGS__, JJ_MUSTBE_MSG, JJ_MUSTBE_X)(__VA_ARGS__)
 
@@ -564,8 +575,8 @@ You have to name all the testcases as the additional parameters. */
 #define JJ_TEST_THAT_THROWS(expr, exc) \
     try { \
         expr; \
-        JJ___DO_TEST(false, #expr << jjT(" throws ") << #exc,) \
+        JJ___DO_TEST(false, #expr << jjT(" throws ") << #exc, FAILED,) \
     } catch (const exc&) { \
-        JJ___DO_TEST(true, #expr << jjT(" throws ") << #exc,) \
+        JJ___DO_TEST(true, #expr << jjT(" throws ") << #exc, FAILED,) \
     }
 #endif // JJ_TEST_H
