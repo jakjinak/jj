@@ -105,7 +105,7 @@ static arg_info_t a(const std::initializer_list<jj::string_t>& x)
     return a;
 }
 
-static const arguments_t::option_t& checkOption(const arguments_t& args, const definitions_t& defs, const name_t& name, arguments_t::optionType_t type)
+const arguments_t::option_t& checkOption(const arguments_t& args, const definitions_t& defs, const name_t& name, arguments_t::optionType_t type)
 {
     arguments_t::options_t::const_iterator fnd = args.Options.find(name);
     JJ_ENSURE(fnd!=args.Options.end());
@@ -136,7 +136,7 @@ static const arguments_t::option_t& checkOption(const arguments_t& args, const d
     JJ_ENSURE(false, jjT("Option definition found."));
 }
 
-static void checkValues(const arguments_t::option_t& opt, const std::list<jj::string_t>& vals)
+void checkValues(const arguments_t::option_t& opt, const std::list<jj::string_t>& vals)
 {
     JJ_ENSURE(opt.second.Values.size() == vals.size());
     std::list<jj::string_t>::const_iterator it = vals.begin();
@@ -271,9 +271,9 @@ JJ_TEST_CASE_VARIANTS(valuedLongOptions,(const std::initializer_list<jj::string_
     ({jjT("--bb=1"),jjT("2"),jjT("3")},true,{0,1,0},{{},{jjT("1"),jjT("2"),jjT("3")},{}}))
 {
     definitions_t defs;
-    defs.Options.push_back({{name_t(jjT("aa"))}, jjT(""), 1u, multiple_t::OVERRIDE, [](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==1u); return true; } });
-    defs.Options.push_back({{name_t(jjT("bb"))}, jjT(""), 3u, multiple_t::OVERRIDE, [](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==3u); return true; } });
-    defs.Options.push_back({{name_t(jjT("cc"))}, jjT(""), 0u, multiple_t::OVERRIDE, [](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==0u); return true; } });
+    defs.Options.push_back({{name_t(jjT("aa"))}, jjT(""), 1u, multiple_t::OVERRIDE, [this](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==1u); return true; } });
+    defs.Options.push_back({{name_t(jjT("bb"))}, jjT(""), 3u, multiple_t::OVERRIDE, [this](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==3u); return true; } });
+    defs.Options.push_back({{name_t(jjT("cc"))}, jjT(""), 0u, multiple_t::OVERRIDE, [this](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==0u); return true; } });
     arguments_t args;
     arg_info_t cvt = a(argv);
     if (ok)
@@ -321,9 +321,9 @@ JJ_TEST_CASE_VARIANTS(valuedShortOptions,(const std::initializer_list<jj::string
     ({jjT("-cb=1"),jjT("2"),jjT("3")},true,{0,1,1},{{},{jjT("1"),jjT("2"),jjT("3")},{}}))
 {
     definitions_t defs;
-    defs.Options.push_back({{name_t(jjT("a"))}, jjT(""), 1u, multiple_t::OVERRIDE, [](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==1u); return true; } });
-    defs.Options.push_back({{name_t(jjT("b"))}, jjT(""), 3u, multiple_t::OVERRIDE, [](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==3u); return true; } });
-    defs.Options.push_back({{name_t(jjT("c"))}, jjT(""), 0u, multiple_t::OVERRIDE, [](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==0u); return true; } });
+    defs.Options.push_back({{name_t(jjT("a"))}, jjT(""), 1u, multiple_t::OVERRIDE, [this](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==1u); return true; } });
+    defs.Options.push_back({{name_t(jjT("b"))}, jjT(""), 3u, multiple_t::OVERRIDE, [this](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==3u); return true; } });
+    defs.Options.push_back({{name_t(jjT("c"))}, jjT(""), 0u, multiple_t::OVERRIDE, [this](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==0u); return true; } });
     arguments_t args;
     arg_info_t cvt = a(argv);
     if (ok)

@@ -70,7 +70,7 @@ void defaultOutput_t::enter_class(const string_t& name, const string_t& variant)
     jj::cout << jjT('\n');
 }
 
-void defaultOutput_t::leave_class(const string_t& name, const string_t& variant)
+void defaultOutput_t::leave_class(const string_t& name, const string_t& variant, const statistics_t& stats)
 {
     if (!opt_.ClassNames)
         return;
@@ -161,6 +161,18 @@ void defaultOutput_t::test_result(test_result_t result, const string_t& text)
     jj::cout << jjT('\n');
 }
 
+void defaultOutput_t::statistics(const statistics_t& stats)
+{
+    if (opt_.Colors)
+        jj::cout << jjT("\033[1m");
+    jj::cout << jjT("SUMMARY\n");
+    jj::cout << jjT("Successful tests:   ") << stats.Passed << jjT("\n");
+    jj::cout << jjT("Failed tests:       ") << stats.Failed << jjT("\n");
+    jj::cout << jjT("Tests run in total: ") << stats.total() << jjT("\n");
+    if (opt_.Colors)
+        jj::cout << jjT("\033[0m");
+}
+
 void holder_base_t::print(const string_t& name)
 {
     jj::cout << jjT('\t') << name << jjT('\n');
@@ -203,45 +215,59 @@ void db_t::list_testcases(const string_t& testclass, bool classvariants, bool te
     do_list(*fnd, classvariants, true, testvariants);
 }
 
-void db_t::run_testcase(std::function<void()> tc)
+void db_t::run_testcase(std::function<void(statistics_t&)> tc, statistics_t& stats)
 {
     try
     {
-        tc();
+        statistics_t s;
+        tc(s);
+        if (s.Failed > 0)
+            ++stats.Failed;
+        else
+            ++stats.Passed;
     }
     catch (const jj::test::testingFailed_t& ex)
     {
+        Statistics += stats;
         throw; // propagate to main()
     }
     catch (const jj::test::testFailed_t& ex)
     {
+        ++stats.Failed;
         test_result(output_t::FAILINFO, jjS(jjT("The previous failure was considered crutial for the test case. Skipping to the end of test case.")));
     }
     catch (const std::exception& ex)
     {
+        ++stats.Failed;
         test_result(output_t::FAILINFO, jjS(jjT("Exception caught: ") << jj::strcvt::to_string_t(ex.what())));
     }
     catch (const std::string& ex)
     {
+        ++stats.Failed;
         test_result(output_t::FAILINFO, jjS(jjT("Exception caught: ") << jj::strcvt::to_string_t(ex)));
     }
     catch (...)
     {
+        ++stats.Failed;
         test_result(output_t::FAILINFO, jjT("Unknown exception caught!"));
     }
 }
 
 void db_t::run()
 {
+    Statistics.reset();
     for (testclasses_t::value_type& i : testclasses_)
     {
         for (testclass_variants_t::value_type& v : i.second.first)
         {
+            statistics_t stats;
             enter_class(i.first, v.first);
-            (v.second)();
-            leave_class(i.first, v.first);
+            (v.second)(stats);
+            leave_class(i.first, v.first, stats);
+            Statistics += stats;
         }
     }
+    statistics(Statistics);
 }
 
 } // namespace test

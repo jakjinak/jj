@@ -36,6 +36,21 @@ struct testingFailed_t : public std::logic_error
     testingFailed_t() : std::logic_error("Testing failed!") {}
 };
 
+/*! Counts of testcases. */
+struct statistics_t
+{
+    size_t Passed, //!< number of passed testcases
+        Failed; //!< number of failed testcases
+
+    statistics_t() : Passed(0), Failed(0) {}
+    /*! total number of testcases */
+    size_t total() const { return Passed + Failed; }
+    /*! resets all counts to 0. */
+    void reset() { Passed = Failed = 0; }
+    /*! adds counts from other instance to this instance. */
+    statistics_t& operator+=(const statistics_t& other) { if (&other == this) return *this; Passed+=other.Passed; Failed+=other.Failed; return *this; }
+};
+
 /*! Encapsulates all the possible options available for the testing framework. 
 
 Note that the outputs (and related settings) are directly in the db_t so that these options can apply to them as well independently. */
@@ -103,13 +118,15 @@ public:
     /*! Called right before a new test class (or it's variant) is instantiated. */
     virtual void enter_class(const string_t& name, const string_t& variant) =0;
     /*! Called right after a test class (or it's variant) is destroyed. */
-    virtual void leave_class(const string_t& name, const string_t& variant) =0;
+    virtual void leave_class(const string_t& name, const string_t& variant, const statistics_t& stats) =0;
     /*! Called right before a test case (or it's variant) is run. */
     virtual void enter_case(const string_t& name, const string_t& variant) =0;
     /*! Called right after a test case (or it's variant) finishes. */
     virtual void leave_case(const string_t& name, const string_t& variant) =0;
     /*! Called from within a TEST/ENSURE/MUSTBE checks, the first argument depends on the result of the condition. */
     virtual void test_result(test_result_t result, const string_t& text) =0;
+    /*! Called at the end of testing to present the final counts for testcases. */
+    virtual void statistics(const statistics_t& stats) =0;
 };
 
 namespace AUX
@@ -131,10 +148,11 @@ struct defaultOutput_t : public output_t
     defaultOutput_t(options_t& opt) : opt_(opt) {}
 
     virtual void enter_class(const string_t& name, const string_t& variant);
-    virtual void leave_class(const string_t& name, const string_t& variant);
+    virtual void leave_class(const string_t& name, const string_t& variant, const statistics_t& stats);
     virtual void enter_case(const string_t& name, const string_t& variant);
     virtual void leave_case(const string_t& name, const string_t& variant);
     virtual void test_result(test_result_t result, const string_t& text);
+    virtual void statistics(const statistics_t& stats);
 
 private:
     options_t& opt_;
@@ -152,10 +170,10 @@ struct db_output_t : public output_t
         for (auto& o : Outputs)
             o->enter_class(name, variant);
     }
-    virtual void leave_class(const string_t& name, const string_t& variant)
+    virtual void leave_class(const string_t& name, const string_t& variant, const statistics_t& stats)
     {
         for (auto& o : Outputs)
-            o->leave_class(name, variant);
+            o->leave_class(name, variant, stats);
     }
     virtual void enter_case(const string_t& name, const string_t& variant)
     {
@@ -172,6 +190,11 @@ struct db_output_t : public output_t
         for (auto& o : Outputs)
             o->test_result(result, text);
     }
+    virtual void statistics(const statistics_t& stats)
+    {
+        for (auto& o : Outputs)
+            o->statistics(stats);
+    }
 };
 
 class testclass_base_t;
@@ -186,6 +209,8 @@ public:
 
 class testclass_base_t
 {
+protected:
+    statistics_t JJ_TEST_CASE_Statistics;
 };
 
 
@@ -195,7 +220,7 @@ class testclass_base_T : public testclass_base_t
     typedef T parent_t;
 
 public:
-    typedef void(*JJ_TESTCASE_runner_fn)(parent_t&);
+    typedef void(*JJ_TESTCASE_runner_fn)(parent_t&, statistics_t&);
     typedef std::pair<string_t, JJ_TESTCASE_runner_fn> JJ_TESTCASE_variant_t;
     typedef std::list<JJ_TESTCASE_variant_t> JJ_TESTCASE_variants_t;
     typedef std::pair<string_t, JJ_TESTCASE_variants_t> JJ_TESTCASE_t;
@@ -232,7 +257,7 @@ public:
                     print(i.first);
             }
         }
-        void run(parent_t& testclass);
+        void run(parent_t& testclass, statistics_t& stats);
     };
 };
 
@@ -240,7 +265,7 @@ public:
 
 class db_t : public options_t, public AUX::db_output_t
 {
-    typedef void(*runner_fn)();
+    typedef void(*runner_fn)(statistics_t&);
 
     // TODO replace with const char_t*
     typedef std::pair<string_t, runner_fn> testclass_variant_t;
@@ -263,6 +288,8 @@ public:
     typedef std::list<initptr_t> initlist_t;
     initlist_t Initializers;
 
+    statistics_t Statistics;
+
     void register_testclass(runner_fn fn, const char_t* name, const char_t* args)
     {
         testclasses_[name].first.push_back(testclass_variant_t(args, fn));
@@ -280,7 +307,7 @@ public:
     void list_testcases(const string_t& testclass, bool classvariants=false, bool testvariants=false) const;
 
     /*! Runs a single testcase in its testclass instance taking care about exception handling and statistics. */
-    void run_testcase(std::function<void()> tc);
+    void run_testcase(std::function<void(statistics_t&)> tc, statistics_t& stats);
 
     /*! Runs all testcases. */
     void run(); // TODO take filters and other options into account
@@ -289,7 +316,7 @@ public:
 namespace AUX
 {
 template<typename T>
-void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass)
+void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statistics_t& stats)
 {
     db_t& db = db_t::instance();
     for (typename JJ_TESTCASE_list_t::value_type& i : list_)
@@ -297,7 +324,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass)
         for (typename JJ_TESTCASE_variants_t::value_type& v : i.second)
         {
             db.enter_case(i.first, v.first);
-            db.run_testcase([&]{ (v.second)(testclass); });
+            db.run_testcase([&v, &testclass](statistics_t& stats){ (v.second)(testclass, stats); }, stats);
             db.leave_case(i.first, v.first);
         }
     }
@@ -342,7 +369,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass)
 
 
 #define JJ___TEST_CLASS_CALL(name, no, args) \
-    static void jjM2(JJ_TEST_CLASS_VARIANT_,no)(){ name inst args; JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().run(inst); } \
+    static void jjM2(JJ_TEST_CLASS_VARIANT_,no)(jj::test::statistics_t& stats){ name inst args; JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().run(inst, stats); } \
     static int jjM2(JJ_TEST_CLASS_REGISTRAR_,no)() { jj::test::db_t::instance().register_testclass(&name::jjM2(JJ_TEST_CLASS_VARIANT_,no), #name, #args); return no; }
 #define JJ___TEST_CLASS_1CALLS(name, p1) JJ___TEST_CLASS_CALL(name, 1, p1)
 #define JJ___TEST_CLASS_2CALLS(name, p1, p2) JJ___TEST_CLASS_CALL(name, 1, p1) JJ___TEST_CLASS_CALL(name, 2, p2)
@@ -428,7 +455,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass)
 #define JJ___TEST_CASE_DEFS(classname, ...) JJ_PP_SELECTOR25(__VA_ARGS__, JJ___TEST_CASE_25DEFS, JJ___TEST_CASE_24DEFS, JJ___TEST_CASE_23DEFS, JJ___TEST_CASE_22DEFS, JJ___TEST_CASE_21DEFS, JJ___TEST_CASE_20DEFS, JJ___TEST_CASE_19DEFS, JJ___TEST_CASE_18DEFS, JJ___TEST_CASE_17DEFS, JJ___TEST_CASE_16DEFS, JJ___TEST_CASE_15DEFS, JJ___TEST_CASE_14DEFS, JJ___TEST_CASE_13DEFS, JJ___TEST_CASE_12DEFS, JJ___TEST_CASE_11DEFS, JJ___TEST_CASE_10DEFS, JJ___TEST_CASE_9DEFS, JJ___TEST_CASE_8DEFS, JJ___TEST_CASE_7DEFS, JJ___TEST_CASE_6DEFS, JJ___TEST_CASE_5DEFS, JJ___TEST_CASE_4DEFS, JJ___TEST_CASE_3DEFS, JJ___TEST_CASE_2DEFS, JJ___TEST_CASE_1DEFS)(classname, __VA_ARGS__)
 
 #define JJ___TEST_CASE_CALL(name, no, args) \
-    static void jjM3(runner,no,name)(JJ_THIS_TESTCLASS& inst) { (inst.*&JJ_THIS_TESTCLASS::name) args; }
+    static void jjM3(runner,no,name)(JJ_THIS_TESTCLASS& inst, jj::test::statistics_t& stats) { inst.JJ_TEST_CASE_Statistics.reset(); (inst.*&JJ_THIS_TESTCLASS::name) args; stats = inst.JJ_TEST_CASE_Statistics; }
 #define JJ___TEST_CASE_1CALLS(name, p1) JJ___TEST_CASE_CALL(name, 1, p1)
 #define JJ___TEST_CASE_2CALLS(name, p1, p2) JJ___TEST_CASE_CALL(name, 1, p1) JJ___TEST_CASE_CALL(name, 2, p2)
 #define JJ___TEST_CASE_3CALLS(name, p1, p2, p3) JJ___TEST_CASE_CALL(name, 1, p1) JJ___TEST_CASE_CALL(name, 2, p2) JJ___TEST_CASE_CALL(name, 3, p3)
@@ -532,15 +559,21 @@ You have to name all the testcases as the additional parameters. */
     void name args
 
 
-#define JJ___DO_TEST(cnd, msg, rt, exc) \
+#define JJ___MEMBER_WARNING JJ_TEST_CASE_Statistics.Passed
+#define JJ___MEMBER_FAILED JJ_TEST_CASE_Statistics.Failed
+
+#define JJ___DO_TEST(cnd, msg, rt, exc) { \
+    jj::test::db_t& DB = jj::test::db_t::instance(); \
     if (cnd) { \
-        if (jj::test::db_t::instance().Tests == jj::test::options_t::testResults_t::ALL) \
-            jj::test::db_t::instance().test_result(jj::test::output_t::PASSED, jjS(msg)); \
+        if (DB.Tests == jj::test::options_t::testResults_t::ALL) \
+            DB.test_result(jj::test::output_t::PASSED, jjS(msg)); \
+        ++JJ_TEST_CASE_Statistics.Passed; \
     } else { \
-        if (jj::test::db_t::instance().Tests != jj::test::options_t::testResults_t::NONE) \
-            jj::test::db_t::instance().test_result(jj::test::output_t::rt, jjS(msg)); \
+        if (DB.Tests != jj::test::options_t::testResults_t::NONE) \
+            DB.test_result(jj::test::output_t::rt, jjS(msg)); \
+        ++jjM2(JJ___MEMBER_,rt); \
         exc \
-    }
+    }}
 
 
 /*! Same as JJ_TEST_X but do not consider the test failed. */
