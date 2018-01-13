@@ -219,6 +219,14 @@ CPPFLAGS_jjbase-tests := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jj
 LIBS_jjbase-tests := ${RESULT_jjtest} ${RESULT_jjbase}
 $(eval $(call define_program,jjbase-tests,tests,clean_tests,jjbase jjtest))
 
+########################################
+# jjtest-tests
+SRCDIR_jjtest-tests := $(realpath tests/test)
+SOURCE_jjtest-tests := test_tests.cpp
+CPPFLAGS_jjtest-tests := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest-tests}/../../..)
+LIBS_jjtest-tests := ${RESULT_jjtest} ${RESULT_jjbase}
+$(eval $(call define_program,jjtest-tests,tests,clean_tests,jjbase jjtest))
+
 
 
 ########################################
