@@ -51,6 +51,13 @@ struct statistics_t
     statistics_t& operator+=(const statistics_t& other) { if (&other == this) return *this; Passed+=other.Passed; Failed+=other.Failed; return *this; }
 };
 
+/*! Contains all members important for test classes. */
+class testclass_base_t
+{
+public:
+    statistics_t JJ_TEST_CASE_Statistics; //!< the per-class-variant statistics
+};
+
 /*! Encapsulates all the possible options available for the testing framework. 
 
 Note that the outputs (and related settings) are directly in the db_t so that these options can apply to them as well independently. */
@@ -131,6 +138,8 @@ public:
 
 namespace AUX
 {
+/*! No other meaning than just defining an empty struct type. */
+struct nothing_t {};
 
 /*! Parses the default command line arguments and sets up options_t accordingly. */
 struct defaultInitializer_t : public initializer_t
@@ -197,8 +206,6 @@ struct db_output_t : public output_t
     }
 };
 
-class testclass_base_t;
-
 class holder_base_t
 {
 public:
@@ -207,11 +214,6 @@ public:
     virtual void list(bool variants) const =0;
 };
 
-class testclass_base_t
-{
-protected:
-    statistics_t JJ_TEST_CASE_Statistics;
-};
 
 
 template<typename T>
@@ -515,11 +517,15 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 
 /*! Opens a test class, inside it JJ_TEST_CASE shall be defined (and any other definitions that are required).
 Note that internally this starts a struct (ie. something like struct name ... { */
-#define JJ_TEST_CLASS(name) JJ_TEST_CLASS_VARIANTS(name,)
+#define JJ_TEST_CLASS(name) JJ_TEST_CLASS_DERIVED_VARIANTS(name,private jj::test::AUX::nothing_t,)
 /*! Opens a test class. You are responsible to define all constructors to suit all the variants!
 For all other see description of JJ_TEST_CLASS. */
-#define JJ_TEST_CLASS_VARIANTS(name, ...) \
-     struct name : public jj::test::AUX::testclass_base_T<name> \
+#define JJ_TEST_CLASS_VARIANTS(name, ...) JJ_TEST_CLASS_DERIVED_VARIANTS(name,private jj::test::AUX::nothing_t,__VA_ARGS__)
+/*! Same as JJ_TEST_CLASS but testclass derives from given list of classes. */
+#define JJ_TEST_CLASS_DERIVED(name, from) JJ_TEST_CLASS_DERIVED_VARIANTS(name,from,)
+/*! Same as JJ_TEST_CLASS_VARIANTS but testclass derives from given list of classes. */
+#define JJ_TEST_CLASS_DERIVED_VARIANTS(name, from, ...) \
+     struct name : from, public jj::test::AUX::testclass_base_T<name> \
      { \
          typedef name JJ_THIS_TESTCLASS; \
          const char* JJ_TEST_CLASS_get_name() const { return #name; } \
@@ -527,6 +533,7 @@ For all other see description of JJ_TEST_CLASS. */
          static void JJ_TEST_CLASS_register() { \
              JJ___TEST_CLASS_REGS(__VA_ARGS__) \
          }
+
 /*! Finishes the defition of a testclass without defining the global variables. (Can be used in header.) */
 #define JJ_TEST_CLASS_END_NODEF(name) \
      };
@@ -567,14 +574,40 @@ You have to name all the testcases as the additional parameters. */
     if (cnd) { \
         if (DB.Tests == jj::test::options_t::testResults_t::ALL) \
             DB.test_result(jj::test::output_t::PASSED, jjS(msg)); \
-        ++JJ_TEST_CASE_Statistics.Passed; \
+        ++ JJ_TEST_CLASS_ACCESSOR JJ_TEST_CASE_Statistics.Passed; \
     } else { \
         if (DB.Tests != jj::test::options_t::testResults_t::NONE) \
             DB.test_result(jj::test::output_t::rt, jjS(msg)); \
-        ++jjM2(JJ___MEMBER_,rt); \
+        ++ JJ_TEST_CLASS_ACCESSOR jjM2(JJ___MEMBER_,rt); \
         exc \
     }}
 
+/*! By default the members of a testclass are accessed directly. However if any of the JJ_WARN/JJ_TEST/... shall be used in a class from which the testclass derives this macro
+must be defined to a member name followed by the accessor which leads to the testclass_base_t class. Define JJ_TEST_CLASS_ACCESSOR at the beginning of such class and restore
+empty definition of JJ_TEST_CLASS_ACCESSOR at the end of such class.
+
+Example: 
+class mycl_t
+{ testclass_base_t bc_;
+public:
+  mycl_t(testclass_base_t& bc) : bc_(bc) {}
+
+#undef JJ_TEST_CLASS_ACCESSOR
+#define JJ_TEST_CLASS_ACCESSOR bc_.
+  void method()
+  { ...
+    JJ_TEST(mycondition);
+    ...
+  }
+#undef JJ_TEST_CLASS_ACCESSOR
+#define JJ_TEST_CLASS_ACCESSOR
+}
+
+JJ_TEST_CLASS_DERIVED(mytestcl,mycl)
+mytestcl() : mycl(static_cast<jj::test::testclass_base_t&>(*this)) {}
+...
+  */
+#define JJ_TEST_CLASS_ACCESSOR
 
 /*! Same as JJ_TEST_X but do not consider the test failed. */
 #define JJ_WARN_X(cond) JJ___DO_TEST(cond, #cond, WARNING,)

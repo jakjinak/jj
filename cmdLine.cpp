@@ -204,6 +204,8 @@ void arguments_t::parse(int argc, const char_t** argv)
         case TLIST:
             if (ParserOptions*flags_t::LIST_MUST_TERMINATE)
                 throw std::runtime_error(strcvt::to_string(jjS(jjT("List option '") << mv.first.Prefix << mv.first.Name << jjT("' is not terminated."))));
+            else
+                add_option(mv);
         }
     }
 
@@ -264,7 +266,7 @@ void arguments_t::add_option_value(missingValues_t& mv, const char_t* value)
 {
     if (mv.empty() || value == nullptr)
         throw std::runtime_error("Internal error.");
-    
+
     options_t::value_type& mi = mv.front();
     switch (mi.second.first.Type)
     {
@@ -386,6 +388,10 @@ void arguments_t::process_short_option(missingValues_t& mv, const string_t& pref
             {
                 value = arg;
                 arg = jjT("");
+            }
+            else if (ParserOptions.opt::e<stackOptionValues_t>::Value==stackOptionValues_t::LOOSE)
+            {
+                // these are gonna be handled as options in next loop(s)
             }
             else
                 throw std::runtime_error(strcvt::to_string(jjS(jjT("Invalid characters '") << arg << jjT("' following '") << fnd->first.Prefix << fnd->first.Name << jjT("'. Did you mean to enter value as separate argument?"))));
