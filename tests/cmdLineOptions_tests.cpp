@@ -1,4 +1,5 @@
 #include "jj/test/test.h"
+#include "cmdLine_tests.h"
 #include "jj/cmdLine.h"
 
 using namespace jj::cmdLine;
@@ -84,27 +85,6 @@ JJ_TEST_CLASS_END(cmdLineOptionDefinitionsTests_t, EmptyOptionName_Throws, Empty
 
 JJ_TEST_CLASS(cmdLineOptionsTests_t)
 
-struct arg_info_t
-{
-    int argc;
-    const jj::char_t* args[30];
-};
-static arg_info_t a(const std::initializer_list<jj::string_t>& x)
-{
-    arg_info_t a;
-    a.args[0] = jjT("prg");
-    size_t i=1;
-    for (auto& s : x)
-    {
-        a.args[i] = s.c_str();
-        ++i;
-        if (i>=30)
-            break;
-    }
-    a.argc = i;
-    return a;
-}
-
 const arguments_t::option_t& checkOption(const arguments_t& args, const definitions_t& defs, const name_t& name, arguments_t::optionType_t type)
 {
     arguments_t::options_t::const_iterator fnd = args.Options.find(name);
@@ -157,8 +137,8 @@ JJ_TEST_CASE_VARIANTS(parseShortOptions,(const std::initializer_list<jj::string_
     defs.Options.push_back({{name_t(jjT('c'))}, jjT(""), 0u, multiple_t::OVERRIDE, [&cnt](const optionDefinition_t&, values_t&) { ++cnt[2]; return true; } });
     defs.Options.push_back({{name_t(jjT('1'))}, jjT(""), 0u, multiple_t::OVERRIDE, [&cnt](const optionDefinition_t&, values_t&) { ++cnt[3]; return true; } });
     arguments_t args;
-    arg_info_t cvt = a(argv);
-    args.parse(defs, cvt.argc, cvt.args);
+    arg_info_t cvt(argv);
+    args.parse(defs, cvt.argc, cvt.argv);
     size_t i = 0;
     for (int c : parsed)
     {
@@ -183,8 +163,8 @@ JJ_TEST_CASE_VARIANTS(parseLongOptions,(const std::initializer_list<jj::string_t
     defs.Options.push_back({{name_t(jjT("second"))}, jjT(""), 0u, multiple_t::OVERRIDE, [&cnt](const optionDefinition_t&, values_t&) { ++cnt[1]; return true; } });
     defs.Options.push_back({{name_t(jjT("3rd"))}, jjT(""), 0u, multiple_t::OVERRIDE, [&cnt](const optionDefinition_t&, values_t&) { ++cnt[2]; return true; } });
     arguments_t args;
-    arg_info_t cvt = a(argv);
-    args.parse(defs, cvt.argc, cvt.args);
+    arg_info_t cvt(argv);
+    args.parse(defs, cvt.argc, cvt.argv);
     size_t i = 0;
     for (int c : parsed)
     {
@@ -211,8 +191,8 @@ JJ_TEST_CASE_VARIANTS(redefinedPrefixes,(const std::initializer_list<jj::string_
     args.PrefixInfo[jjT("-")].Type = LONG_OPTION;
     args.PrefixInfo[jjT("--")].Type = SHORT_OPTION;
     args.PrefixInfo[jjT("+-")].Type = LONG_OPTION;
-    arg_info_t cvt = a(argv);
-    args.parse(defs, cvt.argc, cvt.args);
+    arg_info_t cvt(argv);
+    args.parse(defs, cvt.argc, cvt.argv);
     size_t i = 0;
     for (int c : parsed)
     {
@@ -240,8 +220,8 @@ JJ_TEST_CASE_VARIANTS(stackedOptions,(const std::initializer_list<jj::string_t>&
     defs.Options.push_back({{name_t(jjT("--"),jjT('x'))}, jjT(""), 0u, multiple_t::OVERRIDE, [&cnt](const optionDefinition_t&, values_t&) { ++cnt[3]; return true; } });
     defs.Options.push_back({{name_t(jjT("xyz"))}, jjT(""), 0u, multiple_t::OVERRIDE, [&cnt](const optionDefinition_t&, values_t&) { ++cnt[4]; return true; } });
     arguments_t args;
-    arg_info_t cvt = a(argv);
-    args.parse(defs, cvt.argc, cvt.args);
+    arg_info_t cvt(argv);
+    args.parse(defs, cvt.argc, cvt.argv);
     size_t i = 0;
     for (int c : parsed)
     {
@@ -275,12 +255,12 @@ JJ_TEST_CASE_VARIANTS(valuedLongOptions,(const std::initializer_list<jj::string_
     defs.Options.push_back({{name_t(jjT("bb"))}, jjT(""), 3u, multiple_t::OVERRIDE, [this](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==3u); return true; } });
     defs.Options.push_back({{name_t(jjT("cc"))}, jjT(""), 0u, multiple_t::OVERRIDE, [this](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==0u); return true; } });
     arguments_t args;
-    arg_info_t cvt = a(argv);
+    arg_info_t cvt(argv);
     if (ok)
-        args.parse(defs, cvt.argc, cvt.args);
+        args.parse(defs, cvt.argc, cvt.argv);
     else
     {
-        JJ_TEST_THAT_THROWS(args.parse(defs, cvt.argc, cvt.args), std::runtime_error);
+        JJ_TEST_THAT_THROWS(args.parse(defs, cvt.argc, cvt.argv), std::runtime_error);
         return;
     }
 
@@ -325,12 +305,12 @@ JJ_TEST_CASE_VARIANTS(valuedShortOptions,(const std::initializer_list<jj::string
     defs.Options.push_back({{name_t(jjT("b"))}, jjT(""), 3u, multiple_t::OVERRIDE, [this](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==3u); return true; } });
     defs.Options.push_back({{name_t(jjT("c"))}, jjT(""), 0u, multiple_t::OVERRIDE, [this](const optionDefinition_t&, values_t& v) { JJ_TEST(v.Values.size()==0u); return true; } });
     arguments_t args;
-    arg_info_t cvt = a(argv);
+    arg_info_t cvt(argv);
     if (ok)
-        args.parse(defs, cvt.argc, cvt.args);
+        args.parse(defs, cvt.argc, cvt.argv);
     else
     {
-        JJ_TEST_THAT_THROWS(args.parse(defs, cvt.argc, cvt.args), std::runtime_error);
+        JJ_TEST_THAT_THROWS(args.parse(defs, cvt.argc, cvt.argv), std::runtime_error);
         return;
     }
 
