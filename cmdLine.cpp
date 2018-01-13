@@ -23,7 +23,7 @@ bool nameCompare_t::compare_icase(const string_t& a, const string_t& b)
 }
 
 arguments_t::arguments_t()
-    : OptionCase(case_t::SENSITIVE), VariableCase(case_t::SENSITIVE), ParseStart(1), Options(nameCompare_t(case_t::SENSITIVE)), opts_(nameCompare_t(case_t::SENSITIVE)), vars_(nameCompare_t(case_t::SENSITIVE)), defs_(nullptr)
+    : OptionCase(case_t::SENSITIVE), VariableCase(case_t::SENSITIVE), ParseStart(0), Options(nameCompare_t(case_t::SENSITIVE)), opts_(nameCompare_t(case_t::SENSITIVE)), vars_(nameCompare_t(case_t::SENSITIVE)), defs_(nullptr)
 {
     ParserOptions << flags_t::ALLOW_STACKS << flags_t::ALLOW_SHORT_ASSIGN << flags_t::ALLOW_LONG_ASSIGN;
     setup_basic_prefixes();
@@ -96,6 +96,29 @@ void arguments_t::parse(const definitions_t& defs)
     defs_ = &defs;
 }
 
+void arguments_t::parse_program_name(const char_t* pn)
+{
+    if (pn == nullptr)
+        throw std::runtime_error("Given program name is nullptr");
+    const char_t* tmp = pn, *start = pn;
+    while (*tmp != 0)
+    {
+#if defined(_WINDOWS) || defined(_WIN32)
+        if (*tmp == jjT('/') || *tmp == jjT('\\'))
+#else
+        if (*tmp == '/')
+#endif //  defined(_WINDOWS) || defined(_WIN32)
+            start = tmp + 1;
+        ++tmp;
+    }
+    // TODO for the above use path when available
+
+    if (*start == 0)
+        throw std::runtime_error("Invalid program name.");
+
+    ProgramName.assign(start);
+}
+
 void arguments_t::parse(int argc, const char_t** argv)
 {
     if (defs_ == nullptr)
@@ -113,10 +136,16 @@ void arguments_t::parse(int argc, const char_t** argv)
     if (argi < 0)
         throw std::runtime_error("Invalid value of ParseStart.");
     if (argi == 0)
+    {
+        parse_program_name(argv[0]);
         ++argi;
+    }
 
     for (; argi < argc; ++argi)
     {
+        if (argv[argi] == nullptr)
+            throw std::runtime_error("One of argv[i] is nullptr.");
+
         // handle missing values for options
         if (!missingValues.empty())
         { 

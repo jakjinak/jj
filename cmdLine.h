@@ -241,7 +241,7 @@ struct arguments_t
     parserOptions_t ParserOptions; //!< options of the parser
     case_t OptionCase, //!< whether option names shall be treated case-sensitively
         VariableCase; //!< whether variable names shall be treated case-sensitively
-    size_t ParseStart; //!< where to start the parsing of arguments, effectively an index into argv
+    size_t ParseStart; //!< where to start the parsing of arguments, effectively an index into argv; note that setting this to >0 affects whether the ProgramName is parsed
 
     typedef std::map<string_t, prefixInfo_t> prefixes_t;
     /*! Defines how option prefixes are treated.
@@ -258,6 +258,8 @@ struct arguments_t
     You MUST ensure the lifetime of defs is longer than the last call of the other parse.
     You MUST always call this after you modify the options of the parser and before calling parse(argc,argv). */
     void parse(const definitions_t& defs);
+    /*! Parses the ProgramName only from given string (which usually would be argv[0]). */
+    void parse_program_name(const char_t* pn);
     /*! Parses given commandline arguments based on definitions parsed before. Throws on error. */
     void parse(int argc, const char_t** argv);
     /*! A shorthand for the other parse() methods. */
@@ -276,12 +278,13 @@ struct arguments_t
         optionData_t(const listDefinition_t* lst) : Type(TLIST) { u.List = lst; }
     };
 
+    string_t ProgramName; //!< holds the program name (argv[0] usually)
     typedef std::pair<optionData_t, values_t> option_t;
     typedef std::map<name_t, option_t, nameCompare_t> options_t;
-    options_t Options;
+    options_t Options; //!< holds the parsed options (regular and list)
     typedef std::pair<const positionalDefinition_t*, string_t> positional_t;
     typedef std::list<positional_t> positionals_t;
-    positionals_t Positionals;
+    positionals_t Positionals; //!< holds the parsed positional arguments (both defined through positionalDefinition_t definitions and undefined (for those definition pointer is nullptr))
 
 private:
     typedef std::map<name_t, optionData_t, nameCompare_t> optmap_t;
