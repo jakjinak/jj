@@ -187,10 +187,14 @@ struct definitions_t
     typedef std::list<positionalDefinition_t> poss_t;
     typedef std::list<variableDefinition_t> vars_t;
 
+    typedef std::pair<string_t, string_t> helpSection_t;
+    typedef std::list<helpSection_t> helpSections_t;
+
     opts_t Options; //!< regular option definitions
     lists_t ListOptions; //!< list option definitions
     poss_t Positionals; //!< positional argument definitions
     vars_t Variables; //!< variable definitions
+    helpSections_t Sections; //!< additional sections of information related to arguments
 };
 
 /*! Modifiers of parser behavior. */

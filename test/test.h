@@ -214,7 +214,27 @@ public:
     virtual void list(bool variants) const =0;
 };
 
-
+struct filter_t
+{
+    enum filterType_t { ADD, REMOVE };
+    filterType_t Type;
+    string_t
+        Class,
+        ClassVariant,
+        Case,
+        CaseVariant;
+    filter_t(filterType_t type, const string_t& filter);
+};
+typedef std::list<filter_t> filters_t;
+class filter_ref_t
+{
+    const filter_t& f_;
+public:
+    filter_ref_t(const filter_t& f) : f_(f) {}
+    const filter_t& operator*() const { return f_; }
+    const filter_t* operator->() const { return &f_; }
+};
+typedef std::list<filter_ref_t> filter_refs_t;
 
 template<typename T>
 class testclass_base_T : public testclass_base_t
@@ -280,6 +300,7 @@ class db_t : public options_t, public AUX::db_output_t
 
 public:
     db_t()
+        : Mode(RUN), ListClassVariants(false), ListCaseVariants(false)
     {
         Initializers.push_back(initptr_t(new AUX::defaultInitializer_t));
         Outputs.push_back(outptr_t(new AUX::defaultOutput_t(*this)));
@@ -289,6 +310,11 @@ public:
     typedef std::shared_ptr<initializer_t> initptr_t;
     typedef std::list<initptr_t> initlist_t;
     initlist_t Initializers;
+
+    enum mode_t { LIST, LIST_CLASSES, RUN };
+    mode_t Mode;
+    bool ListClassVariants, ListCaseVariants;
+    string_t ListClass;
 
     statistics_t Statistics;
 
@@ -308,11 +334,15 @@ public:
     /*! Prints all test cases of a specific test class. */
     void list_testcases(const string_t& testclass, bool classvariants=false, bool testvariants=false) const;
 
+    AUX::filters_t Filters;
+    bool check_class_filters(const string_t& c, const string_t& v, bool& startWith, AUX::filter_refs_t& filters);
+    bool check_case_filters(const string_t& c, const string_t& v, bool startWith, const AUX::filter_refs_t& filters);
+
     /*! Runs a single testcase in its testclass instance taking care about exception handling and statistics. */
     void run_testcase(std::function<void(statistics_t&)> tc, statistics_t& stats);
 
     /*! Runs all testcases. */
-    void run(); // TODO take filters and other options into account
+    void run();
 };
 
 namespace AUX

@@ -1,6 +1,7 @@
 #include "jj/test/test.h"
 #include "jj/cmdLine.h"
 #include <iostream>
+#include <deque>
 
 namespace jj
 {
@@ -17,11 +18,28 @@ defaultInitializer_t::defaultInitializer_t()
 void defaultInitializer_t::on_init(db_t& DB)
 {
     using namespace jj::cmdLine;
-    ArgumentDefinitions->Options.push_back({{name_t(jjT('t')), name_t(jjT("run")), name_t(jjT("run-tests"))}, jjT("Give any number of these to specify which tests shall run."), 1u, multiple_t::JOIN, nullptr});
-    ArgumentDefinitions->Options.push_back({{name_t(jjT("class-names"))}, jjT("Prints information about entering/leaving testclass."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.ClassNames = true; return true; } });
-    ArgumentDefinitions->Options.push_back({{name_t(jjT("case-names"))}, jjT("Prints information about testcase being run."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTER; return true; } });
-    ArgumentDefinitions->Options.push_back({{name_t(jjT("full-case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTERLEAVE; return true; } });
-    ArgumentDefinitions->Options.push_back({{name_t(jjT("in-color"))}, jjT("Prints output in colors."), 0u, multiple_t::OVERRIDE, [&DB] (const optionDefinition_t&, values_t&) { DB.Colors = true; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT('l')), name_t(jjT("list"))}, jjT("Lists all testcases known in the program and exits."), 0u, multiple_t::JOIN,
+        [&DB] (const optionDefinition_t&, values_t&) { DB.Mode = db_t::LIST; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT('L')), name_t(jjT("list-classes"))}, jjT("Lists all testclasses known in the program and exits."), 0u, multiple_t::JOIN,
+        [&DB] (const optionDefinition_t&, values_t&) { DB.Mode = db_t::LIST_CLASSES; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("class"))}, jjT("With --list specifies that only the cases in given class should be listed."), 1u, multiple_t::JOIN,
+        [&DB] (const optionDefinition_t&, values_t& v) { DB.ListClass = v.Values.front(); return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT('V')), name_t(jjT("class-variants"))}, jjT("In list mode prints all test class variants."), 0u, multiple_t::JOIN,
+        [&DB] (const optionDefinition_t&, values_t&) { DB.ListClassVariants = true; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT('v')), name_t(jjT("case-variants"))}, jjT("In list mode prints all test case variants."), 0u, multiple_t::JOIN,
+        [&DB] (const optionDefinition_t&, values_t&) { DB.ListCaseVariants = true; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT('r')), name_t(jjT("run")), name_t(jjT('+'), jjT('t'))}, jjT("Give any number of these to specify which tests shall run. See"), 1u, multiple_t::JOIN,
+        [&DB] (const optionDefinition_t&, values_t& v) { DB.Filters.push_back(filter_t(filter_t::ADD, v.Values.front())); return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT('s')), name_t(jjT("skip")), name_t(jjT('t'))}, jjT("Give any number of these to specify which tests shall be skipped."), 1u, multiple_t::JOIN,
+        [&DB] (const optionDefinition_t&, values_t& v) { DB.Filters.push_back(filter_t(filter_t::REMOVE, v.Values.front())); return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("class-names"))}, jjT("Prints information about entering/leaving testclass."), 0u, multiple_t::OVERRIDE,
+        [&DB] (const optionDefinition_t&, values_t&) { DB.ClassNames = true; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("case-names"))}, jjT("Prints information about testcase being run."), 0u, multiple_t::OVERRIDE,
+        [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTER; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("full-case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE,
+        [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTERLEAVE; return true; } });
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("in-color"))}, jjT("Prints output in colors."), 0u, multiple_t::OVERRIDE,
+        [&DB] (const optionDefinition_t&, values_t&) { DB.Colors = true; return true; } });
     ArgumentDefinitions->Options.push_back({{name_t(jjT("results"))}, jjT("Based on provided value prints results of individual tests within testcases; none means no results shown, fails shows only failed tests, all shows failed and passed conditions."), 1u, multiple_t::OVERRIDE,
         [&DB](const optionDefinition_t&, values_t& v) {
             if (v.Values.size()==0) throw std::runtime_error("Invalid number of arg values.");
@@ -31,6 +49,28 @@ void defaultInitializer_t::on_init(db_t& DB)
             else if (s==jjT("all")) DB.Tests = jj::test::options_t::testResults_t::ALL;
             else throw std::runtime_error("Value in --results can be one of none|fails|all.");
             return true; } });
+    ArgumentDefinitions->Sections.push_back({
+        jjT("SELECTING TESTS"),
+        jjT("If no --run/--skip arguments are given then all tests are run.\n")
+        jjT("But any number of --run/--skip can be given - they will be processed sequentially to identify the matching testcases.\n")\
+        jjT("If --run is the first provided then initially no test cases match and the provided value selects the ones to run.\n")
+        jjT("If --skip is the first one then initially all tests match except those matching the provided value.\n")
+        jjT("Further --run/--skip add/remove matching testcases to/from the list to be run.\n")
+        jjT("\n")
+        jjT("The value of --run/--skip (or their equivalents) is one of:\n")
+        jjT("  1) classname(variant)/casename(variant)\n")
+        jjT("  2) classname/casename(variant)\n")
+        jjT("  3) classname(variant)/casename\n")
+        jjT("  4) classname/casename\n")
+        jjT("  5) casename(variant)\n")
+        jjT("  6) casename\n")
+        jjT("  7) classname(variant)/\n")
+        jjT("  8) classname/\n")
+        jjT("where classname stands for the name of test class, casename for the test case name and variant for the exact string as printed in --list.")
+        jjT("If classname/casename given without variant then all variants are taken into account. If no classname is given then all classes are evaluated for matching test cases.")
+        jjT("If only class name is given then all test cases in that class match.")
+        jjT("Whitespace around the / character as well as whitespace at the beginning/end is ignored.")
+        jjT("Whitespace inside the (variant) is used \"as is\".")});
 }
 
 void defaultInitializer_t::on_setup(int argc, const char_t** argv)
@@ -181,6 +221,184 @@ void holder_base_t::print(const string_t& name, const string_t& variant)
 {
     jj::cout << jjT('\t') << name << variant << jjT('\n');
 }
+
+namespace // <anonymous>
+{
+static bool skip_space(const string_t& s, size_t& pos)
+{
+    while (pos < s.length() && std::isspace(s[pos]))
+        ++pos;
+    return pos < s.length();
+}
+static bool skip_till(const string_t& s, size_t& pos, char_t c1)
+{
+    while (pos < s.length() && s[pos] != c1)
+        ++pos;
+    return pos < s.length();
+}
+static bool skip_till(const string_t& s, size_t& pos, char_t c1, char_t c2)
+{
+    while (pos < s.length() && s[pos] != c1 && s[pos] != c2)
+        ++pos;
+    return pos < s.length();
+}
+static bool skip_bracket(const string_t& s, size_t& pos)
+{
+    if (pos >= s.length())
+        return false;
+    if (s[pos]!=jjT('('))
+        throw std::runtime_error("Internal error.");
+
+    struct item_t
+    {
+        char_t ch;
+        bool esc;
+        item_t(char_t c, bool e) : ch(c), esc(e) {}
+    };
+    typedef std::deque<item_t> stack_t;
+    stack_t st;
+    bool esc = false;
+    size_t len = s.length();
+
+    // we are at a '(' as checked above, initalize stack
+    st.push_back(item_t(jjT(')'), false));
+    ++pos;
+
+    for (; pos<len; ++pos)
+    {
+        if (esc)
+        {
+            // while waiting for pair character encountered a backslash, skipping the next char
+            esc = false;
+            continue;
+        }
+        // waiting for some pair character () or ""
+        item_t& t = st.back();
+        if (t.esc)
+        {
+            // within string
+            if (s[pos] == jjT('\\'))
+            {
+                // encountered a backslash, skip this and next char
+                esc = true;
+                continue;
+            }
+            if (s[pos] == t.ch)
+            {
+                st.pop_back();
+                if (st.empty())
+                {
+                    ++pos;
+                    return pos < len;
+                }
+                continue;
+            }
+            continue; // within something escapable no more stack descent
+        }
+        if (s[pos] == t.ch)
+        {
+            st.pop_back();
+            if (st.empty())
+            {
+                ++pos;
+                return pos < len;
+            }
+            continue;
+        }
+        else switch (s[pos]) // next stack level (descending into next bracket or string or char
+        {
+        case jjT('('):
+            st.push_back(item_t(jjT(')'), false));
+            break;
+        case jjT('"'):
+            st.push_back(item_t(jjT('"'), true));
+            break;
+        case jjT('\''):
+            st.push_back(item_t(jjT('\''), true));
+            break;
+        }
+    }
+    if (!st.empty())
+        throw std::runtime_error("Invalid filter specification. Unterminated variant?");
+    return pos < len;
+}
+static void construct(const string_t& s, size_t start, size_t end, string_t& os)
+{
+    if (end<=start)
+        throw std::runtime_error("Empty string to be constructed.");
+    if (end > s.length())
+        throw std::runtime_error("Invalid string index.");
+    while (end>start && std::isspace(s[end-1]))
+        --end;
+    if (end == start)
+        throw std::runtime_error("Empty string to be constructed.");
+    os.assign(s, start, end-start);
+}
+} // namespace <anonymous>
+
+filter_t::filter_t(filterType_t type, const string_t& filter)
+    : Type(type)
+{
+    size_t i = 0;
+    if (!skip_space(filter, i))
+        return; // empty filter
+    size_t s1 = i, e1 = 0, vs1 =0 , ve1 = 0;
+    if (!skip_till(filter, i, jjT('('), jjT('/')))
+    {
+        // case name only was specified
+        construct(filter, s1, i, Case);
+        return;
+    }
+    if (filter[i] == jjT('('))
+    {
+        e1 = i;
+        vs1 = i;
+        skip_bracket(filter, i);
+        ve1 = i;
+        if (!skip_space(filter, i))
+        {
+            // it's a case name with variant
+            construct(filter, s1, e1, Case);
+            construct(filter, vs1, ve1, CaseVariant);
+            return;
+        }
+    }
+    else
+        e1 = i;
+
+    if (filter[i] != jjT('/'))
+        throw std::runtime_error("Unexpected character where '/' was expected.");
+    ++i; // skip the '/'
+    // whatever we received before was a class specification
+    construct(filter, s1, e1, Class);
+    if (vs1 > s1) // check if there was a variant spec as well
+        construct(filter, vs1, ve1, ClassVariant);
+
+    if (!skip_space(filter, i))
+        return; // after all it was a class spec only
+
+    size_t s2 = i;
+    if (!skip_till(filter, i, jjT('('), jjT('/')))
+    {
+        // case spec only
+        construct(filter, s2, i, Case);
+        return;
+    }
+    if (filter[i] == jjT('/'))
+        throw std::runtime_error("Unexpected '/', one was already seen.");
+    size_t vs2 = i;
+    bool cont = skip_bracket(filter, i);
+    // case spec with variant
+    construct(filter, s2, vs2, Case);
+    construct(filter, vs2, i, CaseVariant);
+    if (!cont)
+        return;
+    if (!skip_space(filter, i))
+        return;
+    throw std::runtime_error("Unexpected characters after testcase variant specification.");
+}
+
+
 } // namespace AUX
 
 void db_t::do_list(const testclasses_t::value_type& testclass, bool classvariants, bool tests, bool variants) const
@@ -213,6 +431,56 @@ void db_t::list_testcases(const string_t& testclass, bool classvariants, bool te
     if (fnd == testclasses_.end())
         return;
     do_list(*fnd, classvariants, true, testvariants);
+}
+
+bool db_t::check_class_filters(const string_t& c, const string_t& v, bool& startWith, AUX::filter_refs_t& filters)
+{
+    filters.clear();
+    if (Filters.empty())
+    {
+        startWith = true; // understand run everything
+        return true;
+    }
+    startWith = Filters.front().Type != AUX::filter_t::ADD;
+    bool cur = startWith;
+    AUX::filters_t::const_iterator it = Filters.begin(), e = Filters.end();
+    for (; it!=e; ++it)
+    {
+        if (it->Class.empty())
+            filters.push_back(AUX::filter_ref_t(*it)); // empty matches every class
+        else if (it->Class == c)
+        {
+            bool varmatch = false;
+            if (v.empty())
+                varmatch = it->ClassVariant.empty();
+            else if (it->ClassVariant.empty())
+                varmatch = true;
+            else
+                varmatch = it->ClassVariant == v;
+            if (varmatch)
+            {
+                filters.push_back(AUX::filter_ref_t(*it));
+                cur = it->Type == AUX::filter_t::ADD;
+            }
+        }
+    }
+    return cur;
+}
+
+bool db_t::check_case_filters(const string_t& c, const string_t& v, bool startWith, const AUX::filter_refs_t& filters)
+{
+    bool cur = startWith;
+    for (AUX::filter_refs_t::const_iterator it = filters.begin(); it!=filters.end(); ++it)
+    {
+        if ((*it)->Case.empty())
+            cur = (*it)->Type == AUX::filter_t::ADD; // everything matches empty value
+        else if ((*it)->Case == c)
+        {
+            if ((*it)->CaseVariant.empty() || (*it)->CaseVariant == v)
+                cur = (*it)->Type == AUX::filter_t::ADD;
+        }
+    }
+    return cur;
 }
 
 void db_t::run_testcase(std::function<void(statistics_t&)> tc, statistics_t& stats)
@@ -260,6 +528,11 @@ void db_t::run()
     {
         for (testclass_variants_t::value_type& v : i.second.first)
         {
+            bool start = true;
+            AUX::filter_refs_t refs;
+            if (!check_class_filters(i.first, v.first, start, refs))
+                continue;
+
             statistics_t stats;
             enter_class(i.first, v.first);
             (v.second)(stats);
@@ -286,7 +559,18 @@ int main(int argc, const char** argv)
             i->on_init(DB);
         for (auto i : DB.Initializers)
             i->on_setup(argc, argv);
-        DB.run();
+
+        if (DB.Mode == jj::test::db_t::LIST)
+        {
+            if (DB.ListClass.empty())
+                DB.list_testcases(DB.ListClassVariants, DB.ListCaseVariants);
+            else
+                DB.list_testcases(DB.ListClass, DB.ListClassVariants, DB.ListCaseVariants);
+        }
+        else if (DB.Mode == jj::test::db_t::LIST_CLASSES)
+            DB.list_testclasses(DB.ListClassVariants);
+        else if (DB.Mode == jj::test::db_t::RUN)
+            DB.run();
     }
     catch (const jj::test::testingFailed_t& ex)
     {
