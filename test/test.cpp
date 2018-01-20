@@ -66,10 +66,14 @@ void defaultInitializer_t::on_init(db_t& DB)
         jjT("  6) casename\n")
         jjT("  7) classname(variant)/\n")
         jjT("  8) classname/\n")
-        jjT("where classname stands for the name of test class, casename for the test case name and variant for the exact string as printed in --list.")
-        jjT("If classname/casename given without variant then all variants are taken into account. If no classname is given then all classes are evaluated for matching test cases.")
-        jjT("If only class name is given then all test cases in that class match.")
-        jjT("Whitespace around the / character as well as whitespace at the beginning/end is ignored.")
+        jjT("where classname stands for the name of test class, casename for the test case name and variant for the exact string as printed in --list.\n")
+        jjT("If classname or casename given without variant then all variants are matching.\n")
+        jjT("If no class name is given then 2 situations can occur depending whether there already were --run arguments specifying a classname or not.\n")
+        jjT(" - if yes then only the test cases in these classes match\n")
+        jjT(" - if no then all classes are evaluated for matching test cases\n")
+        jjT("That effectively means that unless you specify at least one --run argument with classname then all classes are evaluated, first such argument changes the behavior.\n")
+        jjT("If only class name is given then all test cases in that class match.\n")
+        jjT("Whitespace around the / character as well as whitespace at the beginning/end is ignored.\n")
         jjT("Whitespace inside the (variant) is used \"as is\".")});
 }
 
@@ -443,11 +447,19 @@ bool db_t::check_class_filters(const string_t& c, const string_t& v, bool& start
     }
     startWith = Filters.front().Type != AUX::filter_t::ADD;
     bool cur = startWith;
+    bool exact = false;
     AUX::filters_t::const_iterator it = Filters.begin(), e = Filters.end();
     for (; it!=e; ++it)
     {
+        if (it->Type == AUX::filter_t::ADD && !it->Class.empty())
+            exact = true;
+
         if (it->Class.empty())
+        {
             filters.push_back(AUX::filter_ref_t(*it)); // empty matches every class
+            if (!exact)
+                cur = it->Type == AUX::filter_t::ADD;
+        }
         else if (it->Class == c)
         {
             bool varmatch = false;
@@ -459,17 +471,25 @@ bool db_t::check_class_filters(const string_t& c, const string_t& v, bool& start
                 varmatch = it->ClassVariant == v;
             if (varmatch)
             {
-                filters.push_back(AUX::filter_ref_t(*it));
-                cur = it->Type == AUX::filter_t::ADD;
+                if (!it->Case.empty())
+                    filters.push_back(AUX::filter_ref_t(*it));
+                if (it->Type == AUX::filter_t::ADD)
+                    cur = true;
+                else if (it->Case.empty())
+                    cur = false;
             }
         }
     }
+    if (!exact) // no class names were given so there was no exact match for class so "cur" is not set properly
+        return filters.size() > 0;
     return cur;
 }
 
-bool db_t::check_case_filters(const string_t& c, const string_t& v, bool startWith, const AUX::filter_refs_t& filters)
+bool db_t::check_case_filters(const string_t& c, const string_t& v, const AUX::filter_refs_t& filters)
 {
-    bool cur = startWith;
+    if (filters.size() == 0)
+        return true;
+    bool cur = filters.front()->Type != AUX::filter_t::ADD;
     for (AUX::filter_refs_t::const_iterator it = filters.begin(); it!=filters.end(); ++it)
     {
         if ((*it)->Case.empty())
@@ -535,7 +555,7 @@ void db_t::run()
 
             statistics_t stats;
             enter_class(i.first, v.first);
-            (v.second)(stats);
+            (v.second)(stats, refs);
             leave_class(i.first, v.first, stats);
             Statistics += stats;
         }

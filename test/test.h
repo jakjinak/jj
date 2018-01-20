@@ -206,51 +206,85 @@ struct db_output_t : public output_t
     }
 };
 
+/*! A helper class providing interface and common functionality for storing individual tests within the class. */
 class holder_base_t
 {
 public:
+    /*! Prints test name to standard output. */
     static void print(const string_t& name);
+    /*! Prints test name and variant to standard output. */
     static void print(const string_t& name, const string_t& variant);
+    /*! Prints all testcases in the testclass, prints names only or names and variants depending on the variants parameter. */
     virtual void list(bool variants) const =0;
 };
 
+/*! Stores information about a filter (the value of --run/--skip argument). */
 struct filter_t
 {
-    enum filterType_t { ADD, REMOVE };
-    filterType_t Type;
+    /*! Type of filter. */
+    enum filterType_t
+    {
+        ADD, //!< adds to class/case selection
+        REMOVE //!< removes from class/case selection
+    };
+    filterType_t Type; //!< type of filter
     string_t
-        Class,
-        ClassVariant,
-        Case,
-        CaseVariant;
+        Class, //!< parsed class name (can be empty if Case is given, then all classes match unless some previous filter specified class)
+        ClassVariant, //!< parsed class variant (portion in brackets including brackets), can only be specified if Class is specified
+        Case, //!< parsed case name (can be empty if Class is given, the all cases in class/all classes/selected classes match)
+        CaseVariant; //!< parsed case variant (portion in brackets including brackets), can only be specified if Case is specified
+    /*! Ctor - sets type and parses given filter into Class, ClassVariant, Case, CaseVariant; throws runtime_error if parsing fails. */
     filter_t(filterType_t type, const string_t& filter);
 };
+/*! Represents all filters parsed from cmdline arguments. */
 typedef std::list<filter_t> filters_t;
+
+/*! Filtering helper class. References to actual filter_t instances.
+
+List of these produced in db_t::check_class_filters(), contains only filters relevant for class. */
 class filter_ref_t
 {
-    const filter_t& f_;
+    const filter_t& f_; //!< actual filter instance reference
 public:
+    /*! Ctor */
     filter_ref_t(const filter_t& f) : f_(f) {}
+    /*! Indirection. */
     const filter_t& operator*() const { return f_; }
+    /*! Indirection. */
     const filter_t* operator->() const { return &f_; }
 };
+/*! List of filter references. Produced in db_t::check_class_filter(), used in db_t::check_case_filters(). */
 typedef std::list<filter_ref_t> filter_refs_t;
 
+/*! Contains interface for actual test class, the actual class derives from this (the actual class is the template parameter).
+Through the helper class JJ_TESTCASE_holder_t contains all the test cases. For every class variant a new instance of the class
+is created but the JJ_TESTCASE_holder_t is always the same (=same list of testcases for each variant). */
 template<typename T>
 class testclass_base_T : public testclass_base_t
 {
-    typedef T parent_t;
+    typedef T parent_t; //!< denotes the actual test class type
 
 public:
+    //! the type of method that is used to run individual test cases(/variants)
     typedef void(*JJ_TESTCASE_runner_fn)(parent_t&, statistics_t&);
+    //!< name of case variant (the part in brackets) and the method to run the variant
     typedef std::pair<string_t, JJ_TESTCASE_runner_fn> JJ_TESTCASE_variant_t;
+    //!< type used to store all variants of a single test case
     typedef std::list<JJ_TESTCASE_variant_t> JJ_TESTCASE_variants_t;
+    //!< name of case and list of all its variants (and runners)
     typedef std::pair<string_t, JJ_TESTCASE_variants_t> JJ_TESTCASE_t;
+    //!< type denoting the list of all test cases in the test class
     typedef std::list<JJ_TESTCASE_t> JJ_TESTCASE_list_t;
 
+    /*! Helper class to actually store the testcases in the test class. It is a singleton.
+
+    It is a separate class as the list of testcases is independent of the individual class variants,
+    ie. same test cases for each class variant. */
     struct JJ_TESTCASE_holder_t : public holder_base_t
     {
-        JJ_TESTCASE_list_t list_;
+        JJ_TESTCASE_list_t list_; //!< all test cases (names and variants and runners)
+
+        /*! Saves a new test case variant into the list. The fn/name/args specify the method to call to run the test/the name of the test/the variant of the test. */
         void register_testcase(JJ_TESTCASE_runner_fn fn, const char_t* name, const char_t* args)
         {
             for (typename JJ_TESTCASE_list_t::value_type& i : list_)
@@ -264,10 +298,14 @@ public:
             list_.push_back(JJ_TESTCASE_t(name, JJ_TESTCASE_variants_t()));
             list_.back().second.push_back(JJ_TESTCASE_variant_t(args, fn));
         }
+        /*! Returns the instance of this singleton. */
         static JJ_TESTCASE_holder_t& instance() { static JJ_TESTCASE_holder_t inst; return inst; }
 
+        /*! Lists all testcases stored in this instance to standard output.
+        Depending on the value of variants prints either only case names or names and variants. */
         void list(bool variants) const
         {
+            // TODO move print() methods (currently in holder_base_t) to the output_t interface
             for (const typename JJ_TESTCASE_list_t::value_type& i : list_)
             {
                 if (variants)
@@ -279,44 +317,70 @@ public:
                     print(i.first);
             }
         }
-        void run(parent_t& testclass, statistics_t& stats);
+        /*! Checks given filters and runs all cases (and variants) stored here and matching given filters
+        on top of given testclass. Updates given stats along the way. */
+        void run(parent_t& testclass, statistics_t& stats, const filter_refs_t& filters);
     };
 };
 
 } // namespace AUX
 
+/*! Represents the test framework and holds the list of all test classes (and variants) in the binary.
+
+The implementation also provides a main() method so you only link against this lib. */
 class db_t : public options_t, public AUX::db_output_t
 {
-    typedef void(*runner_fn)(statistics_t&);
+    //!< type of function to instantiate test classes (in variants) and running test cases in them
+    typedef void(*runner_fn)(statistics_t&, const AUX::filter_refs_t&);
 
-    // TODO replace with const char_t*
+    // TODO replace with const char_t*?
+    /*! class variant name and runner of test cases */
     typedef std::pair<string_t, runner_fn> testclass_variant_t;
+    /*! list of all variants (and runners) of a test class */
     typedef std::list<testclass_variant_t> testclass_variants_t;
+    /*! list of all class variants and pointer to singleton holding the test classes' test cases (and runners). */
     typedef std::pair<testclass_variants_t, AUX::holder_base_t*> testclass_data_t;
+    /*! storage for all testclasses (and variants and runners)
+
+    Note: the variants are used when running the tests, the pointer when listing the tests. */
     typedef std::map<string_t, testclass_data_t> testclasses_t;
-    testclasses_t testclasses_;
+    testclasses_t testclasses_; //!< stores info about all individual test classes (and variants)
 
-    void do_list(const testclasses_t::value_type& testclass, bool classvariants, bool tests, bool testvariants=false) const;
+    /*! Internal helper to list all test cases in a test class. */
+    void do_list(
+        const testclasses_t::value_type& testclass, //!< class to be printed
+        bool classvariants, //!< whether to print the variants or just the name
+        bool tests, //!< whether to print the test cases
+        bool testvariants=false //!< whether to print test case variants or just case names; ignored if tests is false
+        ) const;
 
-public:
+    /*! Ctor, note this class is a singleton. */
     db_t()
         : Mode(RUN), ListClassVariants(false), ListCaseVariants(false)
     {
         Initializers.push_back(initptr_t(new AUX::defaultInitializer_t));
         Outputs.push_back(outptr_t(new AUX::defaultOutput_t(*this)));
     }
+
+public:
+    /*! Provides access to the test framework. */
     static db_t& instance() { static db_t inst; return inst; }
 
+    //! Holds an initializer of the test framework. */
     typedef std::shared_ptr<initializer_t> initptr_t;
+    /*! Type holding all initializer of the test framework. */
     typedef std::list<initptr_t> initlist_t;
-    initlist_t Initializers;
+    initlist_t Initializers; //!< holds all initializers, add your in a global variable initialization
 
+    /*! What should the framework do - listing or running test cases. */
     enum mode_t { LIST, LIST_CLASSES, RUN };
-    mode_t Mode;
-    bool ListClassVariants, ListCaseVariants;
-    string_t ListClass;
+    mode_t Mode; //!< what should the test framework do - list or run test cases
+    bool
+        ListClassVariants, //!< in list mode whether to list class variants, ignored in run mode
+        ListCaseVariants; //!< in list mode whether to list case variants, ignored in run mode
+    string_t ListClass; //!< in list mode list only test cases in this test class; ignored in run mode
 
-    statistics_t Statistics;
+    statistics_t Statistics; //!< the overall statistics of passed / failed tests
 
     void register_testclass(runner_fn fn, const char_t* name, const char_t* args)
     {
@@ -334,9 +398,13 @@ public:
     /*! Prints all test cases of a specific test class. */
     void list_testcases(const string_t& testclass, bool classvariants=false, bool testvariants=false) const;
 
-    AUX::filters_t Filters;
+    AUX::filters_t Filters; //!< holds filters for selecting tests
+    /*! Helper called in run mode to check whether class matches the Filters. Returns whether matching (ie. whether test evaluation shall be done).
+
+    Produces filters which is a list of references to the original filters, but only the relevant for current test class are contained. */
     bool check_class_filters(const string_t& c, const string_t& v, bool& startWith, AUX::filter_refs_t& filters);
-    bool check_case_filters(const string_t& c, const string_t& v, bool startWith, const AUX::filter_refs_t& filters);
+    /*! Helper called in run mode to check whether particular case variant is matching given filters. Returns whether matching. */
+    bool check_case_filters(const string_t& c, const string_t& v, const AUX::filter_refs_t& filters);
 
     /*! Runs a single testcase in its testclass instance taking care about exception handling and statistics. */
     void run_testcase(std::function<void(statistics_t&)> tc, statistics_t& stats);
@@ -348,13 +416,16 @@ public:
 namespace AUX
 {
 template<typename T>
-void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statistics_t& stats)
+void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statistics_t& stats, const filter_refs_t& filters)
 {
     db_t& db = db_t::instance();
     for (typename JJ_TESTCASE_list_t::value_type& i : list_)
     {
         for (typename JJ_TESTCASE_variants_t::value_type& v : i.second)
         {
+            if (!db.check_case_filters(i.first, v.first, filters))
+                continue;
+
             db.enter_case(i.first, v.first);
             db.run_testcase([&v, &testclass](statistics_t& stats){ (v.second)(testclass, stats); }, stats);
             db.leave_case(i.first, v.first);
@@ -401,7 +472,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 
 
 #define JJ___TEST_CLASS_CALL(name, no, args) \
-    static void jjM2(JJ_TEST_CLASS_VARIANT_,no)(jj::test::statistics_t& stats){ name inst args; JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().run(inst, stats); } \
+    static void jjM2(JJ_TEST_CLASS_VARIANT_,no)(jj::test::statistics_t& stats, const jj::test::AUX::filter_refs_t& filters){ name inst args; JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().run(inst, stats, filters); } \
     static int jjM2(JJ_TEST_CLASS_REGISTRAR_,no)() { jj::test::db_t::instance().register_testclass(&name::jjM2(JJ_TEST_CLASS_VARIANT_,no), #name, #args); return no; }
 #define JJ___TEST_CLASS_1CALLS(name, p1) JJ___TEST_CLASS_CALL(name, 1, p1)
 #define JJ___TEST_CLASS_2CALLS(name, p1, p2) JJ___TEST_CLASS_CALL(name, 1, p1) JJ___TEST_CLASS_CALL(name, 2, p2)
@@ -667,7 +738,7 @@ mytestcl() : mycl(static_cast<jj::test::testclass_base_t&>(*this)) {}
 /*! Same as JJ_TEST but throws testingFailed_t to skip to the end of the test program. */
 #define JJ_MUSTBE(...) JJ_PP_SELECTOR2(__VA_ARGS__, JJ_MUSTBE_MSG, JJ_MUSTBE_X)(__VA_ARGS__)
 
-/*! Evaluates given expression and checks that given excetion was thrown. */
+/*! Evaluates given expression and checks that given exception was thrown. */
 #define JJ_TEST_THAT_THROWS(expr, exc) \
     try { \
         expr; \
@@ -675,4 +746,23 @@ mytestcl() : mycl(static_cast<jj::test::testclass_base_t&>(*this)) {}
     } catch (const exc&) { \
         JJ___DO_TEST(true, #expr << jjT(" throws ") << #exc, FAILED,) \
     }
+
+/*! Evaluates given expression and checks that given exception was thrown or skip to the end of test. */
+#define JJ_ENSURE_THAT_THROWS(expr, exc) \
+    try { \
+        expr; \
+        JJ___DO_TEST(false, #expr << jjT(" throws ") << #exc, FAILED, throw jj::test::testFailed_t();) \
+    } catch (const exc&) { \
+        JJ___DO_TEST(true, #expr << jjT(" throws ") << #exc, FAILED, throw jj::test::testFailed_t();) \
+    }
+
+/*! Evaluates given expression and checks that given exception was thrown or skip to the end of test program. */
+#define JJ_MUSTBE_THAT_THROWS(expr, exc) \
+    try { \
+        expr; \
+        JJ___DO_TEST(false, #expr << jjT(" throws ") << #exc, FAILED, throw jj::test::testingFailed_t();) \
+    } catch (const exc&) { \
+        JJ___DO_TEST(true, #expr << jjT(" throws ") << #exc, FAILED, throw jj::test::testingFailed_t();) \
+    }
+
 #endif // JJ_TEST_H
