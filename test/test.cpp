@@ -18,6 +18,7 @@ defaultInitializer_t::defaultInitializer_t()
 void defaultInitializer_t::on_init(db_t& DB)
 {
     using namespace jj::cmdLine;
+    Arguments->add_default_help(*ArgumentDefinitions);
     ArgumentDefinitions->Options.push_back({{name_t(jjT('l')), name_t(jjT("list"))}, jjT("Lists all testcases known in the program and exits."), 0u, multiple_t::JOIN,
         [&DB] (const optionDefinition_t&, values_t&) { DB.Mode = db_t::LIST; return true; } });
     ArgumentDefinitions->Options.push_back({{name_t(jjT('L')), name_t(jjT("list-classes"))}, jjT("Lists all testclasses known in the program and exits."), 0u, multiple_t::JOIN,
@@ -74,7 +75,7 @@ void defaultInitializer_t::on_init(db_t& DB)
         jjT("That effectively means that unless you specify at least one --run argument with classname then all classes are evaluated, first such argument changes the behavior.\n")
         jjT("If only class name is given then all test cases in that class match.\n")
         jjT("Whitespace around the / character as well as whitespace at the beginning/end is ignored.\n")
-        jjT("Whitespace inside the (variant) is used \"as is\".")});
+        jjT("Whitespace inside the (variant) is used \"as is\".\n")});
 }
 
 void defaultInitializer_t::on_setup(int argc, const char_t** argv)

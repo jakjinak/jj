@@ -262,6 +262,10 @@ struct arguments_t
     You MUST ensure the lifetime of defs is longer than the last call of the other parse.
     You MUST always call this after you modify the options of the parser and before calling parse(argc,argv). */
     void parse(const definitions_t& defs);
+    /*! Inserts the default help option into defs.Options. If used then it has to be called before parse(definitions_t) call. */
+    void add_default_help(definitions_t& defs);
+    /*! Prints the "help" to standard output. Can only be called after parse(definitions_t) was succesfully called. */
+    void print_default_help();
     /*! Parses the ProgramName only from given string (which usually would be argv[0]). */
     void parse_program_name(const char_t* pn);
     /*! Parses given commandline arguments based on definitions parsed before. Throws on error. */

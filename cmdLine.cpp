@@ -96,6 +96,108 @@ void arguments_t::parse(const definitions_t& defs)
     defs_ = &defs;
 }
 
+void arguments_t::add_default_help(definitions_t& defs)
+{
+    defs.Options.push_back({
+       {name_t(jjT('h')), name_t(jjT("help"))
+#if defined(_WINDOWS) || defined(_WIN32)
+       ,name_t(jjT('?'))
+#endif // defined(...
+       },
+       jjT("Prints this help and exits."),
+       0u,
+       multiple_t::OVERRIDE,
+       [this](const optionDefinition_t&, values_t&){ this->print_default_help(); exit(0); return true; } 
+       });
+}
+
+void arguments_t::print_default_help()
+{
+    if (ProgramName.empty())
+        jj::cout << jjT("programname");
+    else
+        jj::cout << ProgramName;
+    if (opts_.size()>0)
+        jj::cout << jjT(" OPTIONS...");
+    if (vars_.size()>0)
+        jj::cout << jjT(" VARIABLES...");
+
+    const definitions_t::poss_t& pospar = defs_->Positionals;
+    for (const positionalDefinition_t& p : pospar)
+        jj::cout << jjT(' ') << p.Shorthand;
+    jj::cout << jjT('\n');
+
+    if (opts_.size()>0)
+    {
+        jj::cout << jjT("\nOPTIONS\n");
+        for (const optionDefinition_t& o : defs_->Options)
+        {
+            for (const name_t& n : o.Names)
+            {
+                jj::cout << n.Prefix << n.Name;
+                if (o.ValueCount == 0)
+                    ;
+                else if (o.ValueCount == 1)
+                    jj::cout << jjT(" value");
+                else for (size_t i=0; i<o.ValueCount; ++i)
+                    jj::cout << jjT(" value") << (i+1);
+                jj::cout << jjT('\n');
+            }
+            jj::cout << jjT('\t') << o.Description << jjT('\n');
+        }
+        for (const listDefinition_t& o : defs_->ListOptions)
+        {
+            for (const name_t& n : o.Names)
+                jj::cout << n.Prefix << n.Name << jjT(" ... ") << o.Delimiter << jjT('\n');
+            jj::cout << jjT('\t') << o.Description << jjT('\n');
+        }
+    }
+
+    if (defs_->Positionals.size() > 0)
+    {
+        jj::cout << jjT("\nPOSITIONAL ARGUMENTS\n");
+        // search first for last mandatory
+        const positionalDefinition_t* mandatory = nullptr;
+        for (definitions_t::poss_t::const_reverse_iterator it = defs_->Positionals.rbegin(); it != defs_->Positionals.rend(); ++it)
+        {
+            if (it->Mandatory)
+            {
+                mandatory = &*it;
+                break;
+            }
+        }
+
+        bool isMandatory = mandatory != nullptr;
+        for (const positionalDefinition_t& p : defs_->Positionals)
+        {
+            jj::cout << p.Shorthand << jjT('\n') << jjT('\t') << p.Description;
+            if (isMandatory)
+                jj::cout << jjT("\tThis argument is mandatory.\n");
+            if (mandatory == &p)
+                isMandatory = false;
+        }
+    }
+
+    if (vars_.size() > 0)
+    {
+        jj::cout << jjT("\nVARIABLES\n");
+        jj::cout << jjT("\tThe following variables can be set per arguments in form variable=value.\n");
+        for (const variableDefinition_t& v : defs_->Variables)
+        {
+            jj::cout << v.Name << jjT('\n');
+            jj::cout << jjT('\t') << v.Description << jjT('\n');
+            if (!v.Default.empty())
+                jj::cout << jjT("\tDefault value is \"") << v.Default << jjT('"') << jjT('\n');
+        }
+    }
+
+    for (const definitions_t::helpSection_t& s : defs_->Sections)
+    {
+        jj::cout << jjT('\n') << s.first << jjT('\n');
+        jj::cout << s.second;
+    }
+}
+
 void arguments_t::parse_program_name(const char_t* pn)
 {
     if (pn == nullptr)
