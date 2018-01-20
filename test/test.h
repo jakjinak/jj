@@ -122,6 +122,17 @@ public:
         FAILINFO //!< a subsequent info for a failure (when testFailed_t or testingFailed_t is caught)
     };
 
+    // called in list mode
+    /*! If db_t::ListClassVariants is false then called once for each class. */
+    virtual void list_class(const string_t& name) =0;
+    /*! If db_t::ListClassVariants is true then called once for each class variant. */
+    virtual void list_class(const string_t& name, const string_t& variant) =0;
+    /*! If db_t::ListCaseVariants is false then called once for each case in class. */
+    virtual void list_case(const string_t& name) =0;
+    /*! If db_t::ListCaseVariants is true then called once for each case variant in class. */
+    virtual void list_case(const string_t& name, const string_t& variant) =0;
+
+    // called in run mode
     /*! Called right before a new test class (or it's variant) is instantiated. */
     virtual void enter_class(const string_t& name, const string_t& variant) =0;
     /*! Called right after a test class (or it's variant) is destroyed. */
@@ -156,6 +167,11 @@ struct defaultOutput_t : public output_t
 {
     defaultOutput_t(options_t& opt) : opt_(opt) {}
 
+    virtual void list_class(const string_t& name);
+    virtual void list_class(const string_t& name, const string_t& variant);
+    virtual void list_case(const string_t& name);
+    virtual void list_case(const string_t& name, const string_t& variant);
+
     virtual void enter_class(const string_t& name, const string_t& variant);
     virtual void leave_class(const string_t& name, const string_t& variant, const statistics_t& stats);
     virtual void enter_case(const string_t& name, const string_t& variant);
@@ -173,6 +189,27 @@ struct db_output_t : public output_t
     typedef std::shared_ptr<output_t> outptr_t;
     typedef std::list<outptr_t> outlist_t;
     outlist_t Outputs;
+
+    virtual void list_class(const string_t& name)
+    {
+        for (auto& o : Outputs)
+            o->list_class(name);
+    }
+    virtual void list_class(const string_t& name, const string_t& variant)
+    {
+        for (auto& o : Outputs)
+            o->list_class(name, variant);
+    }
+    virtual void list_case(const string_t& name)
+    {
+        for (auto& o : Outputs)
+            o->list_case(name);
+    }
+    virtual void list_case(const string_t& name, const string_t& variant)
+    {
+        for (auto& o : Outputs)
+            o->list_case(name, variant);
+    }
 
     virtual void enter_class(const string_t& name, const string_t& variant)
     {
@@ -210,10 +247,6 @@ struct db_output_t : public output_t
 class holder_base_t
 {
 public:
-    /*! Prints test name to standard output. */
-    static void print(const string_t& name);
-    /*! Prints test name and variant to standard output. */
-    static void print(const string_t& name, const string_t& variant);
     /*! Prints all testcases in the testclass, prints names only or names and variants depending on the variants parameter. */
     virtual void list(bool variants) const =0;
 };
@@ -303,20 +336,7 @@ public:
 
         /*! Lists all testcases stored in this instance to standard output.
         Depending on the value of variants prints either only case names or names and variants. */
-        void list(bool variants) const
-        {
-            // TODO move print() methods (currently in holder_base_t) to the output_t interface
-            for (const typename JJ_TESTCASE_list_t::value_type& i : list_)
-            {
-                if (variants)
-                {
-                    for (const typename JJ_TESTCASE_variants_t::value_type& v : i.second)
-                        print(i.first, v.first);
-                }
-                else
-                    print(i.first);
-            }
-        }
+        void list(bool variants) const;
         /*! Checks given filters and runs all cases (and variants) stored here and matching given filters
         on top of given testclass. Updates given stats along the way. */
         void run(parent_t& testclass, statistics_t& stats, const filter_refs_t& filters);
@@ -352,7 +372,7 @@ class db_t : public options_t, public AUX::db_output_t
         bool classvariants, //!< whether to print the variants or just the name
         bool tests, //!< whether to print the test cases
         bool testvariants=false //!< whether to print test case variants or just case names; ignored if tests is false
-        ) const;
+        );
 
     /*! Ctor, note this class is a singleton. */
     db_t()
@@ -392,11 +412,11 @@ public:
     }
 
     /*! Prints all test classes to standard output. */
-    void list_testclasses(bool classvariants=false) const;
+    void list_testclasses(bool classvariants=false);
     /*! Prints all test cases of all test classes to standard output. Depending on parameters it will either only print the class/test name or names and and all arg combinations. */
-    void list_testcases(bool classvariants=false, bool testvariants=false) const;
+    void list_testcases(bool classvariants=false, bool testvariants=false);
     /*! Prints all test cases of a specific test class. */
-    void list_testcases(const string_t& testclass, bool classvariants=false, bool testvariants=false) const;
+    void list_testcases(const string_t& testclass, bool classvariants=false, bool testvariants=false);
 
     AUX::filters_t Filters; //!< holds filters for selecting tests
     /*! Helper called in run mode to check whether class matches the Filters. Returns whether matching (ie. whether test evaluation shall be done).
@@ -415,6 +435,22 @@ public:
 
 namespace AUX
 {
+template<typename T>
+void testclass_base_T<T>::JJ_TESTCASE_holder_t::list(bool variants) const
+{
+    db_t& DB = db_t::instance();
+    for (const typename JJ_TESTCASE_list_t::value_type& i : list_)
+    {
+        if (variants)
+        {
+            for (const typename JJ_TESTCASE_variants_t::value_type& v : i.second)
+                DB.list_case(i.first, v.first);
+        }
+        else
+            DB.list_case(i.first);
+    }
+}
+
 template<typename T>
 void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statistics_t& stats, const filter_refs_t& filters)
 {

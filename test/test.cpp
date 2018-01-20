@@ -96,6 +96,26 @@ void defaultInitializer_t::on_setup(int argc, const char_t** argv)
     }
 }
 
+void defaultOutput_t::list_class(const string_t& name)
+{
+    jj::cout << name << jjT('\n');
+}
+
+void defaultOutput_t::list_class(const string_t& name, const string_t& variant)
+{
+    jj::cout << name << variant << jjT('\n');
+}
+
+void defaultOutput_t::list_case(const string_t& name)
+{
+    jj::cout << jjT('\t') << name << jjT('\n');
+}
+
+void defaultOutput_t::list_case(const string_t& name, const string_t& variant)
+{
+    jj::cout << jjT('\t') << name << variant << jjT('\n');
+}
+
 void defaultOutput_t::enter_class(const string_t& name, const string_t& variant)
 {
     if (!opt_.ClassNames)
@@ -215,15 +235,6 @@ void defaultOutput_t::statistics(const statistics_t& stats)
     jj::cout << jjT("Tests run in total: ") << stats.total() << jjT("\n");
     if (opt_.Colors)
         jj::cout << jjT("\033[0m");
-}
-
-void holder_base_t::print(const string_t& name)
-{
-    jj::cout << jjT('\t') << name << jjT('\n');
-}
-void holder_base_t::print(const string_t& name, const string_t& variant)
-{
-    jj::cout << jjT('\t') << name << variant << jjT('\n');
 }
 
 namespace // <anonymous>
@@ -405,31 +416,31 @@ filter_t::filter_t(filterType_t type, const string_t& filter)
 
 } // namespace AUX
 
-void db_t::do_list(const testclasses_t::value_type& testclass, bool classvariants, bool tests, bool variants) const
+void db_t::do_list(const testclasses_t::value_type& testclass, bool classvariants, bool tests, bool variants)
 {
-    if (testclass.second.first.size() == 1 || !classvariants)
-        jj::cout << testclass.first << jjT('\n');
+    if (!classvariants)
+        list_class(testclass.first);
     else for (const testclass_variants_t::value_type& v : testclass.second.first)
-        jj::cout << testclass.first << v.first << jjT('\n');
+        list_class(testclass.first, v.first);
     if (!tests)
         return;
     AUX::holder_base_t* h = testclass.second.second;
     h->list(variants);
 }
 
-void db_t::list_testclasses(bool classvariants) const
+void db_t::list_testclasses(bool classvariants)
 {
     for (const testclasses_t::value_type& i : testclasses_)
         do_list(i, classvariants, false);
 }
 
-void db_t::list_testcases(bool classvariants, bool testvariants) const
+void db_t::list_testcases(bool classvariants, bool testvariants)
 {
     for (const testclasses_t::value_type& i : testclasses_)
         do_list(i, classvariants, true, testvariants);
 }
 
-void db_t::list_testcases(const string_t& testclass, bool classvariants, bool testvariants) const
+void db_t::list_testcases(const string_t& testclass, bool classvariants, bool testvariants)
 {
     testclasses_t::const_iterator fnd = testclasses_.find(testclass);
     if (fnd == testclasses_.end())
