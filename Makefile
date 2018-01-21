@@ -108,8 +108,8 @@ ARFLAGS_$(1) ?= ${COMMON_ARFLAGS}
 
 $(2): $(1)
 $(3): clean_$(1)
-$(1): $(4) $${RESULT_$(1)}
-$(1)_only: $${RESULT_$(1)}
+$(1): $${RESULT_$(1)}
+$${RESULT_$(1)}: $(addsuffix },$(addprefix $${RESULT_,$(4)))
 clean_$(1): clean_$(1)_only $(addprefix clean_,$(4))
 
 clean_$(1)_only:
@@ -166,6 +166,9 @@ $(call define_common_part,$(1),$(2),$(3),$(4))
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_AR} cr $${ARFLAGS_$(1)} $${RESULT_$(1)} $${OBJ_$(1)}
+$(1)_only: $${OBJ_$(1)}
+	$$(call showhint,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
+	$(COMMAND_HIDE_PREFIX)${TOOL_AR} cr $${ARFLAGS_$(1)} $${RESULT_$(1)} $${OBJ_$(1)}
 endef
 
 # Defines all the undefined definitions and rules for a program unless already defined
@@ -185,6 +188,10 @@ $(call define_common_part,$(1),$(2),$(3),$(4))
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
+$(1)_only: $${OBJ_$(1)}
+	$$(call showhint, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
+	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
+
 endef
 
 
