@@ -62,7 +62,7 @@ function generate_test()
   cat << 'ENDOFBLOCK'
 #define JJ___TEST_CLASS_CALL(name, no, args) \
     static void jjM2(JJ_TEST_CLASS_VARIANT_,no)(jj::test::statistics_t& stats, const jj::test::AUX::filter_refs_t& filters){ name inst args; JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().run(inst, stats, filters); } \
-    static int jjM2(JJ_TEST_CLASS_REGISTRAR_,no)() { jj::test::db_t::instance().register_testclass(&name::jjM2(JJ_TEST_CLASS_VARIANT_,no), #name, #args); return no; }
+    static int jjM2(JJ_TEST_CLASS_REGISTRAR_,no)() { jj::test::db_t::instance().register_testclass(&name::jjM2(JJ_TEST_CLASS_VARIANT_,no), jjT(#name), jjT(#args)); return no; }
 ENDOFBLOCK
   s=$((clsv-1))
   i=1
@@ -115,7 +115,7 @@ ENDOFBLOCK
     i=$((i+1))
     echo
   done
-  echo -n "#define JJ___TEST_CLASS_REGS(...) JJ_PP_SELECTOR$s(__VA_ARGS__"
+  echo -n "#define JJ___TEST_CLASS_REGS(dummy, ...) JJ_PP_SELECTOR$s(__VA_ARGS__"
   i=$((clsv-1))
   while [[ $i -gt 0 ]]
   do
@@ -190,7 +190,7 @@ ENDOFBLOCK
   echo
   cat << 'ENDOFBLOCK'
 #define JJ___TEST_CASE_REG(name, no, args) \
-    JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().register_testcase(&JJ_THIS_TESTCLASS::jjM3(runner,no,name), #name, #args);
+    JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().register_testcase(&JJ_THIS_TESTCLASS::jjM3(runner,no,name), jjT(#name), jjT(#args));
 ENDOFBLOCK
   i=1
   s=$(($casincls-1))

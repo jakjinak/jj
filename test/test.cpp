@@ -594,7 +594,7 @@ int main(int argc, const char** argv)
         argx[i] = args.back().c_str();
     }
 #else
-    const jj::char_t* argx = argv;
+    const jj::char_t** argx = argv;
 #endif
     jj::test::db_t& DB = jj::test::db_t::instance();
     try
