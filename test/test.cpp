@@ -2,6 +2,9 @@
 #include "jj/cmdLine.h"
 #include <iostream>
 #include <deque>
+#if defined(_WINDOWS) || defined(_WIN32)
+#include <tchar.h>
+#endif
 
 namespace jj
 {
@@ -578,19 +581,28 @@ void db_t::run()
 } // namespace test
 } // namespace jj
 
-#if defined(_WINDOWS) || defined(_WIN32)
-int wmain(int argc, const wchar_t** argv)
-#else
 int main(int argc, const char** argv)
-#endif
 {
+#if defined(_WINDOWS) || defined(_WIN32)
+    typedef std::list<std::wstring> args_t;
+    args_t args;
+    const wchar_t** argx = new const wchar_t*[argc];
+    std::unique_ptr<const wchar_t*[]> argp(argx);
+    for (int i = 0; i < argc; ++i)
+    {
+        args.push_back(jj::strcvt::to_string_t(argv[i]));
+        argx[i] = args.back().c_str();
+    }
+#else
+    const jj::char_t* argx = argv;
+#endif
     jj::test::db_t& DB = jj::test::db_t::instance();
     try
     {
         for (auto i : DB.Initializers)
             i->on_init(DB);
         for (auto i : DB.Initializers)
-            i->on_setup(argc, argv);
+            i->on_setup(argc, argx);
 
         if (DB.Mode == jj::test::db_t::LIST)
         {

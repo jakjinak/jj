@@ -510,7 +510,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 
 #define JJ___TEST_CLASS_CALL(name, no, args) \
     static void jjM2(JJ_TEST_CLASS_VARIANT_,no)(jj::test::statistics_t& stats, const jj::test::AUX::filter_refs_t& filters){ name inst args; JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().run(inst, stats, filters); } \
-    static int jjM2(JJ_TEST_CLASS_REGISTRAR_,no)() { jj::test::db_t::instance().register_testclass(&name::jjM2(JJ_TEST_CLASS_VARIANT_,no), #name, #args); return no; }
+    static int jjM2(JJ_TEST_CLASS_REGISTRAR_,no)() { jj::test::db_t::instance().register_testclass(&name::jjM2(JJ_TEST_CLASS_VARIANT_,no), jjT(#name), jjT(#args)); return no; }
 #define JJ___TEST_CLASS_1CALLS(name, p1) JJ___TEST_CLASS_CALL(name, 1, p1)
 #define JJ___TEST_CLASS_2CALLS(name, p1, p2) JJ___TEST_CLASS_CALL(name, 1, p1) JJ___TEST_CLASS_CALL(name, 2, p2)
 #define JJ___TEST_CLASS_3CALLS(name, p1, p2, p3) JJ___TEST_CLASS_CALL(name, 1, p1) JJ___TEST_CLASS_CALL(name, 2, p2) JJ___TEST_CLASS_CALL(name, 3, p3)
@@ -624,7 +624,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 #define JJ___TEST_CASE_CALLS(name, ...) JJ_PP_SELECTOR25(__VA_ARGS__, JJ___TEST_CASE_25CALLS, JJ___TEST_CASE_24CALLS, JJ___TEST_CASE_23CALLS, JJ___TEST_CASE_22CALLS, JJ___TEST_CASE_21CALLS, JJ___TEST_CASE_20CALLS, JJ___TEST_CASE_19CALLS, JJ___TEST_CASE_18CALLS, JJ___TEST_CASE_17CALLS, JJ___TEST_CASE_16CALLS, JJ___TEST_CASE_15CALLS, JJ___TEST_CASE_14CALLS, JJ___TEST_CASE_13CALLS, JJ___TEST_CASE_12CALLS, JJ___TEST_CASE_11CALLS, JJ___TEST_CASE_10CALLS, JJ___TEST_CASE_9CALLS, JJ___TEST_CASE_8CALLS, JJ___TEST_CASE_7CALLS, JJ___TEST_CASE_6CALLS, JJ___TEST_CASE_5CALLS, JJ___TEST_CASE_4CALLS, JJ___TEST_CASE_3CALLS, JJ___TEST_CASE_2CALLS, JJ___TEST_CASE_1CALLS)(name, __VA_ARGS__)
 
 #define JJ___TEST_CASE_REG(name, no, args) \
-    JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().register_testcase(&JJ_THIS_TESTCLASS::jjM3(runner,no,name), #name, #args);
+    JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().register_testcase(&JJ_THIS_TESTCLASS::jjM3(runner,no,name), jjT(#name), jjT(#args));
 #define JJ___TEST_CASE_1REGS(name, p1) JJ___TEST_CASE_REG(name, 1, p1)
 #define JJ___TEST_CASE_2REGS(name, p1, p2) JJ___TEST_CASE_REG(name, 1, p1) JJ___TEST_CASE_REG(name, 2, p2)
 #define JJ___TEST_CASE_3REGS(name, p1, p2, p3) JJ___TEST_CASE_REG(name, 1, p1) JJ___TEST_CASE_REG(name, 2, p2) JJ___TEST_CASE_REG(name, 3, p3)
@@ -669,7 +669,7 @@ For all other see description of JJ_TEST_CLASS. */
          const char* JJ_TEST_CLASS_get_name() const { return #name; } \
          JJ___TEST_CLASS_CALLS(name, __VA_ARGS__) \
          static void JJ_TEST_CLASS_register() { \
-             JJ___TEST_CLASS_REGS(__VA_ARGS__) \
+             JJ___TEST_CLASS_REGS(name, __VA_ARGS__) \
          }
 
 /*! Finishes the defition of a testclass without defining the global variables. (Can be used in header.) */
@@ -682,7 +682,7 @@ You have to name all the testcases as the additional parameters. */
      { \
          jjM2(name,__DEF)() { \
              name::JJ_TEST_CLASS_register(); \
-             jj::test::db_t::instance().register_testholder(#name, &name::JJ_TESTCASE_holder_t::instance()); \
+             jj::test::db_t::instance().register_testholder(jjT(#name), &name::JJ_TESTCASE_holder_t::instance()); \
              JJ___TEST_CASE_DEFS(name, __VA_ARGS__) \
          } \
      }; \
