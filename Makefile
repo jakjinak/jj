@@ -287,14 +287,30 @@ r=dll|WXUSINGDLL
 endef
 VSHEADER_jjgui := $(shell cd "${SRCDIR_jjgui}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
 $(eval $(call define_static_library,jjgui,libs,clean))
-$(eval $(call define_generate_vsproj,jjgui,..\\gui))
+$(eval $(call define_generate_vsproj,jjgui))
 
 ########################################
 # jjtest
 SRCDIR_jjtest := $(realpath test)
 SOURCE_jjtest := test.cpp
 CPPFLAGS_jjtest := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest}/../..)
+VSTYPE_jjtest := lib
+VSGUID_jjtest := AFD50C25-67B4-4BA2-B68B-0AB431A322B5
+VSREFS_jjtest := jjbase
+define VSINPUT_jjtest
+properties:
+= ..\BUILD\jj
+includedirs:
+$$(jjIncDir2)
+defines:
+a=x86|WIN32
+m=debug|_DEBUG
+m=release|NDEBUG
+_LIB
+endef
+VSHEADER_jjtest := $(shell cd "${SRCDIR_jjtest}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
 $(eval $(call define_static_library,jjtest,libs,clean))
+$(eval $(call define_generate_vsproj,jjtest))
 
 
 
@@ -304,7 +320,23 @@ SRCDIR_jjbase-tests := $(realpath tests)
 SOURCE_jjbase-tests := string_tests.cpp cmdLine_tests.cpp cmdLineOptions_tests.cpp
 CPPFLAGS_jjbase-tests := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
 LIBS_jjbase-tests := ${RESULT_jjtest} ${RESULT_jjbase}
+VSNAME_jjbase-tests := jjbase.Tests
+VSTYPE_jjbase-tests := capp
+VSGUID_jjbase-tests := 1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38
+VSREFS_jjbase-tests := jjtest
+define VSINPUT_jjbase-tests
+properties:
+= ..\BUILD\jj
+includedirs:
+$$(jjIncDir2)
+defines:
+a=x86|WIN32
+m=debug|_DEBUG
+m=release|NDEBUG
+_CONSOLE
+endef
 $(eval $(call define_program,jjbase-tests,tests,clean_tests,jjbase jjtest))
+$(eval $(call define_generate_vsproj,jjbase-tests))
 
 ########################################
 # jjtest-tests
@@ -312,7 +344,23 @@ SRCDIR_jjtest-tests := $(realpath tests/test)
 SOURCE_jjtest-tests := test_tests.cpp filter_tests.cpp
 CPPFLAGS_jjtest-tests := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest-tests}/../../..)
 LIBS_jjtest-tests := ${RESULT_jjtest} ${RESULT_jjbase}
+VSNAME_jjtest-tests := jjtest.Tests
+VSTYPE_jjtest-tests := capp
+VSGUID_jjtest-tests := 07D954B6-05DD-4B85-9BFA-0473B5591768
+VSREFS_jjtest-tests := jjtest
+define VSINPUT_jjtest-tests
+properties:
+= ..\..\BUILD\jj
+includedirs:
+..\..\..
+defines:
+a=x86|WIN32
+m=debug|_DEBUG
+m=release|NDEBUG
+_CONSOLE
+endef
 $(eval $(call define_program,jjtest-tests,tests,clean_tests,jjbase jjtest))
+$(eval $(call define_generate_vsproj,jjtest-tests))
 
 
 
@@ -323,7 +371,7 @@ SOURCE_TestApp := TestAppMain.cpp
 LIBS_TestApp := ${RESULT_jjgui} ${RESULT_jjbase} ${WXLIBS}
 INCDIR_TestApp := -I$(realpath ${SRCDIR_TestApp}/../..)
 VSNAME_TestApp := jjTestApp
-VSTYPE_TestApp := app
+VSTYPE_TestApp := gapp
 VSGUID_TestApp := 84C36B8F-8BC6-47FF-9027-F8706D3FA72D
 VSREFS_TestApp := jjgui
 define VSINPUT_TestApp
@@ -349,5 +397,5 @@ $(eval $(call define_generate_vsproj,TestApp))
 # test solutions
 VSSLN_GUID1_jjTest := 5D226A8D-49CF-4B24-89CB-FD8DBA82C1E5
 VSSLN_GUID2_jjTest := 8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942
-VSSLN_PROJS_jjTest := TestApp jjbase jjgui
+VSSLN_PROJS_jjTest := TestApp jjbase jjgui jjtest jjbase-tests jjtest-tests
 $(eval $(call define_generate_vssln,jjTest,tests))
