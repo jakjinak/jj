@@ -108,8 +108,8 @@ ARFLAGS_$(1) ?= ${COMMON_ARFLAGS}
 
 $(2): $(1)
 $(3): clean_$(1)
-$(1): $(4) $${RESULT_$(1)}
-$(1)_only: $${RESULT_$(1)}
+$(1): $${RESULT_$(1)}
+$${RESULT_$(1)}: $(addsuffix },$(addprefix $${RESULT_,$(4)))
 clean_$(1): clean_$(1)_only $(addprefix clean_,$(4))
 
 clean_$(1)_only:
@@ -166,6 +166,9 @@ $(call define_common_part,$(1),$(2),$(3),$(4))
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_AR} cr $${ARFLAGS_$(1)} $${RESULT_$(1)} $${OBJ_$(1)}
+$(1)_only: $${OBJ_$(1)}
+	$$(call showhint,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
+	$(COMMAND_HIDE_PREFIX)${TOOL_AR} cr $${ARFLAGS_$(1)} $${RESULT_$(1)} $${OBJ_$(1)}
 endef
 
 # Defines all the undefined definitions and rules for a program unless already defined
@@ -185,27 +188,166 @@ $(call define_common_part,$(1),$(2),$(3),$(4))
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
+$(1)_only: $${OBJ_$(1)}
+	$$(call showhint, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
+	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
 endef
 
+#(call define_generate_vssln,name,dir)
+define define_generate_vssln
+vssln_$(1):
+	{ $(foreach proj,${VSSLN_PROJS_$(1)},echo project=$${VSGUID_$(proj)} ; echo path='$${SRCDIR_$(proj)}/$${VSNAME_$(proj)}.vcxproj' ;) } | \
+	tools/generate_vc.pl sln $${VSSLN_GUID1_$(1)} "$(realpath $(2))/$(1).sln" $${VSSLN_GUID2_$(1)} > "$(realpath $(2))/$(1).sln"
+
+.PHONY: vssln_$(1)
+endef
+
+#(call define_generate_vsproj,name)
+define define_generate_vsproj
+VSNAME_$(1) ?= $(1)
+
+.ONESHELL: vsproj_$(1)
+
+vsproj_$(1):
+	{
+		echo '$${VSINPUT_$(1)}'
+		echo 'sources:'
+		for sf in $${SOURCE_$(1)}
+		do
+			echo "$$$$sf"
+		done
+		echo 'includes:'
+		for sf in $${VSHEADER_$(1)}
+		do
+			echo "$$$$sf"
+		done
+		echo 'references:'
+		$(foreach proj,${VSREFS_$(1)},echo $${VSGUID_$(proj)} '$${SRCDIR_$(proj)}/$${VSNAME_$(proj)}.vcxproj' ;)
+	} | tools/generate_vc.pl vcproj $${VSGUID_$(1)} "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj" $${VSTYPE_$(1)} > "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj"
+	{
+		echo 'sources:'
+		for sf in $${SOURCE_$(1)}
+		do
+			echo "$$$$sf"
+		done
+		echo 'includes:'
+		for sf in $${VSHEADER_$(1)}
+		do
+			echo "$$$$sf"
+		done
+	} | tools/generate_vc.pl vcfilter $${VSGUID_$(1)} "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj.filters" > "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj.filters"
+
+.PHONY: vsproj_$(1)
+endef
 
 ########################################
 # jjbase
 SRCDIR_jjbase := $(realpath .)
 SOURCE_jjbase := string.cpp stream.cpp cmdLine.cpp
 CPPFLAGS_jjbase := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase}/..)
+VSNAME_jjbase := jjBase
+VSTYPE_jjbase := lib
+VSGUID_jjbase := 9D3B6614-DCEB-419C-A035-BE06BF4D7BEF
 $(eval $(call define_static_library,jjbase,libs,clean))
+define VSINPUT_jjbase
+properties:
+= BUILD\jj
+includedirs:
+$$(jjIncDir)
+defines:
+a=x86|WIN32
+m=debug|_DEBUG
+m=release|NDEBUG
+_LIB
+endef
+VSHEADER_jjbase := $(shell cd "${SRCDIR_jjbase}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
+$(eval $(call define_generate_vsproj,jjbase))
 
 ########################################
 # jjgui
 SRCDIR_jjgui := $(realpath gui)
 SOURCE_jjgui := common_wx.cpp application_wx.cpp window_wx.cpp menu_wx.cpp sizer_wx.cpp control_wx.cpp button_wx.cpp textLabel_wx.cpp textInput_wx.cpp comboBox_wx.cpp
 CPPFLAGS_jjgui := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjgui}/../..) ${WXINCDIR}
+VSNAME_jjgui := jjGUI
+VSTYPE_jjgui := lib
+VSGUID_jjgui := 0F2CE363-F079-4F3D-A745-F1E6212EEFC7
+VSREFS_jjgui := jjbase
+define VSINPUT_jjgui
+properties:
+= ..\BUILD\jj
+* ..\BUILD\wx
+includedirs:
+$$(jjIncDir2);$$(wxIncludePath)
+defines:
+a=x86|WIN32
+m=debug|_DEBUG
+m=release|NDEBUG
+_LIB
+r=dll|WXUSINGDLL
+endef
+VSHEADER_jjgui := $(shell cd "${SRCDIR_jjgui}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
 $(eval $(call define_static_library,jjgui,libs,clean))
+$(eval $(call define_generate_vsproj,jjgui,..\\gui))
+
+########################################
+# jjtest
+SRCDIR_jjtest := $(realpath test)
+SOURCE_jjtest := test.cpp
+CPPFLAGS_jjtest := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest}/../..)
+$(eval $(call define_static_library,jjtest,libs,clean))
+
+
+
+########################################
+# jjbase-tests
+SRCDIR_jjbase-tests := $(realpath tests)
+SOURCE_jjbase-tests := string_tests.cpp cmdLine_tests.cpp cmdLineOptions_tests.cpp
+CPPFLAGS_jjbase-tests := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
+LIBS_jjbase-tests := ${RESULT_jjtest} ${RESULT_jjbase}
+$(eval $(call define_program,jjbase-tests,tests,clean_tests,jjbase jjtest))
+
+########################################
+# jjtest-tests
+SRCDIR_jjtest-tests := $(realpath tests/test)
+SOURCE_jjtest-tests := test_tests.cpp filter_tests.cpp
+CPPFLAGS_jjtest-tests := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest-tests}/../../..)
+LIBS_jjtest-tests := ${RESULT_jjtest} ${RESULT_jjbase}
+$(eval $(call define_program,jjtest-tests,tests,clean_tests,jjbase jjtest))
+
+
 
 ########################################
 # TestApp
-SRCDIR_TestApp := $(realpath test)
+SRCDIR_TestApp := $(realpath tests)
 SOURCE_TestApp := TestAppMain.cpp
 LIBS_TestApp := ${RESULT_jjgui} ${RESULT_jjbase} ${WXLIBS}
 INCDIR_TestApp := -I$(realpath ${SRCDIR_TestApp}/../..)
+VSNAME_TestApp := jjTestApp
+VSTYPE_TestApp := app
+VSGUID_TestApp := 84C36B8F-8BC6-47FF-9027-F8706D3FA72D
+VSREFS_TestApp := jjgui
+define VSINPUT_TestApp
+properties:
+= ..\BUILD\jj
+* ..\BUILD\wx
+includedirs:
+$$(jjIncDir2)
+defines:
+a=x86|WIN32
+m=debug|_DEBUG
+m=release|NDEBUG
+_WINDOWS
+libraries:
+$$(wxBaseLibs)
+libdirs:
+$$(wxLibPath)
+endef
 $(eval $(call define_program,TestApp,tests,clean_tests,jjbase jjgui))
+$(eval $(call define_generate_vsproj,TestApp))
+
+########################################
+# test solutions
+VSSLN_GUID1_jjTest := 5D226A8D-49CF-4B24-89CB-FD8DBA82C1E5
+VSSLN_GUID2_jjTest := 8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942
+VSSLN_PROJS_jjTest := TestApp jjbase jjgui
+$(eval $(call define_generate_vssln,jjTest,tests))

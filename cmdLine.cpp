@@ -4,12 +4,14 @@
 #include <exception>
 #include "jj/stream.h"
 #include <sstream>
-#include <cstring>
 
 namespace jj
 {
 namespace cmdLine
 {
+
+name_t::defaultPolicy_t name_t::DefaultPolicy(DASH);
+string_t name_t::DefaultPrefix;
 
 bool nameCompare_t::compare_icase(const string_t& a, const string_t& b)
 {
@@ -21,9 +23,9 @@ bool nameCompare_t::compare_icase(const string_t& a, const string_t& b)
 }
 
 arguments_t::arguments_t()
-    : OptionCase(case_t::SENSITIVE), VariableCase(case_t::SENSITIVE), ParseStart(1), Options(nameCompare_t(case_t::SENSITIVE)), opts_(nameCompare_t(case_t::SENSITIVE)), vars_(nameCompare_t(case_t::SENSITIVE))
+    : OptionCase(case_t::SENSITIVE), VariableCase(case_t::SENSITIVE), ParseStart(0), Options(nameCompare_t(case_t::SENSITIVE)), opts_(nameCompare_t(case_t::SENSITIVE)), vars_(nameCompare_t(case_t::SENSITIVE)), defs_(nullptr)
 {
-    ParserOptions << flags_t::ALLOW_STACKS << flags_t::ALLOW_SHORT_ASSIGN << flags_t::ALLOW_LONG_ASSIGN; 
+    ParserOptions << flags_t::ALLOW_STACKS << flags_t::ALLOW_SHORT_ASSIGN << flags_t::ALLOW_LONG_ASSIGN;
     setup_basic_prefixes();
 }
 
@@ -91,6 +93,132 @@ void arguments_t::parse(const definitions_t& defs)
         if (!ret)
             throw std::runtime_error(strcvt::to_string(jjS(jjT("Duplicate definition for variable '") << v.Name << jjT("'"))));
     }
+    defs_ = &defs;
+}
+
+void arguments_t::add_default_help(definitions_t& defs)
+{
+    defs.Options.push_back({
+       {name_t(jjT('h')), name_t(jjT("help"))
+#if defined(_WINDOWS) || defined(_WIN32)
+       ,name_t(jjT('?'))
+#endif // defined(...
+       },
+       jjT("Prints this help and exits."),
+       0u,
+       multiple_t::OVERRIDE,
+       [this](const optionDefinition_t&, values_t&){ this->print_default_help(); exit(0); return true; } 
+       });
+}
+
+void arguments_t::print_default_help()
+{
+    if (ProgramName.empty())
+        jj::cout << jjT("programname");
+    else
+        jj::cout << ProgramName;
+    if (opts_.size()>0)
+        jj::cout << jjT(" OPTIONS...");
+    if (vars_.size()>0)
+        jj::cout << jjT(" VARIABLES...");
+
+    const definitions_t::poss_t& pospar = defs_->Positionals;
+    for (const positionalDefinition_t& p : pospar)
+        jj::cout << jjT(' ') << p.Shorthand;
+    jj::cout << jjT('\n');
+
+    if (opts_.size()>0)
+    {
+        jj::cout << jjT("\nOPTIONS\n");
+        for (const optionDefinition_t& o : defs_->Options)
+        {
+            for (const name_t& n : o.Names)
+            {
+                jj::cout << n.Prefix << n.Name;
+                if (o.ValueCount == 0)
+                    ;
+                else if (o.ValueCount == 1)
+                    jj::cout << jjT(" value");
+                else for (size_t i=0; i<o.ValueCount; ++i)
+                    jj::cout << jjT(" value") << (i+1);
+                jj::cout << jjT('\n');
+            }
+            jj::cout << jjT('\t') << o.Description << jjT('\n');
+        }
+        for (const listDefinition_t& o : defs_->ListOptions)
+        {
+            for (const name_t& n : o.Names)
+                jj::cout << n.Prefix << n.Name << jjT(" ... ") << o.Delimiter << jjT('\n');
+            jj::cout << jjT('\t') << o.Description << jjT('\n');
+        }
+    }
+
+    if (defs_->Positionals.size() > 0)
+    {
+        jj::cout << jjT("\nPOSITIONAL ARGUMENTS\n");
+        // search first for last mandatory
+        const positionalDefinition_t* mandatory = nullptr;
+        for (definitions_t::poss_t::const_reverse_iterator it = defs_->Positionals.rbegin(); it != defs_->Positionals.rend(); ++it)
+        {
+            if (it->Mandatory)
+            {
+                mandatory = &*it;
+                break;
+            }
+        }
+
+        bool isMandatory = mandatory != nullptr;
+        for (const positionalDefinition_t& p : defs_->Positionals)
+        {
+            jj::cout << p.Shorthand << jjT('\n') << jjT('\t') << p.Description;
+            if (isMandatory)
+                jj::cout << jjT("\tThis argument is mandatory.\n");
+            if (mandatory == &p)
+                isMandatory = false;
+        }
+    }
+
+    if (vars_.size() > 0)
+    {
+        jj::cout << jjT("\nVARIABLES\n");
+        jj::cout << jjT("\tThe following variables can be set per arguments in form variable=value.\n");
+        for (const variableDefinition_t& v : defs_->Variables)
+        {
+            jj::cout << v.Name << jjT('\n');
+            jj::cout << jjT('\t') << v.Description << jjT('\n');
+            if (!v.Default.empty())
+                jj::cout << jjT("\tDefault value is \"") << v.Default << jjT('"') << jjT('\n');
+        }
+    }
+
+    for (const definitions_t::helpSection_t& s : defs_->Sections)
+    {
+        jj::cout << jjT('\n') << s.first << jjT('\n');
+        jj::cout << s.second;
+    }
+}
+
+void arguments_t::parse_program_name(const char_t* pn)
+{
+    if (pn == nullptr)
+        throw std::runtime_error("Given program name is nullptr");
+    const char_t* tmp = pn, *start = pn;
+    while (*tmp != 0)
+    {
+#if defined(_WINDOWS) || defined(_WIN32)
+        if (*tmp == jjT('/') || *tmp == jjT('\\'))
+#else
+        if (*tmp == '/')
+#endif //  defined(_WINDOWS) || defined(_WIN32)
+            start = tmp + 1;
+        ++tmp;
+    }
+    // TODO for the above use path when available
+
+    if (*start == 0)
+        throw std::runtime_error("Invalid program name.");
+
+    ProgramName.assign(start);
 }
 
 void arguments_t::parse(int argc, const char_t** argv)
@@ -100,9 +228,9 @@ void arguments_t::parse(int argc, const char_t** argv)
     if (argc == 0 || argv == nullptr)
         throw std::runtime_error("Empty argument list");
 
-    clean_data();
+    clear_data();
 
-    definitions_t::poss_t::const_iterator currentPositional = defs_->Positionals.cbegin();
+    definitions_t::poss_t::const_iterator currentPositional = defs_->Positionals.begin();
     bool inPositionals = false;
 
     missingValues_t missingValues;
@@ -110,10 +238,16 @@ void arguments_t::parse(int argc, const char_t** argv)
     if (argi < 0)
         throw std::runtime_error("Invalid value of ParseStart.");
     if (argi == 0)
+    {
+        parse_program_name(argv[0]);
         ++argi;
+    }
 
     for (; argi < argc; ++argi)
     {
+        if (argv[argi] == nullptr)
+            throw std::runtime_error("One of argv[i] is nullptr.");
+
         // handle missing values for options
         if (!missingValues.empty())
         { 
@@ -172,6 +306,8 @@ void arguments_t::parse(int argc, const char_t** argv)
         case TLIST:
             if (ParserOptions*flags_t::LIST_MUST_TERMINATE)
                 throw std::runtime_error(strcvt::to_string(jjS(jjT("List option '") << mv.first.Prefix << mv.first.Name << jjT("' is not terminated."))));
+            else
+                add_option(mv);
         }
     }
 
@@ -179,6 +315,14 @@ void arguments_t::parse(int argc, const char_t** argv)
     for (; currentPositional != defs_->Positionals.cend(); ++currentPositional)
         if (currentPositional->Mandatory)
             throw std::runtime_error(strcvt::to_string(jjS(jjT("Mandatory positional argument '") << currentPositional->Shorthand << jjT("' missing."))));
+}
+
+void arguments_t::clear_data()
+{
+    Options = options_t(nameCompare_t(OptionCase));
+    Positionals.clear();
+    for (varmap_t::value_type& v : vars_)
+        v.second.Value = v.second.Var->Default;
 }
 
 void arguments_t::add_option(options_t::value_type& opt)
@@ -224,7 +368,7 @@ void arguments_t::add_option_value(missingValues_t& mv, const char_t* value)
 {
     if (mv.empty() || value == nullptr)
         throw std::runtime_error("Internal error.");
-    
+
     options_t::value_type& mi = mv.front();
     switch (mi.second.first.Type)
     {
@@ -347,6 +491,12 @@ void arguments_t::process_short_option(missingValues_t& mv, const string_t& pref
                 value = arg;
                 arg = jjT("");
             }
+            else if (ParserOptions.opt::e<stackOptionValues_t>::Value==stackOptionValues_t::LOOSE)
+            {
+                // these are gonna be handled as options in next loop(s)
+            }
+            else
+                throw std::runtime_error(strcvt::to_string(jjS(jjT("Invalid characters '") << arg << jjT("' following '") << fnd->first.Prefix << fnd->first.Name << jjT("'. Did you mean to enter value as separate argument?"))));
         }
         if (*arg != 0 && !(ParserOptions*flags_t::ALLOW_STACKS))
             throw std::runtime_error(strcvt::to_string(jjS(jjT("Invalid characters '") << arg << jjT("' following '") << fnd->first.Prefix << fnd->first.Name << jjT("'. Did you mean separate options?"))));

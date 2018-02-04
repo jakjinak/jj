@@ -187,10 +187,14 @@ struct definitions_t
     typedef std::list<positionalDefinition_t> poss_t;
     typedef std::list<variableDefinition_t> vars_t;
 
+    typedef std::pair<string_t, string_t> helpSection_t;
+    typedef std::list<helpSection_t> helpSections_t;
+
     opts_t Options; //!< regular option definitions
     lists_t ListOptions; //!< list option definitions
     poss_t Positionals; //!< positional argument definitions
     vars_t Variables; //!< variable definitions
+    helpSections_t Sections; //!< additional sections of information related to arguments
 };
 
 /*! Modifiers of parser behavior. */
@@ -231,15 +235,17 @@ struct prefixInfo_t
     type_t Type; //!< type of option with this prefix
 };
 
+/*! The actual parser (and holder) of command line arguments. */
 struct arguments_t
 {
+    /*! Ctor */
     arguments_t();
 
     typedef jj::options_T<opt::f<flags_t, flags_t::MAX_FLAGS>, opt::e<stackOptionValues_t>> parserOptions_t;
     parserOptions_t ParserOptions; //!< options of the parser
     case_t OptionCase, //!< whether option names shall be treated case-sensitively
         VariableCase; //!< whether variable names shall be treated case-sensitively
-    size_t ParseStart; //!< where to start the parsing of arguments, effectively an index into argv
+    size_t ParseStart; //!< where to start the parsing of arguments, effectively an index into argv; note that setting this to >0 affects whether the ProgramName is parsed
 
     typedef std::map<string_t, prefixInfo_t> prefixes_t;
     /*! Defines how option prefixes are treated.
@@ -256,6 +262,12 @@ struct arguments_t
     You MUST ensure the lifetime of defs is longer than the last call of the other parse.
     You MUST always call this after you modify the options of the parser and before calling parse(argc,argv). */
     void parse(const definitions_t& defs);
+    /*! Inserts the default help option into defs.Options. If used then it has to be called before parse(definitions_t) call. */
+    void add_default_help(definitions_t& defs);
+    /*! Prints the "help" to standard output. Can only be called after parse(definitions_t) was succesfully called. */
+    void print_default_help();
+    /*! Parses the ProgramName only from given string (which usually would be argv[0]). */
+    void parse_program_name(const char_t* pn);
     /*! Parses given commandline arguments based on definitions parsed before. Throws on error. */
     void parse(int argc, const char_t** argv);
     /*! A shorthand for the other parse() methods. */
@@ -274,12 +286,13 @@ struct arguments_t
         optionData_t(const listDefinition_t* lst) : Type(TLIST) { u.List = lst; }
     };
 
+    string_t ProgramName; //!< holds the program name (argv[0] usually)
     typedef std::pair<optionData_t, values_t> option_t;
     typedef std::map<name_t, option_t, nameCompare_t> options_t;
-    options_t Options;
+    options_t Options; //!< holds the parsed options (regular and list)
     typedef std::pair<const positionalDefinition_t*, string_t> positional_t;
     typedef std::list<positional_t> positionals_t;
-    positionals_t Positionals;
+    positionals_t Positionals; //!< holds the parsed positional arguments (both defined through positionalDefinition_t definitions and undefined (for those definition pointer is nullptr))
 
 private:
     typedef std::map<name_t, optionData_t, nameCompare_t> optmap_t;
@@ -295,7 +308,7 @@ private:
 
     const definitions_t* defs_; //!< definitions as passed to parse()
 
-    void clean_data();
+    void clear_data();
     typedef std::deque<options_t::value_type> missingValues_t;
     void add_option(options_t::value_type& opt);
     void add_option_value(missingValues_t& mv, const char_t* value);
