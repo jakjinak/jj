@@ -98,7 +98,7 @@ ENDOFBLOCK
   i=1
   while [[ $i -lt $clsv ]]
   do
-    echo -n "#define JJ___TEST_CLASS_${i}REGS(p1"
+    echo -n "#define JJ___TEST_CLASS_${i}REGS(dummy, p1"
     j=2
     while [[ $j -le $i ]]
     do
@@ -122,7 +122,8 @@ ENDOFBLOCK
     echo -n ", JJ___TEST_CLASS_${i}REGS"
     i=$((i-1))
   done
-  echo ")(__VA_ARGS__)"
+  echo ")(dummy, __VA_ARGS__)"
+  echo '// note: the dummy parameter above is not required except for MSVC which cannot have empty macro argument list ie, MACRO()'
   echo
   echo '#define JJ___TEST_CASE_DEF(classname, testname) classname::jjM2(registrar_,testname)();'
   i=1
