@@ -11,7 +11,7 @@
 
 namespace jj
 {
-namespace stringcvt
+namespace strcvt
 {
 
 std::string to_string(const wchar_t* str)
@@ -42,7 +42,7 @@ std::wstring to_wstring(const std::string& str)
     return converter.from_bytes(str);
 }
 
-} // namespace stringcvt
+} // namespace strcvt
 } // namespace jj
 
 #else // defined(_WINDOWS)...
