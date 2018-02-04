@@ -45,7 +45,7 @@ sub processargs
     die("Fourth argument has to be the secondary GUID of the solution.") unless isguid($eguid);
   }
   elsif ($type eq 'vcproj')
-  { die("Fourth argument has to be the type of project (lib,slib,app).") unless $ptype =~ /^(lib|slib|app)$/
+  { die("Fourth argument has to be the type of project (lib,slib,gapp,capp).") unless $ptype =~ /^(lib|slib|gapp|capp)$/
   }
   $name = $path;
   $name =~ s/^.*\///;
@@ -296,7 +296,7 @@ sub evaluateinput($$$$)
 sub projecttype($)
 { return 'StaticLibrary' if $_[0] eq 'lib';
   return 'DynamicLibrary' if $_[0] eq 'slib';
-  return 'Application' if $_[0] eq 'app';
+  return 'Application' if $_[0] eq 'gapp' or $_[0] eq 'capp';
   die("Invalid project type '$_[0]'.");
 }
 
@@ -386,13 +386,15 @@ sub vcproj
       print indent(3)."<RuntimeLibrary>$runtime</RuntimeLibrary>\n";
       print indent(2)."</ClCompile>\n";
       print indent(2)."<Link>\n";
-      print indent(3)."<SubSystem>Windows</SubSystem>\n";
+      my $ss = 'Windows';
+      $ss = 'Console' if $ptype eq 'capp';
+      print indent(3)."<SubSystem>$ss</SubSystem>\n";
       if ($m =~ /^Release/)
       { print indent(3)."<EnableCOMDATFolding>true</EnableCOMDATFolding>\n";
         print indent(3)."<OptimizeReferences>true</OptimizeReferences>\n";
       }
       print indent(3)."<GenerateDebugInformation>true</GenerateDebugInformation>\n";
-      if ($ptype eq 'app')
+      if ($ptype eq 'gapp' or $ptype eq 'capp')
       { my $libs = evaluateinput('libraries',';',$m,$a);
         print indent(3)."<AdditionalDependencies>$libs%(AdditionalDependencies)</AdditionalDependencies>\n";
         my $ldirs = evaluateinput('libdirs',';',$m,$a);
