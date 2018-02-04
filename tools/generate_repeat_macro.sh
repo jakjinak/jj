@@ -3,6 +3,31 @@
 function generate_selector()
 { cnt="$1"
   [[ $cnt -lt 1 ]] && { echo "Invalid count '$cnt'" ; exit 1 ; }
+  echo '#if defined(_WINDOWS) || defined(_WIN32)'
+  cat << 'END_OF_BLOCK'
+#define JJ___PP_VSCRAP_Y(d,x) x
+#define JJ___PP_VSCRAP_X(a,b) JJ___PP_VSCRAP_Y(~, a ## b)
+#define JJ___PP_VSCRAP(a) JJ___PP_VSCRAP_X(a,)
+// thank you boost
+
+END_OF_BLOCK
+  i=1
+  while [[ $i -lt $cnt ]]
+  do
+    echo -n "#define JJ___PP_SELECTOR${i}_X("
+    j=1
+    while [[ $j -le $i ]]
+    do
+      echo -n "p$j, "
+      j=$((j+1))
+    done
+    echo 'actual, ...) actual'
+    echo "#define JJ_PP_SELECTOR${i}(...) JJ___PP_VSCRAP(JJ___PP_SELECTOR${i}_X(__VA_ARGS__))"
+    i=$((i+1))
+  done
+  echo '#else // defined(_WINDOWS) || defined(_WIN32)'
+  echo '#define JJ___PP_VSCRAP(a) a'
+  echo
   i=1
   while [[ $i -lt $cnt ]]
   do
@@ -16,6 +41,7 @@ function generate_selector()
     echo 'actual, ...) actual'
     i=$((i+1))
   done
+  echo '#endif // defined(_WINDOWS) || defined(_WIN32)'
 }
 
 function generate_merge()
@@ -85,14 +111,14 @@ ENDOFBLOCK
     echo
     i=$((i+1))
   done
-  echo -n "#define JJ___TEST_CLASS_CALLS(name, ...) JJ_PP_SELECTOR$s(__VA_ARGS__"
+  echo -n "#define JJ___TEST_CLASS_CALLS(name, ...) JJ___PP_VSCRAP(JJ_PP_SELECTOR$s(__VA_ARGS__"
   j=$((clsv-1))
   while [[ $j -gt 0 ]]
   do
     echo -n ", JJ___TEST_CLASS_${j}CALLS"
     j=$((j-1))
   done
-  echo ')(name, __VA_ARGS__)'
+  echo ')(name, __VA_ARGS__))'
   echo
   echo '#define JJ___TEST_CLASS_REG(no) jjM2(JJ_TEST_CLASS_REGISTRAR_,no)();'
   i=1
@@ -115,14 +141,14 @@ ENDOFBLOCK
     i=$((i+1))
     echo
   done
-  echo -n "#define JJ___TEST_CLASS_REGS(dummy, ...) JJ_PP_SELECTOR$s(__VA_ARGS__"
+  echo -n "#define JJ___TEST_CLASS_REGS(dummy, ...) JJ___PP_VSCRAP(JJ_PP_SELECTOR$s(__VA_ARGS__"
   i=$((clsv-1))
   while [[ $i -gt 0 ]]
   do
     echo -n ", JJ___TEST_CLASS_${i}REGS"
     i=$((i-1))
   done
-  echo ")(dummy, __VA_ARGS__)"
+  echo ")(dummy, __VA_ARGS__))"
   echo '// note: the dummy parameter above is not required except for MSVC which cannot have empty macro argument list ie, MACRO()'
   echo
   echo '#define JJ___TEST_CASE_DEF(classname, testname) classname::jjM2(registrar_,testname)();'
@@ -148,13 +174,13 @@ ENDOFBLOCK
     i=$((i+1))
   done
   i=$((casv-1))
-  echo -n "#define JJ___TEST_CASE_DEFS(classname, ...) JJ_PP_SELECTOR$s(__VA_ARGS__"
+  echo -n "#define JJ___TEST_CASE_DEFS(classname, ...) JJ___PP_VSCRAP(JJ_PP_SELECTOR$s(__VA_ARGS__"
   while [[ $i -gt 0 ]]
   do
     echo -n ", JJ___TEST_CASE_${i}DEFS"
     i=$((i-1))
   done
-  echo ")(classname, __VA_ARGS__)"
+  echo ")(classname, __VA_ARGS__))"
   echo
   cat << 'ENDOFBLOCK'
 #define JJ___TEST_CASE_CALL(name, no, args) \
@@ -181,13 +207,13 @@ ENDOFBLOCK
     i=$((i+1))
   done
   j=$((casv-1))
-  echo -n "#define JJ___TEST_CASE_CALLS(name, ...) JJ_PP_SELECTOR$s(__VA_ARGS__"
+  echo -n "#define JJ___TEST_CASE_CALLS(name, ...) JJ___PP_VSCRAP(JJ_PP_SELECTOR$s(__VA_ARGS__"
   while [[ $j -gt 0 ]]
   do
     echo -n ", JJ___TEST_CASE_${j}CALLS"
     j=$((j-1))
   done
-  echo ')(name, __VA_ARGS__)'
+  echo ')(name, __VA_ARGS__))'
   echo
   cat << 'ENDOFBLOCK'
 #define JJ___TEST_CASE_REG(name, no, args) \
@@ -215,13 +241,13 @@ ENDOFBLOCK
     i=$((i+1))
   done
   i=$((casincls-1))
-  echo -n "#define JJ___TEST_CASE_REGS(name, ...) JJ_PP_SELECTOR$s(__VA_ARGS__"
+  echo -n "#define JJ___TEST_CASE_REGS(name, ...) JJ___PP_VSCRAP(JJ_PP_SELECTOR$s(__VA_ARGS__"
   while [[ $i -gt 0 ]]
   do
     echo -n ", JJ___TEST_CASE_${i}REGS"
     i=$((i-1))
   done
-  echo ')(name, __VA_ARGS__)'
+  echo ')(name, __VA_ARGS__))'
 }
 
 # main program starts here
