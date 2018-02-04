@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 
+use File::Spec;
 use Data::Dumper;
 
 use strict;
@@ -49,7 +50,7 @@ sub processargs
   $name = $path;
   $name =~ s/^.*\///;
   $name =~ s/\.[^\.]*$//;
-  $path =~ s/\//\\/g;
+  $path =~ s/(.*)\/.*/$1/; # cut off the file name
 }
 
 sub readslninput
@@ -83,6 +84,7 @@ sub verifyslninput
     $n =~ s/\.[^\.]*$//;
     die("Path [$prjs{$p}{'path'}] of project [$p] contains empty name part.") if $n eq '';
     $prjs{$p}{'name'} = $n;
+    $prjs{$p}{'path'} = File::Spec->abs2rel($prjs{$p}{'path'}, $path);
     $prjs{$p}{'path'} =~ s/\//\\/g;
   }
 }
@@ -417,8 +419,13 @@ sub vcproj
   if (0 < scalar(keys %{$files{'refs'}}))
   { print indent(1)."<ItemGroup>\n";
     for my $r (sort keys %{$files{'refs'}})
-    { print indent(2)."<ProjectReference Include=\"$files{'refs'}{$r}\">\n";
-      print indent(3)."<Project>{$r}</Project>\n";
+    { my $p = $files{'refs'}{$r};
+      $p = File::Spec->abs2rel($p, $path);
+      $p =~ s/\//\\/g;
+      my $r2= $r;
+      $r2 =~ y/ABCDEF/abcdef/;
+      print indent(2)."<ProjectReference Include=\"$p\">\n";
+      print indent(3)."<Project>{$r2}</Project>\n";
       print indent(2)."</ProjectReference>\n";
     }
     print indent(1)."</ItemGroup>\n";
