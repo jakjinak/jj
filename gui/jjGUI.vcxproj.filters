@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -18,7 +18,13 @@
     <ClInclude Include="application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="window.h">
+    <ClInclude Include="button.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="comboBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="common_wx.h">
@@ -27,25 +33,7 @@
     <ClInclude Include="control.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="button.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sizer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sizer_wx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="eventCallback.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="textInput.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="keys.h">
@@ -54,10 +42,13 @@
     <ClInclude Include="keys_wx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="textLabel.h">
+    <ClInclude Include="menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="comboBox.h">
+    <ClInclude Include="sizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sizer_wx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stock.h">
@@ -66,21 +57,33 @@
     <ClInclude Include="stock_wx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="textInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="textLabel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application_wx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="window_wx.cpp">
+    <ClCompile Include="button_wx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="comboBox_wx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="common_wx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="control_wx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="button_wx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="common_wx.cpp">
+    <ClCompile Include="menu_wx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="sizer_wx.cpp">
@@ -89,13 +92,10 @@
     <ClCompile Include="textInput_wx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="menu_wx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="textLabel_wx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="comboBox_wx.cpp">
+    <ClCompile Include="window_wx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
