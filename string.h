@@ -67,6 +67,15 @@ inline string_t to_string_t(const std::wstring& str) { return to_string(str); }
 
 namespace str
 {
+
+// TODO locale enabled variants
+
+/*! Returns whether given character can be considered a whitespace. */
+bool isspace(char ch);
+/*! Returns whether given character can be considered a whitespace. */
+bool isspace(wchar_t ch);
+// TODO inline these
+
 /*! Returns whether given string str begins with given string with. The NUL characters are not compared. */
 template<typename CH>
 bool starts_with_T(const CH* str, const CH* with)

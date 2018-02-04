@@ -1,6 +1,8 @@
 #include "jj/string.h"
 #include "jj/exception.h"
 #include <cstring>
+#include <cctype>
+#include <cwctype>
 
 #if defined(_WINDOWS) || defined(_WIN32) || ( __GNUC__ > 5 ) || (__GNUC__ == 5 && (__GNUC_MINOR__ > 1 ) )
 // this is only supported on windows (vs2017) or with g++ newer than
@@ -72,8 +74,25 @@ std::wstring to_wstring(const std::string& str)
 
 } // namespace strcvt
 
+} // namespace jj
+
+#endif // defined(_WINDOWS)...
+
+namespace jj
+{
+
 namespace str
 {
+
+bool isspace(char ch)
+{
+    return std::isspace(ch);
+}
+
+bool isspace(wchar_t ch)
+{
+    return std::iswspace(ch);
+}
 
 const char* find(const char* str, char what, size_t pos)
 {
@@ -138,5 +157,3 @@ const wchar_t* find(const wchar_t* str, const wchar_t* what, size_t pos)
 } // namespace str
 
 } // namespace jj
-
-#endif // defined(_WINDOWS)...

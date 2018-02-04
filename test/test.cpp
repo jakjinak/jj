@@ -86,7 +86,7 @@ void defaultInitializer_t::on_setup(int argc, const char_t** argv)
     }
     catch (const std::exception& ex)
     {
-        jj:cout << jjT("Exception caught: ") << jj::strcvt::to_string(ex.what()) << jjT("\n");
+        jj::cout << jjT("Exception caught: ") << jj::strcvt::to_string_t(ex.what()) << jjT("\n");
         // TODO print help
         exit(1);
     }
@@ -192,7 +192,7 @@ void defaultOutput_t::test_result(test_result_t result, const string_t& text)
     case FAILINFO:
         if (opt_.Colors)
             jj::cout << jjT("\033[31;1m");
-        std::cout << text;
+        jj::cout << text;
         if (opt_.Colors)
             jj::cout << jjT("\033[0m");
         jj::cout << jjT('\n');
@@ -242,7 +242,7 @@ namespace // <anonymous>
 {
 static bool skip_space(const string_t& s, size_t& pos)
 {
-    while (pos < s.length() && std::isspace(s[pos]))
+    while (pos < s.length() && jj::str::isspace(s[pos]))
         ++pos;
     return pos < s.length();
 }
@@ -344,7 +344,7 @@ static void construct(const string_t& s, size_t start, size_t end, string_t& os)
         throw std::runtime_error("Empty string to be constructed.");
     if (end > s.length())
         throw std::runtime_error("Invalid string index.");
-    while (end>start && std::isspace(s[end-1]))
+    while (end>start && jj::str::isspace(s[end-1]))
         --end;
     if (end == start)
         throw std::runtime_error("Empty string to be constructed.");
@@ -526,7 +526,7 @@ void db_t::run_testcase(std::function<void(statistics_t&)> tc, statistics_t& sta
         else
             ++stats.Passed;
     }
-    catch (const jj::test::testingFailed_t& ex)
+    catch (const jj::test::testingFailed_t&)
     {
         Statistics += stats;
         throw; // propagate to main()
@@ -534,7 +534,7 @@ void db_t::run_testcase(std::function<void(statistics_t&)> tc, statistics_t& sta
     catch (const jj::test::testFailed_t& ex)
     {
         ++stats.Failed;
-        test_result(output_t::FAILINFO, jjS(jjT("The previous failure was considered crutial for the test case. Skipping to the end of test case.")));
+        test_result(output_t::FAILINFO, jjS(jjT("The previous failure was considered crutial for the test case. Skipping to the end of test case. Exception caught : ") << jj::strcvt::to_string_t(ex.what())));
     }
     catch (const std::exception& ex)
     {
@@ -607,6 +607,7 @@ int main(int argc, const char** argv)
     catch (const jj::test::testingFailed_t& ex)
     {
         DB.test_result(jj::test::output_t::FAILINFO, jjS(jjT("The previous failure was considered crutial for the test suite. Skipping to the end of test suite.")));
+        std::cout << "Exception caught: " << ex.what() << "\n";
         return 1;
     }
     catch (const std::exception& ex)

@@ -8,6 +8,7 @@
 #include <list>
 #include <memory>
 #include <sstream>
+#include <functional>
 
 namespace jj
 {
