@@ -30,7 +30,7 @@ struct arg_info_t
             if (i>=MAX_SIZE)
                 break;
         }
-        info.argc = i;
+        info.argc = int(i);
     }
     static void setup(const std::initializer_list<jj::string_t>& x, arg_info_t& info)
     {

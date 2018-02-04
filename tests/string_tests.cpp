@@ -161,7 +161,7 @@ JJ_TEST_CASE_VARIANTS(str_in_charp,(const char* str, const std::string& what, si
     JJ_TEST(jj::str::find(str, what, pos)==result);
 }
 
-static const size_t npos = std::string::npos;
+static const size_t npos;
 
 JJ_TEST_CASE_VARIANTS(char_in_str,(const std::string& str, char what, size_t pos, size_t result),("ABC",'A',0u,0u),("ABC",'A',1u,npos),("ABA",'A',1u,2u),("ABC",'a',0u,npos),("",'a',0u,npos))
 {
@@ -181,6 +181,7 @@ JJ_TEST_CASE_VARIANTS(str_in_str,(const std::string& str, const std::string& wha
 JJ_TEST_CLASS_END(str_findTests_t, char_in_charp, char_in_charp_pos, charp_in_charp, charp_in_charp_pos, str_in_charp, char_in_str, charp_in_str, str_in_str)
 const char* str_findTests_t::ABC("ABC");
 const char* str_findTests_t::ABAABCBCC("ABAABCBCC");
+const size_t str_findTests_t::npos(std::string::npos);
 
 //================================================
 
@@ -218,7 +219,7 @@ JJ_TEST_CASE_VARIANTS(str_in_charp,(const wchar_t* str, const std::wstring& what
     JJ_TEST(jj::str::find(str, what, pos)==result);
 }
 
-static const size_t npos = std::wstring::npos;
+static const size_t npos;
 
 JJ_TEST_CASE_VARIANTS(char_in_str,(const std::wstring& str, char what, size_t pos, size_t result),(L"ABC",L'A',0u,0u),(L"ABC",L'A',1u,npos),(L"ABA",L'A',1u,2u),(L"ABC",L'a',0u,npos),(L"",L'a',0u,npos))
 {
@@ -238,3 +239,4 @@ JJ_TEST_CASE_VARIANTS(str_in_str,(const std::wstring& str, const std::wstring& w
 JJ_TEST_CLASS_END(wstr_findTests_t, char_in_charp, char_in_charp_pos, charp_in_charp, charp_in_charp_pos, str_in_charp, char_in_str, charp_in_str, str_in_str)
 const wchar_t* wstr_findTests_t::ABC(L"ABC");
 const wchar_t* wstr_findTests_t::ABAABCBCC(L"ABAABCBCC");
+const size_t wstr_findTests_t::npos = std::wstring::npos;

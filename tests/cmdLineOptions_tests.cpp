@@ -1,6 +1,7 @@
 #include "jj/test/test.h"
 #include "cmdLine_tests.h"
 #include "jj/cmdLine.h"
+#include <vector>
 
 using namespace jj::cmdLine;
 
@@ -274,7 +275,7 @@ JJ_TEST_CASE_VARIANTS(parseShortOptions,(const std::initializer_list<jj::string_
     size_t i = 0;
     for (int c : parsed)
     {
-        JJ_TEST(cnt[i]==c, i << jjT("th count matches; ") << c << jjT(" expected, have ") << cnt[i]);
+        JJ_TEST(cnt[int(i)]==c, i << jjT("th count matches; ") << c << jjT(" expected, have ") << cnt[int(i)]);
         if (c>0)
         {
             if (i==0) checkOption(args, defs, name_t(jjT('a')), arguments_t::TREG);
@@ -300,7 +301,7 @@ JJ_TEST_CASE_VARIANTS(parseLongOptions,(const std::initializer_list<jj::string_t
     size_t i = 0;
     for (int c : parsed)
     {
-        JJ_TEST(cnt[i]==c, i << jjT("th count matches; ") << c << jjT(" expected, have ") << cnt[i]);
+        JJ_TEST(cnt[int(i)]==c, i << jjT("th count matches; ") << c << jjT(" expected, have ") << cnt[int(i)]);
         if (c>0)
         {
             if (i==0) checkOption(args, defs, name_t(jjT("first")), arguments_t::TREG);
@@ -328,7 +329,7 @@ JJ_TEST_CASE_VARIANTS(redefinedPrefixes,(const std::initializer_list<jj::string_
     size_t i = 0;
     for (int c : parsed)
     {
-        JJ_TEST(cnt[i]==c, i << jjT("th count matches; ") << c << jjT(" expected, have ") << cnt[i]);
+        JJ_TEST(cnt[int(i)]==c, i << jjT("th count matches; ") << c << jjT(" expected, have ") << cnt[int(i)]);
         if (c>0)
         {
             if (i==0) checkOption(args, defs, name_t(jjT('-'),jjT("argument")), arguments_t::TREG);
@@ -357,7 +358,7 @@ JJ_TEST_CASE_VARIANTS(stackedOptions,(const std::initializer_list<jj::string_t>&
     size_t i = 0;
     for (int c : parsed)
     {
-        JJ_TEST(cnt[i]==c, i << jjT("th count matches; ") << c << jjT(" expected, have ") << cnt[i]);
+        JJ_TEST(cnt[int(i)]==c, i << jjT("th count matches; ") << c << jjT(" expected, have ") << cnt[int(i)]);
         if (c>0)
         {
             if (i==0) checkOption(args, defs, name_t(jjT('x')), arguments_t::TREG);
@@ -370,7 +371,7 @@ JJ_TEST_CASE_VARIANTS(stackedOptions,(const std::initializer_list<jj::string_t>&
     }
 }
 
-JJ_TEST_CASE_VARIANTS(valuedLongOptions,(const std::initializer_list<jj::string_t>& argv, bool ok, const std::array<int,3> count, const std::list<std::list<jj::string_t>>& pvals),\
+JJ_TEST_CASE_VARIANTS(valuedLongOptions,(const std::initializer_list<jj::string_t>& argv, bool ok, const std::vector<int>& count, const std::list<std::list<jj::string_t>>& pvals),\
     ({jjT("--aa"),jjT("v1"),jjT("--cc"),jjT("--bb"),jjT("1"),jjT("2"),jjT("3")},true,{1,1,1},{{jjT("v1")},{jjT("1"),jjT("2"),jjT("3")},{}}),\
     ({jjT("--aa"),jjT("--cc")},true,{1,0,0},{{jjT("--cc")},{},{}}),\
     ({jjT("--bb"),jjT("--aa"),jjT("v1"),jjT("--cc")},true,{0,1,0},{{},{jjT("--aa"),jjT("v1"),jjT("--cc")},{}}),\
@@ -411,7 +412,7 @@ JJ_TEST_CASE_VARIANTS(valuedLongOptions,(const std::initializer_list<jj::string_
     }
 }
 
-JJ_TEST_CASE_VARIANTS(valuedShortOptions,(const std::initializer_list<jj::string_t>& argv, bool ok, const std::array<int,3> count, const std::list<std::list<jj::string_t>>& pvals),\
+JJ_TEST_CASE_VARIANTS(valuedShortOptions,(const std::initializer_list<jj::string_t>& argv, bool ok, const std::vector<int>& count, const std::list<std::list<jj::string_t>>& pvals),\
     ({jjT("-a"),jjT("v1"),jjT("-c"),jjT("-b"),jjT("1"),jjT("2"),jjT("3")},true,{1,1,1},{{jjT("v1")},{jjT("1"),jjT("2"),jjT("3")},{}}),\
     ({jjT("-a"),jjT("-c")},true,{1,0,0},{{jjT("-c")},{},{}}),\
     ({jjT("-b"),jjT("-a"),jjT("v1"),jjT("-c")},true,{0,1,0},{{},{jjT("-a"),jjT("v1"),jjT("-c")},{}}),\
@@ -462,7 +463,7 @@ JJ_TEST_CASE_VARIANTS(valuedShortOptions,(const std::initializer_list<jj::string
     }
 }
 
-JJ_TEST_CASE_VARIANTS(looseStackValues,(const std::initializer_list<jj::string_t>& argv, bool ok, const std::array<int,3> count, const std::list<std::list<jj::string_t>>& pvals),\
+JJ_TEST_CASE_VARIANTS(looseStackValues,(const std::initializer_list<jj::string_t>& argv, bool ok, const std::vector<int>& count, const std::list<std::list<jj::string_t>>& pvals),\
     ({jjT("-abc"),jjT("v1"),jjT("1"),jjT("2"),jjT("3")},true,{1,1,1},{{jjT("v1")},{jjT("1"),jjT("2"),jjT("3")},{}}),\
     ({jjT("-cab"),jjT("v1"),jjT("1"),jjT("2"),jjT("3")},true,{1,1,1},{{jjT("v1")},{jjT("1"),jjT("2"),jjT("3")},{}}),\
     ({jjT("-acb"),jjT("v1"),jjT("1"),jjT("2"),jjT("3")},true,{1,1,1},{{jjT("v1")},{jjT("1"),jjT("2"),jjT("3")},{}}),\
@@ -514,7 +515,7 @@ JJ_TEST_CLASS_DERIVED(cmdLineListsTests_t, public cmdLineOptionsCommon_t)
 
     cmdLineListsTests_t() : cmdLineOptionsCommon_t(static_cast<jj::test::testclass_base_t&>(*this)) {}
 
-JJ_TEST_CASE_VARIANTS(parseShortOptions,(const std::initializer_list<jj::string_t>& argv, bool mustterm, bool ok, const std::array<bool,3> count, const std::list<std::list<jj::string_t>>& pvals),\
+JJ_TEST_CASE_VARIANTS(parseShortOptions,(const std::initializer_list<jj::string_t>& argv, bool mustterm, bool ok, const std::vector<bool>& count, const std::list<std::list<jj::string_t>>& pvals),\
     ({jjT("-a"),jjT("v1"),jjT("END"),jjT("-b"),jjT("end"),jjT("-c"),jjT("A"),jjT("B"),jjT("C"), jjT("")},false,true,{true,true,true},{{jjT("v1")},{},{jjT("A"),jjT("B"),jjT("C")}}),\
     ({jjT("-a"),jjT("v1"),jjT("END"),jjT("-b"),jjT("end"),jjT("-c"),jjT("A"),jjT("B"),jjT("C")},false,true,{true,true,true},{{jjT("v1")},{},{jjT("A"),jjT("B"),jjT("C")}}),\
     ({jjT("-a"),jjT("v1"),jjT("END"),jjT("-b"),jjT("end"),jjT("-c"),jjT("A"),jjT("B"),jjT("C")},true,false,{},{}),\
@@ -558,7 +559,7 @@ JJ_TEST_CASE_VARIANTS(parseShortOptions,(const std::initializer_list<jj::string_
     }
 }
 
-JJ_TEST_CASE_VARIANTS(parseLongOptions,(const std::initializer_list<jj::string_t>& argv, bool mustterm, bool ok, const std::array<bool,3> count, const std::list<std::list<jj::string_t>>& pvals),\
+JJ_TEST_CASE_VARIANTS(parseLongOptions,(const std::initializer_list<jj::string_t>& argv, bool mustterm, bool ok, const std::vector<bool>& count, const std::list<std::list<jj::string_t>>& pvals),\
     ({jjT("--aa"),jjT("v1"),jjT("END"),jjT("--bb"),jjT("end"),jjT("--cc"),jjT("A"),jjT("B"),jjT("C"), jjT("")},false,true,{true,true,true},{{jjT("v1")},{},{jjT("A"),jjT("B"),jjT("C")}}),\
     ({jjT("--aa"),jjT("v1"),jjT("END"),jjT("--bb"),jjT("end"),jjT("--cc"),jjT("A"),jjT("B"),jjT("C")},false,true,{true,true,true},{{jjT("v1")},{},{jjT("A"),jjT("B"),jjT("C")}}),\
     ({jjT("--aa"),jjT("v1"),jjT("END"),jjT("--bb"),jjT("end"),jjT("--cc"),jjT("A"),jjT("B"),jjT("C")},true,false,{},{}),\
@@ -600,7 +601,7 @@ JJ_TEST_CASE_VARIANTS(parseLongOptions,(const std::initializer_list<jj::string_t
     }
 }
 
-JJ_TEST_CASE_VARIANTS(looseStackValues,(const std::initializer_list<jj::string_t>& argv, bool mustterm, bool ok, const std::array<bool,3> count, const std::list<std::list<jj::string_t>>& pvals),\
+JJ_TEST_CASE_VARIANTS(looseStackValues,(const std::initializer_list<jj::string_t>& argv, bool mustterm, bool ok, const std::vector<bool>& count, const std::list<std::list<jj::string_t>>& pvals),\
     ({jjT("-abc"),jjT("A"),jjT("END"),jjT("B"),jjT("end"),jjT("C"),jjT("")},true,true,{true,true,true},{{jjT("A")},{jjT("B")},{jjT("C")}}),\
     ({jjT("-abc"),jjT("A"),jjT("END"),jjT("B"),jjT("end")},false,true,{true,true,true},{{jjT("A")},{jjT("B")},{}}),\
     ({jjT("-abc"),jjT("A"),jjT("END"),jjT("B"),jjT("end")},true,false,{},{}),\
