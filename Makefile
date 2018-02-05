@@ -199,7 +199,14 @@ vssln_$(1):
 	{ $(foreach proj,${VSSLN_PROJS_$(1)},echo project=$${VSGUID_$(proj)} ; echo path='$${SRCDIR_$(proj)}/$${VSNAME_$(proj)}.vcxproj' ;) } | \
 	tools/generate_vc.pl sln $${VSSLN_GUID1_$(1)} "$(realpath $(2))/$(1).sln" $${VSSLN_GUID2_$(1)} > "$(realpath $(2))/$(1).sln"
 
-.PHONY: vssln_$(1)
+vsall: vssln_$(1)
+
+vsslnlist_$(1):
+	@echo "vssln_$(1) -> $(realpath $(2))/$(1).sln"
+
+vslist: vsslnlist_$(1)
+
+.PHONY: vssln_$(1) vsslnlist_$(1)
 endef
 
 #(call define_generate_vsproj,name)
@@ -237,8 +244,19 @@ vsproj_$(1):
 		done
 	} | tools/generate_vc.pl vcfilter $${VSGUID_$(1)} "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj.filters" > "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj.filters"
 
-.PHONY: vsproj_$(1)
+vsall: vsproj_$(1)
+
+vsprojlist_$(1):
+	@echo "vsproj_$(1) -> $$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj and $$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj.filters"
+
+vslist: vsprojlist_$(1)
+
+.PHONY: vsproj_$(1) vsprojlist_$(1)
 endef
+
+.PHONY: vslist vsall
+
+
 
 ########################################
 # jjbase
@@ -250,10 +268,8 @@ VSTYPE_jjbase := lib
 VSGUID_jjbase := 9D3B6614-DCEB-419C-A035-BE06BF4D7BEF
 $(eval $(call define_static_library,jjbase,libs,clean))
 define VSINPUT_jjbase
-properties:
-= BUILD\jj
 includedirs:
-$$(jjIncDir)
+..
 defines:
 a=x86|WIN32
 m=debug|_DEBUG
@@ -274,10 +290,9 @@ VSGUID_jjgui := 0F2CE363-F079-4F3D-A745-F1E6212EEFC7
 VSREFS_jjgui := jjbase
 define VSINPUT_jjgui
 properties:
-= ..\BUILD\jj
 * ..\BUILD\wx
 includedirs:
-$$(jjIncDir2);$$(wxIncludePath)
+..\..;$$(wxIncludePath)
 defines:
 a=x86|WIN32
 m=debug|_DEBUG
@@ -298,10 +313,8 @@ VSTYPE_jjtest := lib
 VSGUID_jjtest := AFD50C25-67B4-4BA2-B68B-0AB431A322B5
 VSREFS_jjtest := jjbase
 define VSINPUT_jjtest
-properties:
-= ..\BUILD\jj
 includedirs:
-$$(jjIncDir2)
+..\..
 defines:
 a=x86|WIN32
 m=debug|_DEBUG
@@ -325,10 +338,8 @@ VSTYPE_jjbase-tests := capp
 VSGUID_jjbase-tests := 1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38
 VSREFS_jjbase-tests := jjtest
 define VSINPUT_jjbase-tests
-properties:
-= ..\BUILD\jj
 includedirs:
-$$(jjIncDir2)
+..\..
 defines:
 a=x86|WIN32
 m=debug|_DEBUG
@@ -349,8 +360,6 @@ VSTYPE_jjtest-tests := capp
 VSGUID_jjtest-tests := 07D954B6-05DD-4B85-9BFA-0473B5591768
 VSREFS_jjtest-tests := jjtest
 define VSINPUT_jjtest-tests
-properties:
-= ..\..\BUILD\jj
 includedirs:
 ..\..\..
 defines:
@@ -376,10 +385,9 @@ VSGUID_TestApp := 84C36B8F-8BC6-47FF-9027-F8706D3FA72D
 VSREFS_TestApp := jjgui
 define VSINPUT_TestApp
 properties:
-= ..\BUILD\jj
 * ..\BUILD\wx
 includedirs:
-$$(jjIncDir2)
+..\..
 defines:
 a=x86|WIN32
 m=debug|_DEBUG

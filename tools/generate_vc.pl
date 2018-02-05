@@ -305,7 +305,7 @@ sub vcproj
   print '<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">'."\n";
   print indent(1).'<ItemGroup Label="ProjectConfigurations">'."\n";
   for my $m (@modes)
-  { for my $a (keys %parchs)
+  { for my $a (sort keys %parchs)
     { print indent(2)."<ProjectConfiguration Include=\"$m|$parchs{$a}\">\n";
       print indent(3)."<Configuration>$m</Configuration>\n";
       print indent(3)."<Platform>$parchs{$a}</Platform>\n";
@@ -323,7 +323,7 @@ sub vcproj
   print indent(1).'<Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />'."\n";
   my $ct = projecttype($ptype);
   for my $m (@modes)
-  { for my $a (keys %parchs)
+  { for my $a (sort keys %parchs)
     { print indent(1)."<PropertyGroup Condition=\"'\$(Configuration)|\$(Platform)'=='$m|$parchs{$a}'\" Label=\"Configuration\">\n";
       print indent(2)."<ConfigurationType>$ct</ConfigurationType>\n";
       print indent(2).'<UseDebugLibraries>'.($m =~ /^Release/?'false':'true').'</UseDebugLibraries>'."\n";
@@ -339,7 +339,7 @@ sub vcproj
   print indent(1).'<ImportGroup Label="Shared">'."\n";
   print indent(1).'</ImportGroup>'."\n";
   for my $m (@modes)
-  { for my $a (keys %parchs)
+  { for my $a (sort keys %parchs)
     { print indent(1)."<ImportGroup Label=\"PropertySheets\" Condition=\"'\$(Configuration)|\$(Platform)'=='$m|$parchs{$a}'\">\n";
       print indent(2)."<Import Project=\"\$(UserRootDir)\\Microsoft.Cpp.\$(Platform).user.props\" Condition=\"exists('\$(UserRootDir)\\Microsoft.Cpp.\$(Platform).user.props')\" Label=\"LocalAppDataPlatform\" />\n";
       for my $p (sort keys %{$files{'props'}})
@@ -350,7 +350,7 @@ sub vcproj
   }
   print indent(1)."<PropertyGroup Label=\"UserMacros\" />\n";
   for my $m (@modes)
-  { for my $a (keys %parchs)
+  { for my $a (sort keys %parchs)
     { print indent(1)."<PropertyGroup Condition=\"'\$(Configuration)|\$(Platform)'=='$m|$parchs{$a}'\">\n";
       print indent(2)."<LinkIncremental>".($m =~ /^Release/?'false':'true')."</LinkIncremental>\n";
       print indent(2)."<OutDir>\$(SolutionDir).bin\\\$(Configuration).\$(Platform)\\</OutDir>\n";
@@ -359,7 +359,7 @@ sub vcproj
     }
   }
   for my $m (@modes)
-  { for my $a (keys %parchs)
+  { for my $a (sort keys %parchs)
     { print indent(1)."<ItemDefinitionGroup Condition=\"'\$(Configuration)|\$(Platform)'=='$m|$parchs{$a}'\">\n";
       print indent(2)."<ClCompile>\n";
       if (0 < scalar(keys %{$files{'includes'}}))

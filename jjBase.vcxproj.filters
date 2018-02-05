@@ -21,6 +21,9 @@
     <ClInclude Include="defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="exception.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="flagSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
