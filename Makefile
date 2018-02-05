@@ -289,10 +289,17 @@ VSTYPE_jjgui := lib
 VSGUID_jjgui := 0F2CE363-F079-4F3D-A745-F1E6212EEFC7
 VSREFS_jjgui := jjbase
 define VSINPUT_jjgui
-properties:
-* ..\BUILD\wx
 includedirs:
-..\..;$$(wxIncludePath)
+..\..
+D:\test\wxWidgets\include
+m=debug,r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib\mswud
+m=release,r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib\mswu
+m=debug,r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll\mswud
+m=release,r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll\mswu
+m=debug,r=static,a=x86|D:\test\wxWidgets\lib\vc_lib\mswud
+m=release,r=static,a=x86|D:\test\wxWidgets\lib\vc_lib\mswu
+m=debug,r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll\mswud
+m=release,r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll\mswu
 defines:
 a=x86|WIN32
 m=debug|_DEBUG
@@ -384,8 +391,6 @@ VSTYPE_TestApp := gapp
 VSGUID_TestApp := 84C36B8F-8BC6-47FF-9027-F8706D3FA72D
 VSREFS_TestApp := jjgui
 define VSINPUT_TestApp
-properties:
-* ..\BUILD\wx
 includedirs:
 ..\..
 defines:
@@ -394,9 +399,14 @@ m=debug|_DEBUG
 m=release|NDEBUG
 _WINDOWS
 libraries:
-$$(wxBaseLibs)
+m=debug|wxbase30ud.lib;wxmsw30ud_core.lib;wxmsw30ud_adv.lib;wxpngd.lib;wxzlibd.lib
+m=release|wxbase30u.lib;wxmsw30u_core.lib;wxmsw30u_adv.lib;wxpng.lib;wxzlib.lib
+comctl32.lib;Rpcrt4.lib
 libdirs:
-$$(wxLibPath)
+r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib
+r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll
+r=static,a=x86|D:\test\wxWidgets\lib\vc_lib
+r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll
 endef
 $(eval $(call define_program,TestApp,tests,clean_tests,jjbase jjgui))
 $(eval $(call define_generate_vsproj,TestApp))
