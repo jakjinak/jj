@@ -1,3 +1,6 @@
+BUILD_MODE ?= debug
+BUILD_ARCH ?= x86_64
+
 ########################################
 # this file contains macros used to generate the targets for individual projects
 # see definition of define_static_library/define_program below on how to use it
@@ -37,6 +40,12 @@ COMMAND_HIDE_PREFIX := @
 else
 COMMAND_HIDE_PREFIX :=
 endif
+
+.PHONY: all libs tests clean_all clean clean_tests
+
+libs:
+all: libs tests
+clean_all: clean clean_tests
 
 # Defines all the undefined definitions and rules that are needed in the macros below.
 # The first parameter is the name of the library and also the suffix of all defines,

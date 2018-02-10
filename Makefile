@@ -1,7 +1,4 @@
 
-BUILD_MODE ?= debug
-BUILD_ARCH ?= x86_64
-
 WXDIR ?= $(realpath ../../../src/wxWidgets-3.0.3)
 
 WXDEFINE := -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__
@@ -32,84 +29,8 @@ COMMON_CPPFLAGS += -O0 -DDEBUG
 COMMON_LDFLAGS += -O0 -DDEBUG
 endif
 
-.PHONY: all libs tests clean_all clean clean_tests
-
-libs:
-all: libs tests
-clean_all: clean clean_tests
-
 include BUILD/build.mk
-
-#(call define_generate_vssln,name,dir)
-define define_generate_vssln
-.ONESHELL: vssln_$(1)
-
-vssln_$(1):
-	{
-		$(foreach proj,${VSSLN_PROJS_$(1)},echo project=$${VSGUID_$(proj)} ; echo path='$${SRCDIR_$(proj)}/$${VSNAME_$(proj)}.vcxproj' ; echo folder='$${VSFOLDER_$(proj)}' ;)
-		echo 'folders'
-		cat << 'END_OF_BLOCK'
-		$${VSSLN_FOLDERS_$(1)}
-		END_OF_BLOCK
-	} | tools/generate_vc.pl sln $${VSSLN_GUID1_$(1)} "$(realpath $(2))/$(1).sln" $${VSSLN_GUID2_$(1)} > "$(realpath $(2))/$(1).sln"
-
-vsall: vssln_$(1)
-
-vsslnlist_$(1):
-	@echo "vssln_$(1) -> $(realpath $(2))/$(1).sln"
-
-vslist: vsslnlist_$(1)
-
-.PHONY: vssln_$(1) vsslnlist_$(1)
-endef
-
-#(call define_generate_vsproj,name)
-define define_generate_vsproj
-VSNAME_$(1) ?= $(1)
-
-.ONESHELL: vsproj_$(1)
-
-vsproj_$(1):
-	{
-		echo '$${VSINPUT_$(1)}'
-		echo 'sources:'
-		for sf in $${SOURCE_$(1)}
-		do
-			echo "$$$$sf"
-		done
-		echo 'includes:'
-		for sf in $${VSHEADER_$(1)}
-		do
-			echo "$$$$sf"
-		done
-		echo 'references:'
-		$(foreach proj,${VSREFS_$(1)},echo $${VSGUID_$(proj)} '$${SRCDIR_$(proj)}/$${VSNAME_$(proj)}.vcxproj' ;)
-	} | tools/generate_vc.pl vcproj $${VSGUID_$(1)} "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj" $${VSTYPE_$(1)} > "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj"
-	{
-		echo 'sources:'
-		for sf in $${SOURCE_$(1)}
-		do
-			echo "$$$$sf"
-		done
-		echo 'includes:'
-		for sf in $${VSHEADER_$(1)}
-		do
-			echo "$$$$sf"
-		done
-	} | tools/generate_vc.pl vcfilter $${VSGUID_$(1)} "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj.filters" > "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj.filters"
-
-vsall: vsproj_$(1)
-
-vsprojlist_$(1):
-	@echo "vsproj_$(1) -> $$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj and $$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj.filters"
-
-vslist: vsprojlist_$(1)
-
-.PHONY: vsproj_$(1) vsprojlist_$(1)
-endef
-
-.PHONY: vslist vsall
-
+include BUILD/VS.mk
 
 
 ########################################
