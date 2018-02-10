@@ -2,6 +2,7 @@
 #define JJ_STRING_H
 
 #include <string>
+#include <cstring>
 
 #if defined(_WINDOWS) || defined(_WIN32)
 namespace jj
