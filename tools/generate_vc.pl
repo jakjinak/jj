@@ -14,6 +14,7 @@ my $eguid;
 
 my %prjs;
 my @prjlst;
+my %folds;
 
 my %files;
 
@@ -55,14 +56,42 @@ sub processargs
 
 sub readslninput
 { my $cprj = '';
+  my $cfold = '';
+  my $infold = 0;
   my $line = 0;
   while (<STDIN>)
   { $line++;
     if (/^project\s*=\s*(.*)$/)
     { my $tmp = $1;
       die("Invalid GUID [$tmp] specified at line $line of input.") unless isguid($tmp);
+      $infold = 0;
       $cprj = $tmp;
       push @prjlst, $tmp;
+    }
+    elsif (/^folders$/)
+    { $cprj = '';
+      $infold = 1;
+      $cfold = '';
+    }
+    elsif ($infold == 1)
+    { if (/^\s*(.*?)\s*\|\s*(.*)$/)
+      { my $name = $1;
+        my $guid = $2;
+        die("Solution folder definition second part [$guid] must be a guid at line $line.") unless isguid($guid);
+        die("Solution folder name must not be empty.") if $name eq '';
+        $cfold = $name;
+        $folds{$name}{'guid'} = $guid;
+      }
+      elsif (/^([-a-zA-Z0-9]+)\s*=\s*(.*)$/)
+      { die("No folder defined yet, but property encountered.") unless $cfold ne '';
+        my $prop = $1;
+        my $val = $2;
+        $folds{$cfold}{$prop} = $val;
+      }
+      else
+      { chomp;
+        die("Unknown line $line [$_] in folders section.");
+      }
     }
     elsif (/^([-a-zA-Z0-9]+)\s*=\s*(.*)$/)
     { die("No project defined yet, but property encountered.") unless $cprj ne '';
@@ -184,12 +213,18 @@ sub indent($)
 }
 
 sub sln
-{ print "\nMicrosoft Visual Studio Solution File, Format Version 12.00\n";
+{ print "Microsoft Visual Studio Solution File, Format Version 12.00\n";
   print "# Visual Studio 15\n";
   print "VisualStudioVersion = 15.0.27004.2009\n";
   print "MinimumVisualStudioVersion = 10.0.40219.1\n";
   for my $p (@prjlst)
   { print "Project(\"{$eguid}\") = \"$prjs{$p}{'name'}\", \"$prjs{$p}{'path'}\", \"{$p}\"\n";
+    print "EndProject\n";
+  }
+  for my $f (sort keys %folds)
+  { my $x = $f;
+    $x =~ s/.*\///;
+    print "Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"$x\", \"$x\", \"{$folds{$f}{'guid'}}\"\n";
     print "EndProject\n";
   }
   print "Global\n";
@@ -213,6 +248,22 @@ sub sln
   print "\tGlobalSection(SolutionProperties) = preSolution\n";
   print "\t\tHideSolutionNode = FALSE\n";
   print "\tEndGlobalSection\n";
+  if (0 < scalar(keys %folds))
+  { print "\tGlobalSection(NestedProjects) = preSolution\n";
+    for my $p (@prjlst)
+    { next if $prjs{$p}{'folder'} eq '';
+      print "\t\t{$p} = {$folds{$prjs{$p}{'folder'}}{'guid'}}\n";
+    }
+    for my $f (sort keys %folds)
+    { my @fx = split('/',$f);
+      next if scalar(@fx) <= 1; # nothing for folders directly in solution
+      # continue with nested folders
+      pop @fx;
+      my $parent = pop @fx; # take his parent
+      print "\t\t{$folds{$f}{'guid'}} = {$folds{$parent}{'guid'}}\n";
+    }
+    print "\tEndGlobalSection\n";
+  }
   print "\tGlobalSection(ExtensibilityGlobals) = postSolution\n";
   print "\t\tSolutionGuid = {$guid}\n";
   print "\tEndGlobalSection\n";

@@ -1,4 +1,3 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2009
@@ -14,6 +13,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjbase.Tests", "jjbase.Tests.vcxproj", "{1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjtest.Tests", "test\jjtest.Tests.vcxproj", "{07D954B6-05DD-4B85-9BFA-0473B5591768}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{586B014B-D960-4C75-AEB6-F1129F25082E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -126,6 +127,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{84C36B8F-8BC6-47FF-9027-F8706D3FA72D} = {586B014B-D960-4C75-AEB6-F1129F25082E}
+		{1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38} = {586B014B-D960-4C75-AEB6-F1129F25082E}
+		{07D954B6-05DD-4B85-9BFA-0473B5591768} = {586B014B-D960-4C75-AEB6-F1129F25082E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5D226A8D-49CF-4B24-89CB-FD8DBA82C1E5}

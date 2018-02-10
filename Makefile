@@ -195,9 +195,16 @@ endef
 
 #(call define_generate_vssln,name,dir)
 define define_generate_vssln
+.ONESHELL: vssln_$(1)
+
 vssln_$(1):
-	{ $(foreach proj,${VSSLN_PROJS_$(1)},echo project=$${VSGUID_$(proj)} ; echo path='$${SRCDIR_$(proj)}/$${VSNAME_$(proj)}.vcxproj' ;) } | \
-	tools/generate_vc.pl sln $${VSSLN_GUID1_$(1)} "$(realpath $(2))/$(1).sln" $${VSSLN_GUID2_$(1)} > "$(realpath $(2))/$(1).sln"
+	{
+		$(foreach proj,${VSSLN_PROJS_$(1)},echo project=$${VSGUID_$(proj)} ; echo path='$${SRCDIR_$(proj)}/$${VSNAME_$(proj)}.vcxproj' ; echo folder='$${VSFOLDER_$(proj)}' ;)
+		echo 'folders'
+		cat << 'END_OF_BLOCK'
+		$${VSSLN_FOLDERS_$(1)}
+		END_OF_BLOCK
+	} | tools/generate_vc.pl sln $${VSSLN_GUID1_$(1)} "$(realpath $(2))/$(1).sln" $${VSSLN_GUID2_$(1)} > "$(realpath $(2))/$(1).sln"
 
 vsall: vssln_$(1)
 
@@ -344,6 +351,7 @@ VSNAME_jjbase-tests := jjbase.Tests
 VSTYPE_jjbase-tests := capp
 VSGUID_jjbase-tests := 1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38
 VSREFS_jjbase-tests := jjtest
+VSFOLDER_jjbase-tests := Tests
 define VSINPUT_jjbase-tests
 includedirs:
 ..\..
@@ -366,6 +374,7 @@ VSNAME_jjtest-tests := jjtest.Tests
 VSTYPE_jjtest-tests := capp
 VSGUID_jjtest-tests := 07D954B6-05DD-4B85-9BFA-0473B5591768
 VSREFS_jjtest-tests := jjtest
+VSFOLDER_jjtest-tests := Tests
 define VSINPUT_jjtest-tests
 includedirs:
 ..\..\..
@@ -390,6 +399,7 @@ VSNAME_TestApp := jjTestApp
 VSTYPE_TestApp := gapp
 VSGUID_TestApp := 84C36B8F-8BC6-47FF-9027-F8706D3FA72D
 VSREFS_TestApp := jjgui
+VSFOLDER_TestApp := Tests
 define VSINPUT_TestApp
 includedirs:
 ..\..
@@ -416,4 +426,7 @@ $(eval $(call define_generate_vsproj,TestApp))
 VSSLN_GUID1_jjTest := 5D226A8D-49CF-4B24-89CB-FD8DBA82C1E5
 VSSLN_GUID2_jjTest := 8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942
 VSSLN_PROJS_jjTest := TestApp jjbase jjgui jjtest jjbase-tests jjtest-tests
+define VSSLN_FOLDERS_jjTest
+Tests|586B014B-D960-4C75-AEB6-F1129F25082E
+endef
 $(eval $(call define_generate_vssln,jjTest,tests))
