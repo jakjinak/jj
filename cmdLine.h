@@ -73,9 +73,9 @@ private:
 };
 
 /*! A predicate to compare prefix+name of option where name can be compare case sensitively or insensitively. */
-struct nameCompare_t
+struct nameCompare_less_t
 {
-    nameCompare_t(case_t cs) : cs_(cs) {}
+    nameCompare_less_t(case_t cs) : cs_(cs) {}
     /*! Used for options. */
     bool operator()(const name_t& a, const name_t& b) const
     {
@@ -86,7 +86,7 @@ struct nameCompare_t
         if (cs_ == case_t::SENSITIVE)
             return a.Name < b.Name;
         else
-            return compare_icase(a.Name, b.Name);
+            return str::lessi(a.Name, b.Name);
     }
     /*! Used for variables. */
     bool operator()(const string_t& a, const string_t& b) const
@@ -94,10 +94,9 @@ struct nameCompare_t
         if (cs_ == case_t::SENSITIVE)
             return a < b;
         else
-            return compare_icase(a, b);
+            return str::lessi(a, b);
     }
 private:
-    static bool compare_icase(const string_t& a, const string_t& b);
     case_t cs_;
 };
 
@@ -288,14 +287,14 @@ struct arguments_t
 
     string_t ProgramName; //!< holds the program name (argv[0] usually)
     typedef std::pair<optionData_t, values_t> option_t;
-    typedef std::map<name_t, option_t, nameCompare_t> options_t;
+    typedef std::map<name_t, option_t, nameCompare_less_t> options_t;
     options_t Options; //!< holds the parsed options (regular and list)
     typedef std::pair<const positionalDefinition_t*, string_t> positional_t;
     typedef std::list<positional_t> positionals_t;
     positionals_t Positionals; //!< holds the parsed positional arguments (both defined through positionalDefinition_t definitions and undefined (for those definition pointer is nullptr))
 
 private:
-    typedef std::map<name_t, optionData_t, nameCompare_t> optmap_t;
+    typedef std::map<name_t, optionData_t, nameCompare_less_t> optmap_t;
     optmap_t opts_; //!< preprocessed option definition data
 
     struct varproxy_t
@@ -303,7 +302,7 @@ private:
         string_t Value;
         const variableDefinition_t* Var;
     };
-    typedef std::map<string_t, varproxy_t, nameCompare_t> varmap_t;
+    typedef std::map<string_t, varproxy_t, nameCompare_less_t> varmap_t;
     varmap_t vars_; //!< preprocessed variable definition data (and actual variable values after argv parsed)
 
     const definitions_t* defs_; //!< definitions as passed to parse()

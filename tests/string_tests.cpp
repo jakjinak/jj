@@ -69,6 +69,144 @@ const wchar_t* xstrcvtTests_t::long_wstring = L"AbC023as;lk/./.as2190";
 
 //================================================
 
+JJ_TEST_CLASS(str_lessTests_t)
+
+JJ_TEST_CASE_VARIANTS(lessc, (char a, char b, bool result),\
+    ('a','A',false), ('A','a',true),\
+    ('a','b',true), ('b','a',false), ('X','Y',true), ('Y','X',false),\
+    ('0','0',false), ('0','1',true), ('1','0',false), ('0','9',true), ('9','0',false))
+{
+    JJ_TEST(jj::str::less(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(less0,(const char* a, const char* b, bool result),\
+    (nullptr,nullptr,false),(nullptr,"",false),("",nullptr,false),\
+    (nullptr,"A",true),("A",nullptr,false),(nullptr,"xyz",true),("xyz",nullptr,false))
+{
+    JJ_TEST(jj::str::less(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(less,(const char* a, const char* b, bool result),\
+    ("","",false), ("","A",true), ("A","",false), ("","a",true), ("a","",false), ("","abc",true), ("abc","", false),\
+    ("a","A",false), ("A","a",true), ("abc","abC",false), ("abC","abc",true), ("abc","aBc",false), ("aBc","abc",true),\
+    ("a","b",true), ("b","a",false), ("X","Y",true), ("Y","X",false),\
+    ("ijk","pjk",true), ("pjk","ijk",false), ("idk","ijk",true), ("ijk","idk",false),\
+    ("a","aa",true), ("aa","a",false), ("abcde","abcdef",true), ("abcdef","abcde",false))
+{
+    JJ_TEST(jj::str::less(a, b) == result);
+    JJ_TEST(jj::str::less(std::string(a), std::string(b)) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lessn, (const char* a, const char* b, bool result),\
+    ("0","0",false), ("0","1",true), ("1","0",false), ("0","9",true), ("9","0",false))
+{
+    JJ_TEST(jj::str::less(a, b) == result);
+    JJ_TEST(jj::str::less(std::string(a), std::string(b)) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lesswc, (wchar_t a, wchar_t b, bool result),\
+    (L'a',L'A',false), (L'A',L'a',true),\
+    (L'a',L'b',true), (L'b',L'a',false), (L'X',L'Y',true), (L'Y',L'X',false),\
+    (L'0',L'0',false), (L'0',L'1',true), (L'1',L'0',false), (L'0',L'9',true), (L'9',L'0',false))
+{
+    JJ_TEST(jj::str::less(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lessw0,(const wchar_t* a, const wchar_t* b, bool result),\
+    (nullptr,nullptr,false),(nullptr,L"",false),(L"",nullptr,false),\
+    (nullptr,L"A",true),(L"A",nullptr,false),(nullptr,L"xyz",true),(L"xyz",nullptr,false))
+{
+    JJ_TEST(jj::str::less(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lessw,(const wchar_t* a, const wchar_t* b, bool result),\
+    (L"",L"",false), (L"",L"A",true), (L"A",L"",false), (L"",L"a",true), (L"a",L"",false), (L"",L"abc",true), (L"abc",L"", false),\
+    (L"a",L"A",false), (L"A",L"a",true), (L"abc",L"abC",false), (L"abC",L"abc",true), (L"abc",L"aBc",false), (L"aBc",L"abc",true),\
+    (L"a",L"b",true), (L"b",L"a",false), (L"X",L"Y",true), (L"Y",L"X",false),\
+    (L"ijk",L"pjk",true), (L"pjk",L"ijk",false), (L"idk",L"ijk",true), (L"ijk",L"idk",false),\
+    (L"a",L"aa",true), (L"aa",L"a",false), (L"abcde",L"abcdef",true), (L"abcdef",L"abcde",false))
+{
+    JJ_TEST(jj::str::less(a, b) == result);
+    JJ_TEST(jj::str::less(std::wstring(a), std::wstring(b)) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lesswn, (const wchar_t* a, const wchar_t* b, bool result),\
+    (L"0",L"0",false), (L"0",L"1",true), (L"1",L"0",false), (L"0",L"9",true), (L"9",L"0",false))
+{
+    JJ_TEST(jj::str::less(a, b) == result);
+    JJ_TEST(jj::str::less(std::wstring(a), std::wstring(b)) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lessic, (char a, char b, bool result),\
+    ('a','A',false), ('A','a',false),\
+    ('a','b',true), ('b','a',false), ('X','Y',true), ('Y','X',false),\
+    ('0','0',false), ('0','1',true), ('1','0',false), ('0','9',true), ('9','0',false))
+{
+    JJ_TEST(jj::str::lessi(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lessi0,(const char* a, const char* b, bool result),\
+    (nullptr,nullptr,false),(nullptr,"",false),("",nullptr,false),\
+    (nullptr,"A",true),("A",nullptr,false),(nullptr,"xyz",true),("xyz",nullptr,false))
+{
+    JJ_TEST(jj::str::lessi(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lessi, (const char* a, const char* b, bool result),\
+    ("","",false), ("","A",true), ("A","", false), ("","a",true), ("a","",false), ("","abc",true), ("abc","",false),\
+    ("a","A",false), ("A","a",false), ("abc","abC",false), ("abC","abc",false), ("abc","aBc",false), ("aBc","abc",false),\
+    ("a","b",true), ("b","a",false), ("X","Y",true), ("Y","X",false),\
+    ("ijk","pjk",true), ("pjk","ijk",false), ("idk","ijk",true), ("ijk","idk",false),\
+    ("a","aa",true), ("aa","a",false), ("abcde","abcdef",true), ("abcdef","abcde",false))
+{
+    JJ_TEST(jj::str::lessi(a, b) == result);
+    JJ_TEST(jj::str::lessi(std::string(a), std::string(b)) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lessin, (const char* a, const char* b, bool result),\
+    ("0","0",false), ("0","1",true), ("1","0",false), ("0","9",true), ("9","0",false))
+{
+    JJ_TEST(jj::str::lessi(a, b) == result);
+    JJ_TEST(jj::str::lessi(std::string(a), std::string(b)) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lesswic, (wchar_t a, wchar_t b, bool result),\
+    (L'a',L'A',false), (L'A',L'a',false),\
+    (L'a',L'b',true), (L'b',L'a',false), (L'X',L'Y',true), (L'Y',L'X',false),\
+    (L'0',L'0',false), (L'0',L'1',true), (L'1',L'0',false), (L'0',L'9',true), (L'9',L'0',false))
+{
+    JJ_TEST(jj::str::lessi(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lesswi0,(const wchar_t* a, const wchar_t* b, bool result),\
+    (nullptr,nullptr,false),(nullptr,L"",false),(L"",nullptr,false),\
+    (nullptr,L"A",true),(L"A",nullptr,false),(nullptr,L"xyz",true),(L"xyz",nullptr,false))
+{
+    JJ_TEST(jj::str::less(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lesswi, (const wchar_t* a, const wchar_t* b, bool result),\
+    (L"",L"",false), (L"",L"A",true), (L"A",L"", false), (L"",L"a",true), (L"a",L"",false), (L"",L"abc",true), (L"abc",L"",false),\
+    (L"a",L"A",false), (L"A",L"a",false), (L"abc",L"abC",false), (L"abC",L"abc",false), (L"abc",L"aBc",false), (L"aBc",L"abc",false),\
+    (L"a",L"b",true), (L"b",L"a",false), (L"X",L"Y",true), (L"Y",L"X",false),\
+    (L"ijk",L"pjk",true), (L"pjk",L"ijk",false), (L"idk",L"ijk",true), (L"ijk",L"idk",false),\
+    (L"a",L"aa",true), (L"aa",L"a",false), (L"abcde",L"abcdef",true), (L"abcdef",L"abcde",false))
+{
+    JJ_TEST(jj::str::lessi(a, b) == result);
+    JJ_TEST(jj::str::lessi(std::wstring(a), std::wstring(b)) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(lesswin, (const wchar_t* a, const wchar_t* b, bool result),\
+    (L"0",L"0",false), (L"0",L"1",true), (L"1",L"0",false), (L"0",L"9",true), (L"9",L"0",false))
+{
+    JJ_TEST(jj::str::lessi(a, b) == result);
+    JJ_TEST(jj::str::lessi(std::wstring(a), std::wstring(b)) == result);
+}
+
+JJ_TEST_CLASS_END(str_lessTests_t, lessc, less0, less, lessn, lessw0, lesswc, lessw, lesswn, lessic, lessi0, lessi, lessin, lesswic, lesswi0, lesswi, lesswin)
+
+//================================================
+
 JJ_TEST_CLASS(str_starts_withTests_t)
 
 JJ_TEST_CASE_VARIANTS(starts_with,(const char* a, const char* b, bool result),\

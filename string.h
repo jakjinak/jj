@@ -76,6 +76,45 @@ bool isspace(char ch);
 bool isspace(wchar_t ch);
 // TODO inline these
 
+/*! Returns whether given a is lexicographically less than b. */
+inline bool less(char a, char b) { return a < b; }
+/*! Returns whether given a is lexicographically less than b. */
+inline bool less(const char* a, const char* b)
+{
+    if (b == nullptr || *b == 0)
+        return false;
+    if (a == nullptr)
+        return true;
+    return std::strcmp(a, b) < 0;
+}
+/*! Returns whether given a is lexicographically less than b. */
+inline bool less(const std::string& a, const std::string& b) { return a < b; }
+/*! Returns whether given a is lexicographically less than b. */
+inline bool less(wchar_t a, wchar_t b) { return a < b; }
+/*! Returns whether given a is lexicographically less than b. */
+inline bool less(const wchar_t* a, const wchar_t* b)
+{
+    if (b == nullptr || *b == 0)
+        return false;
+    if (a == nullptr)
+        return true;
+    return std::wcscmp(a, b) < 0;
+}
+/*! Returns whether given a is lexicographically less than b. */
+inline bool less(const std::wstring& a, const std::wstring& b) { return a < b; }
+/*! Returns whether given a is lexicographically less than b without taking care about character case. */
+bool lessi(char a, char b);
+/*! Returns whether given a is lexicographically less than b without taking care about character case. */
+bool lessi(const char* a, const char* b);
+/*! Returns whether given a is lexicographically less than b without taking care about character case. */
+bool lessi(const std::string& a, const std::string& b);
+/*! Returns whether given a is lexicographically less than b without taking care about character case. */
+bool lessi(wchar_t a, wchar_t b);
+/*! Returns whether given a is lexicographically less than b without taking care about character case. */
+bool lessi(const wchar_t* a, const wchar_t* b);
+/*! Returns whether given a is lexicographically less than b without taking care about character case. */
+bool lessi(const std::wstring& a, const std::wstring& b);
+
 /*! Returns whether given string str begins with given string with. The NUL characters are not compared. */
 template<typename CH>
 bool starts_with_T(const CH* str, const CH* with)

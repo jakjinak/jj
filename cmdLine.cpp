@@ -1,6 +1,4 @@
 #include "jj/cmdLine.h"
-#include <algorithm>
-#include <cctype>
 #include <exception>
 #include "jj/stream.h"
 #include <sstream>
@@ -13,17 +11,8 @@ namespace cmdLine
 name_t::defaultPolicy_t name_t::DefaultPolicy(DASH);
 string_t name_t::DefaultPrefix;
 
-bool nameCompare_t::compare_icase(const string_t& a, const string_t& b)
-{
-    // TODO do per-character and move to string.h
-    string_t ta(a), tb(b);
-    std::transform(ta.begin(), ta.end(), ta.begin(), [](char_t ch) { return std::tolower(ch); });
-    std::transform(tb.begin(), tb.end(), tb.begin(), [](char_t ch) { return std::tolower(ch); });
-    return ta < tb;
-}
-
 arguments_t::arguments_t()
-    : OptionCase(case_t::SENSITIVE), VariableCase(case_t::SENSITIVE), ParseStart(0), Options(nameCompare_t(case_t::SENSITIVE)), opts_(nameCompare_t(case_t::SENSITIVE)), vars_(nameCompare_t(case_t::SENSITIVE)), defs_(nullptr)
+    : OptionCase(case_t::SENSITIVE), VariableCase(case_t::SENSITIVE), ParseStart(0), Options(nameCompare_less_t(case_t::SENSITIVE)), opts_(nameCompare_less_t(case_t::SENSITIVE)), vars_(nameCompare_less_t(case_t::SENSITIVE)), defs_(nullptr)
 {
     ParserOptions << flags_t::ALLOW_STACKS << flags_t::ALLOW_SHORT_ASSIGN << flags_t::ALLOW_LONG_ASSIGN;
     setup_basic_prefixes();
@@ -49,7 +38,7 @@ const prefixInfo_t& arguments_t::ensure_prefix(const string_t& prefix)
 void arguments_t::parse(const definitions_t& defs)
 {
     // reset options metadata and rebuild it from regular and list option lists
-    opts_ = optmap_t(nameCompare_t(OptionCase));
+    opts_ = optmap_t(nameCompare_less_t(OptionCase));
     for (const definitions_t::opts_t::value_type& o : defs.Options)
     {
         for (const optionDefinition_t::names_t::value_type& n : o.Names)
@@ -84,7 +73,7 @@ void arguments_t::parse(const definitions_t& defs)
     }
 
     // reset variables metadata and rebuild them from definition list
-    vars_ = varmap_t(nameCompare_t(VariableCase));
+    vars_ = varmap_t(nameCompare_less_t(VariableCase));
     for (const definitions_t::vars_t::value_type& v : defs.Variables)
     {
         if (v.Name.empty())
@@ -319,7 +308,7 @@ void arguments_t::parse(int argc, const char_t** argv)
 
 void arguments_t::clear_data()
 {
-    Options = options_t(nameCompare_t(OptionCase));
+    Options = options_t(nameCompare_less_t(OptionCase));
     Positionals.clear();
     for (varmap_t::value_type& v : vars_)
         v.second.Value = v.second.Var->Default;

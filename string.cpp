@@ -94,6 +94,70 @@ bool isspace(wchar_t ch)
     return std::iswspace(ch);
 }
 
+bool lessi(char a, char b)
+{
+    return std::tolower(a) < std::tolower(b);
+}
+
+bool lessi(const char* a, const char* b)
+{
+    if (b == nullptr || *b == 0)
+        return false; // b is prefix of a or both empty
+    if (a == nullptr)
+        return true; // empty a is always prefix of b
+    for (; *a != 0 && *b != 0 && std::tolower(*a) == std::tolower(*b); ++a, ++b)
+        ;
+    if (*b == 0)
+        return false; // b is prefix of a, ie. b is less than a
+    if (*a == 0)
+        return true; // a is prefix of b, ie. a is less than b
+    return std::tolower(*a) < std::tolower(*b); // found non-matching chars
+}
+
+bool lessi(const std::string& a, const std::string& b)
+{
+    std::string::size_type ai = 0, bi = 0, al = a.length(), bl = b.length();
+    for (; ai < al && bi < bl && std::tolower(a[ai]) == std::tolower(b[bi]); ++ai, ++bi)
+        ;
+    if (bi == bl)
+        return false; // b is prefix of a, ie. b is less than a
+    if (ai == al)
+        return true; // a is prefix of b, ie. a is less than b
+    return std::tolower(a[ai]) < std::tolower(b[bi]); // found non-matching chars
+}
+
+bool lessi(wchar_t a, wchar_t b)
+{
+    return std::towlower(a) < std::towlower(b);
+}
+
+bool lessi(const wchar_t* a, const wchar_t* b)
+{
+    if (b == nullptr || *b == 0)
+        return false; // b is prefix of a or both empty
+    if (a == nullptr)
+        return true; // empty a is always prefix of b
+    for (; *a != 0 && *b != 0 && std::towlower(*a) == std::towlower(*b); ++a, ++b)
+        ;
+    if (*b == 0)
+        return false; // b is prefix of a, ie. b is less than a
+    if (*a == 0)
+        return true; // a is prefix of b, ie. a is less than b
+    return std::towlower(*a) < std::towlower(*b); // found non-matching chars
+}
+
+bool lessi(const std::wstring& a, const std::wstring& b)
+{
+    std::wstring::size_type ai = 0, bi = 0, al = a.length(), bl = b.length();
+    for (; ai < al && bi < bl && std::towlower(a[ai]) == std::towlower(b[bi]); ++ai, ++bi)
+        ;
+    if (bi == bl)
+        return false; // b is prefix of a, ie. b is less than a
+    if (ai == al)
+        return true; // a is prefix of b, ie. a is less than b
+    return std::towlower(a[ai]) < std::towlower(b[bi]); // found non-matching chars
+}
+
 const char* find(const char* str, char what, size_t pos)
 {
     if (str == nullptr)

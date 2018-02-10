@@ -204,7 +204,7 @@ struct cmdLineOptionsCommon_t
         if (type==arguments_t::TREG)
         {
             JJ_ENSURE(opt.first.u.Opt!=nullptr);
-            nameCompare_t cmp(args.OptionCase);
+            nameCompare_less_t cmp(args.OptionCase);
             definitions_t::opts_t::const_iterator fndd=defs.Options.begin();
             for (; fndd!=defs.Options.end();++fndd)
             {
@@ -222,7 +222,7 @@ struct cmdLineOptionsCommon_t
         else if (type==arguments_t::TLIST)
         {
             JJ_ENSURE(opt.first.u.List!=nullptr);
-            nameCompare_t cmp(args.OptionCase);
+            nameCompare_less_t cmp(args.OptionCase);
             definitions_t::lists_t::const_iterator fndd=defs.ListOptions.begin();
             for (; fndd!=defs.ListOptions.end();++fndd)
             {
