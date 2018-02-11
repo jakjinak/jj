@@ -42,6 +42,7 @@ class options_T : public Ts...
     {
         typedef T type;
         static void adopt(type& t, const T v) { t = v; }
+        static void revoke(type&, const T) {} // ignored for regular types
     };
     // "one of" specialization
     template<typename T, typename ... Ss>
@@ -49,6 +50,7 @@ class options_T : public Ts...
     {
         typedef opt::e<T> type;
         static void adopt(type& t, const T v) { t = v; }
+        static void revoke(type&, const T) {} // ignored for "one of"
     };
     // "any of" specialization
     template<typename T, T COUNT, typename ... Ss>
@@ -56,6 +58,7 @@ class options_T : public Ts...
     {
         typedef opt::f<T, COUNT> type;
         static void adopt(type& t, const T v) { t |= v; }
+        static void revoke(type& t, const T v) { t -= v; }
     };
     // the sentinel if no match was found in the type list
     template<typename T>
@@ -65,13 +68,23 @@ class options_T : public Ts...
 
 public:
     /*! Sets value of given type.
-    Note that for opt::f the flags can only be set, not unset. For other types any new value simply overwrites the previous one.
+    Note that for opt::f the flags can only be set this way use >> to unset those. For other types any new value simply overwrites the previous one.
     */
     template<typename T>
     options_T& operator<<(const T v)
     {
         typename SEARCHER<T, Ts..., void>::type& t = *this;
         SEARCHER<T, Ts..., void>::adopt(t, v);
+        return *this;
+    }
+    /*! Removes flag from the value.
+    Note that this works only for opt::f flags and this method does NOOP for other types; simply use << to overwrite the current value for those types.
+    */
+    template<typename T>
+    options_T& operator>>(const T v)
+    {
+        typename SEARCHER<T, Ts..., void>::type& t = *this;
+        SEARCHER<T, Ts..., void>::revoke(t, v);
         return *this;
     }
 };

@@ -112,7 +112,7 @@ $(eval $(call define_generate_vsproj,jjtest))
 ########################################
 # jjbase-tests
 SRCDIR_jjbase-tests := $(realpath tests)
-SOURCE_jjbase-tests := string_tests.cpp cmdLine_tests.cpp cmdLineOptions_tests.cpp
+SOURCE_jjbase-tests := string_tests.cpp flagSet_tests.cpp options_tests.cpp cmdLine_tests.cpp cmdLineOptions_tests.cpp
 CPPFLAGS_jjbase-tests := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
 LIBS_jjbase-tests := ${RESULT_jjtest} ${RESULT_jjbase}
 VSNAME_jjbase-tests := jjbase.Tests

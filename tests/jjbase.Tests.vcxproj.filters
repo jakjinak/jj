@@ -21,6 +21,12 @@
     <ClCompile Include="cmdLine_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="flagSet_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="options_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="string_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
