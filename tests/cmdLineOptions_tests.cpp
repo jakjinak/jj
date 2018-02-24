@@ -491,6 +491,29 @@ JJ_TEST_CASE_VARIANTS(stackedValues, (const std::initializer_list<jj::string_t>&
     perform_test(infos, defs, args, ok, count, pvals);
 }
 
+JJ_TEST_CASE_VARIANTS(disabledStacksButStackedValues, (const std::initializer_list<jj::string_t>& argv, bool ok, bool allowStackedValues, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals),\
+    ({jjT("-ab")},true,true,{1,0,0},{{jjT("b")},{},{}}),\
+    ({jjT("-ab"),jjT("1"),jjT("2"),jjT("3")},false,false,{},{}),\
+    ({jjT("-abc")},true,true,{1,0,0},{{jjT("bc")},{},{}}),\
+    ({jjT("-a=bc")},true,true,{1,0,0},{{jjT("bc")},{},{}}),\
+    ({jjT("-aa")},true,true,{1,0,0},{{jjT("a")},{},{}}),\
+    ({jjT("-ba")},false,true,{},{}),\
+    ({jjT("-babc"),jjT("-b"),jjT("-c")},true,true,{0,1,0},{{},{jjT("abc"),jjT("-b"),jjT("-c")},{}}),\
+    ({jjT("-ca"),jjT("X")},false,true,{},{}),\
+    ({jjT("-cc")},false,true,{},{}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_option(defs, infos, { name_t(jjT("a")) }, 1u, multiple_t::OVERRIDE);
+    setup_single_option(defs, infos, { name_t(jjT("b")) }, 3u, multiple_t::OVERRIDE);
+    setup_single_option(defs, infos, { name_t(jjT("c")) }, 0u, multiple_t::OVERRIDE);
+    arguments_t args;
+    args.ParserOptions >> flags_t::ALLOW_STACKS;
+    if (allowStackedValues)
+        args.ParserOptions << flags_t::ALLOW_STACK_VALUES;
+    perform_test(infos, defs, args, ok, count, pvals);
+}
+
 JJ_TEST_CASE_VARIANTS(disabledAssigns, (const std::initializer_list<jj::string_t>& argv, bool ok, bool allowStackedValues, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals),\
     ({jjT("-a"),jjT("X"),jjT("-cb"),jjT("1"),jjT("2"),jjT("3"),jjT("--param"),jjT("A"),jjT("--option")},true,false,{1,1,1,1,1},{{jjT("X")},{jjT("1"),jjT("2"),jjT("3")},{},{jjT("A")},{}}),\
     ({jjT("-a=X")},false,false,{},{}),\
@@ -515,7 +538,8 @@ JJ_TEST_CASE_VARIANTS(disabledAssigns, (const std::initializer_list<jj::string_t
     perform_test(infos, defs, args, ok, count, pvals);
 }
 
-JJ_TEST_CLASS_END(cmdLineOptionsTests_t, parseShortOptions, parseLongOptions, redefinedPrefixes, stackedOptions, valuedLongOptions, valuedShortOptions, looseStackValues, disabledStacks, stackedValues, disabledAssigns)
+JJ_TEST_CLASS_END(cmdLineOptionsTests_t, parseShortOptions, parseLongOptions, redefinedPrefixes, stackedOptions, valuedLongOptions, valuedShortOptions,\
+    looseStackValues, disabledStacks, stackedValues, disabledStacksButStackedValues, disabledAssigns)
 
 //================================================
 
