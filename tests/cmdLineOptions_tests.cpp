@@ -234,7 +234,17 @@ struct cmdLineOptionsCommon_t
                     if (!cmp(n,name)&&!cmp(name,n))
                     {
                         JJ_TEST(opt.first.u.Opt==&*fndd);
-                        JJ_TEST(opt.second.Values.size() == fndd->ValueCount);
+                        if (opt.first.u.Opt->Multi == multiple_t::JOIN)
+                        {
+                            if (fndd->ValueCount > 0)
+                            {
+                                JJ_TEST(opt.second.Values.size() % fndd->ValueCount == 0);
+                            }
+                        }
+                        else
+                        {
+                            JJ_TEST(opt.second.Values.size() == fndd->ValueCount);
+                        }
                         return opt;
                     }
                 }
@@ -262,11 +272,11 @@ struct cmdLineOptionsCommon_t
 
     void checkValues(const arguments_t::option_t& opt, const std::list<jj::string_t>& vals)
     {
-        JJ_ENSURE(opt.second.Values.size() == vals.size());
+        JJ_ENSURE(opt.second.Values.size() == vals.size(), jjT("Expected ") << vals.size() << jjT(" values but received ") << opt.second.Values.size());
         std::list<jj::string_t>::const_iterator it = vals.begin();
         for (const jj::string_t& s : opt.second.Values)
         {
-            JJ_TEST(s == *it);
+            JJ_TEST(s == *it, jjT("Expected \"") << *it << jjT("\" but received \"") << s << jjT("\""));
             ++it;
         }
     }
@@ -388,7 +398,8 @@ JJ_TEST_CASE_VARIANTS(valuedLongOptions,(const std::initializer_list<jj::string_
     ({jjT("--bb")},false,{},{}),\
     ({jjT("--aa"),jjT("v1"),jjT("--cc"),jjT("--bb"),jjT("1"),jjT("2")},false,{},{}),\
     ({jjT("--aa=v1")},true,{1,0,0},{{jjT("v1")},{},{}}),\
-    ({jjT("--bb=1"),jjT("2"),jjT("3")},true,{0,1,0},{{},{jjT("1"),jjT("2"),jjT("3")},{}}))
+    ({jjT("--bb=1"),jjT("2"),jjT("3")},true,{0,1,0},{{},{jjT("1"),jjT("2"),jjT("3")},{}}),\
+    ({jjT("--aa=X=Y")},true,{1,0,0},{{jjT("X=Y")},{},{}}))
 {
     optinfos_t infos(argv);
     definitions_t defs;
@@ -420,7 +431,8 @@ JJ_TEST_CASE_VARIANTS(valuedShortOptions,(const std::initializer_list<jj::string
     ({jjT("-a=c")},true,{1,0,0},{{jjT("c")},{},{}}),\
     ({jjT("-cb=1"),jjT("2"),jjT("3")},true,{0,1,1},{{},{jjT("1"),jjT("2"),jjT("3")},{}}),
     ({jjT("-c=1")},false,{},{}),\
-    ({jjT("-a=")},true,{1,0,0},{{jjT("")},{},{}}))
+    ({jjT("-a=")},true,{1,0,0},{{jjT("")},{},{}}),\
+    ({jjT("-a=X=Y")},true,{1,0,0},{{jjT("X=Y")},{},{}}))
 {
     optinfos_t infos(argv);
     definitions_t defs;
@@ -538,8 +550,39 @@ JJ_TEST_CASE_VARIANTS(disabledAssigns, (const std::initializer_list<jj::string_t
     perform_test(infos, defs, args, ok, count, pvals);
 }
 
+JJ_TEST_CASE_VARIANTS(valueModes, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<flags_t>& flags, multiple_t valueMode, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals),\
+    ({jjT("-a"),jjT("X"),jjT("-a"),jjT("Y"),jjT("-a"),jjT("Z")},{},multiple_t::OVERRIDE,true,{3,0,0,0},{{jjT("Z")},{},{},{}}),\
+    ({jjT("-a"),jjT("X"),jjT("-a"),jjT("Y"),jjT("-a"),jjT("Z")},{},multiple_t::PRESERVE,true,{3,0,0,0},{{jjT("X")},{},{},{}}),\
+    ({jjT("-a"),jjT("X"),jjT("-a"),jjT("Y"),jjT("-a"),jjT("Z")},{},multiple_t::JOIN,true,{3,0,0,0},{{jjT("X"),jjT("Y"),jjT("Z")},{},{},{}}),\
+    ({jjT("-a"),jjT("X"),jjT("-a"),jjT("Y"),jjT("-a"),jjT("Z")},{},multiple_t::ERROR,false,{},{}),\
+    ({jjT("-b"),jjT("1"),jjT("2"),jjT("3"),jjT("-b"),jjT("4"),jjT("5"),jjT("6")},{},multiple_t::OVERRIDE,true,{0,2,0,0},{{},{jjT("4"),jjT("5"),jjT("6")},{},{}}),\
+    ({jjT("-b"),jjT("1"),jjT("2"),jjT("3"),jjT("-b"),jjT("4"),jjT("5"),jjT("6")},{},multiple_t::PRESERVE,true,{0,2,0,0},{{},{jjT("1"),jjT("2"),jjT("3")},{},{}}),\
+    ({jjT("-b"),jjT("1"),jjT("2"),jjT("3"),jjT("-b"),jjT("4"),jjT("5"),jjT("6")},{},multiple_t::JOIN,true,{0,2,0,0},{{},{jjT("1"),jjT("2"),jjT("3"),jjT("4"),jjT("5"),jjT("6")},{},{}}),\
+    ({jjT("-b"),jjT("1"),jjT("2"),jjT("3"),jjT("-b"),jjT("4"),jjT("5"),jjT("6")},{},multiple_t::ERROR,false,{},{}),
+    ({jjT("-cc")},{},multiple_t::OVERRIDE,true,{0,0,2,0},{{},{},{},{}}),\
+    ({jjT("-cc")},{},multiple_t::PRESERVE,true,{0,0,2,0},{{},{},{},{}}),\
+    ({jjT("-cc")},{},multiple_t::JOIN,true,{0,0,2,0},{{},{},{},{}}),\
+    ({jjT("-cc")},{},multiple_t::ERROR,false,{},{}),\
+    ({jjT("--long"),jjT("X"),jjT("--long"),jjT("Y")},{},multiple_t::OVERRIDE,true,{0,0,0,2},{{},{},{},{jjT("Y")}}),\
+    ({jjT("--long"),jjT("X"),jjT("--long"),jjT("Y")},{},multiple_t::PRESERVE,true,{0,0,0,2},{{},{},{},{jjT("X")}}),\
+    ({jjT("--long"),jjT("X"),jjT("--long"),jjT("Y")},{},multiple_t::JOIN,true,{0,0,0,2},{{},{},{},{jjT("X"),jjT("Y")}}),\
+    ({jjT("--long"),jjT("X"),jjT("--long"),jjT("Y")},{},multiple_t::ERROR,false,{},{}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_option(defs, infos, { name_t(jjT("a")) }, 1u, valueMode);
+    setup_single_option(defs, infos, { name_t(jjT("b")) }, 3u, valueMode);
+    setup_single_option(defs, infos, { name_t(jjT("c")) }, 0u, valueMode);
+    setup_single_option(defs, infos, { name_t(jjT("long")) }, 1u, valueMode);
+    arguments_t args;
+    jj::opt::f<flags_t, flags_t::MAX_FLAGS>& fs = args.ParserOptions;
+    for (auto f : flags)
+        fs.toggle(f);
+    perform_test(infos, defs, args, ok, count, pvals);
+}
+
 JJ_TEST_CLASS_END(cmdLineOptionsTests_t, parseShortOptions, parseLongOptions, redefinedPrefixes, stackedOptions, valuedLongOptions, valuedShortOptions,\
-    looseStackValues, disabledStacks, stackedValues, disabledStacksButStackedValues, disabledAssigns)
+    looseStackValues, disabledStacks, stackedValues, disabledStacksButStackedValues, disabledAssigns, valueModes)
 
 //================================================
 
@@ -572,7 +615,8 @@ JJ_TEST_CASE_VARIANTS(parseShortOptions,(const std::initializer_list<jj::string_
     ({jjT("-a=v1")},false,true,{1,0,0},{{jjT("v1")},{},{}}),\
     ({jjT("-a=v1")},true,false,{},{}),\
     ({jjT("-a=END")},true,true,{1,0,0},{{},{},{}}),\
-    ({jjT("-c=")},true,true,{0,0,1},{{},{},{}}))
+    ({jjT("-c=")},true,true,{0,0,1},{{},{},{}}),\
+    ({jjT("-a=X=Y")},false,true,{1,0,0},{{jjT("X=Y")},{},{}}))
 {
     optinfos_t infos(argv);
     definitions_t defs;
@@ -594,7 +638,8 @@ JJ_TEST_CASE_VARIANTS(parseLongOptions,(const std::initializer_list<jj::string_t
     ({jjT("--aa=v1"),jjT("END"),jjT("--bb=1"),jjT("2"),jjT("end")},true,true,{1,1,0},{{jjT("v1")},{jjT("1"),jjT("2")},{}}),\
     ({jjT("--aa=v1")},false,true,{1,0,0},{{jjT("v1")},{},{}}),\
     ({jjT("--aa=v1")},true,false,{},{}),\
-    ({jjT("--aa=END")},true,true,{1,0,0},{{},{},{}}))
+    ({jjT("--aa=END")},true,true,{1,0,0},{{},{},{}}),\
+    ({jjT("--aa=X=Y")},false,true,{1,0,0},{{jjT("X=Y")},{},{}}))
 {
     optinfos_t infos(argv);
     definitions_t defs;
@@ -652,6 +697,31 @@ JJ_TEST_CASE_VARIANTS(stackedValues,(const std::initializer_list<jj::string_t>& 
     perform_test(infos, defs, args, ok, count, pvals);
 }
 
+JJ_TEST_CASE_VARIANTS(disabledStacksButStackedValues, (const std::initializer_list<jj::string_t>& argv, bool mustterm, bool allowStackedValues, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals), \
+    ({jjT("-ab")},false,true,true,{1,0,0},{{jjT("b")},{},{}}),\
+    ({jjT("-ab"),jjT("1"),jjT("2"),jjT("3")},false,false,false,{},{}),\
+    ({jjT("-abc")},false,true,true,{1,0,0},{{jjT("bc")},{},{}}),\
+    ({jjT("-a=bc")},false,true,true,{1,0,0},{{jjT("bc")},{},{}}),\
+    ({jjT("-aa")},false,true,true,{1,0,0},{{jjT("a")},{},{}}),\
+    ({jjT("-babc"),jjT("-b"),jjT("-c")},false,true,true,{0,1,0},{{},{jjT("abc"),jjT("-b"),jjT("-c")},{}}),\
+    ({jjT("-ca"),jjT("END")},true,true,false,{},{}),\
+    ({jjT("-ca"),jjT("END")},false,true,true,{0,0,1},{{},{},{jjT("a"),jjT("END")}}),\
+    ({jjT("-ca"),jjT("")},true,true,true,{0,0,1},{{},{},{jjT("a")}}),\
+    ({jjT("-cc")},false,true,true,{0,0,1},{{},{},{jjT("c")}}),\
+    ({jjT("-cc")},true,true,false,{},{}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_option(defs, infos, { name_t(jjT('a')) }, jjT("END"), multiple_t::OVERRIDE);
+    setup_single_option(defs, infos, { name_t(jjT('b')) }, jjT("end"), multiple_t::OVERRIDE);
+    setup_single_option(defs, infos, { name_t(jjT('c')) }, jjT(""), multiple_t::OVERRIDE);
+    arguments_t args;
+    args.ParserOptions >> flags_t::ALLOW_STACKS;
+    if (allowStackedValues) args.ParserOptions << flags_t::ALLOW_STACK_VALUES;
+    if (mustterm) args.ParserOptions << flags_t::LIST_MUST_TERMINATE;
+    perform_test(infos, defs, args, ok, count, pvals);
+}
+
 JJ_TEST_CASE_VARIANTS(disabledAssigns,(const std::initializer_list<jj::string_t>& argv, bool mustterm, bool allowStackValues, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals),\
     ({jjT("-a"),jjT("X"),jjT("END"),jjT("-c"),jjT(""),jjT("--param"),jjT("1"),jjT("2"),jjT("3"),jjT("end"),jjT("--option"),jjT("")},true,false,true,{1,1,1,1},{{jjT("X")},{},{jjT("1"),jjT("2"),jjT("3")},{}}),\
     ({jjT("-a=X"),jjT("END")},true,false,false,{},{}),\
@@ -684,4 +754,40 @@ JJ_TEST_CASE_VARIANTS(disabledAssigns,(const std::initializer_list<jj::string_t>
     perform_test(infos, defs, args, ok, count, pvals);
 }
 
-JJ_TEST_CLASS_END(cmdLineListsTests_t, parseShortOptions, parseLongOptions, looseStackValues, stackedValues, disabledAssigns)
+JJ_TEST_CASE_VARIANTS(valueModes, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<flags_t>& flags, multiple_t valueMode, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals), \
+    ({jjT("-a"),jjT("X"),jjT("END"),jjT("-a"),jjT("Y"),jjT("END")},{},multiple_t::OVERRIDE,true,{2,0,0,0},{{jjT("Y")},{},{},{}}),\
+    ({jjT("-a"),jjT("X"),jjT("END"),jjT("-a"),jjT("Y"),jjT("END")},{},multiple_t::PRESERVE,true,{2,0,0,0},{{jjT("X")},{},{},{}}),\
+    ({jjT("-a"),jjT("X"),jjT("END"),jjT("-a"),jjT("Y"),jjT("END")},{},multiple_t::JOIN,true,{2,0,0,0},{{jjT("X"),jjT("Y")},{},{},{}}),\
+    ({jjT("-a"),jjT("X"),jjT("END"),jjT("-a"),jjT("Y"),jjT("END")},{},multiple_t::ERROR,false,{},{}),\
+    ({jjT("-c"),jjT(""),jjT("-c"),jjT("Y")},{},multiple_t::OVERRIDE,true,{0,2,0,0},{{},{jjT("Y")},{},{}}),\
+    ({jjT("-c"),jjT(""),jjT("-c"),jjT("Y")},{},multiple_t::PRESERVE,true,{0,2,0,0},{{},{},{},{}}),\
+    ({jjT("-c"),jjT(""),jjT("-c"),jjT("Y")},{},multiple_t::JOIN,true,{0,2,0,0},{{},{jjT("Y")},{},{}}),\
+    ({jjT("-c"),jjT(""),jjT("-c"),jjT("Y")},{},multiple_t::ERROR,false,{},{}),\
+    ({jjT("-cc"),jjT(""),jjT("Y")},{},multiple_t::OVERRIDE,true,{0,2,0,0},{{},{jjT("Y")},{},{}}),\
+    ({jjT("-cc"),jjT(""),jjT("Y")},{},multiple_t::PRESERVE,true,{0,2,0,0},{{},{},{},{}}),\
+    ({jjT("-cc"),jjT(""),jjT("Y")},{},multiple_t::JOIN,true,{0,2,0,0},{{},{jjT("Y")},{},{}}),\
+    ({jjT("-cc"),jjT(""),jjT("Y")},{},multiple_t::ERROR,false,{},{}),\
+    ({jjT("--longa"),jjT("X"),jjT("END"),jjT("--longa"),jjT("END")},{},multiple_t::OVERRIDE,true,{0,0,2,0},{{},{},{},{}}),\
+    ({jjT("--longa"),jjT("X"),jjT("END"),jjT("--longa"),jjT("END")},{},multiple_t::PRESERVE,true,{0,0,2,0},{{},{},{jjT("X")},{}}),\
+    ({jjT("--longa"),jjT("X"),jjT("END"),jjT("--longa"),jjT("END")},{},multiple_t::JOIN,true,{0,0,2,0},{{},{},{jjT("X")},{}}),\
+    ({jjT("--longa"),jjT("X"),jjT("END"),jjT("--longa"),jjT("END")},{},multiple_t::ERROR,false,{},{}),\
+    ({jjT("--longc=1"),jjT("2"),jjT(""),jjT("--longc"),jjT(" ")},{},multiple_t::OVERRIDE,true,{0,0,0,2},{{},{},{},{jjT(" ")}}),\
+    ({jjT("--longc=1"),jjT("2"),jjT(""),jjT("--longc"),jjT(" ")},{},multiple_t::PRESERVE,true,{0,0,0,2},{{},{},{},{jjT("1"),jjT("2")}}),\
+    ({jjT("--longc=1"),jjT("2"),jjT(""),jjT("--longc"),jjT(" ")},{},multiple_t::JOIN,true,{0,0,0,2},{{},{},{},{jjT("1"),jjT("2"),jjT(" ")}}),\
+    ({jjT("--longc=1"),jjT("2"),jjT(""),jjT("--longc"),jjT(" ")},{},multiple_t::ERROR,false,{},{}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_option(defs, infos, { name_t(jjT("a")) }, jjT("END"), valueMode);
+    setup_single_option(defs, infos, { name_t(jjT("c")) }, jjT(""), valueMode);
+    setup_single_option(defs, infos, { name_t(jjT("longa")) }, jjT("END"), valueMode);
+    setup_single_option(defs, infos, { name_t(jjT("longc")) }, jjT(""), valueMode);
+    arguments_t args;
+    args.ParserOptions << stackOptionValues_t::LOOSE;
+    jj::opt::f<flags_t, flags_t::MAX_FLAGS>& fs = args.ParserOptions;
+    for (auto f : flags)
+        fs.toggle(f);
+    perform_test(infos, defs, args, ok, count, pvals);
+}
+
+JJ_TEST_CLASS_END(cmdLineListsTests_t, parseShortOptions, parseLongOptions, looseStackValues, stackedValues, disabledStacksButStackedValues, disabledAssigns, valueModes)
