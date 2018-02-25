@@ -53,6 +53,15 @@ void defaultInitializer_t::on_init(db_t& DB)
             else if (s==jjT("all")) DB.Tests = jj::test::options_t::testResults_t::ALL;
             else throw std::runtime_error("Value in --results can be one of none|fails|all.");
             return true; } });
+    ArgumentDefinitions->Options.push_back({ {name_t(jjT("S")),name_t(jjT("summary"))}, jjT("Determines if and how the summary of tests is printed at the end of the program; none means not printed at all, default show the default (passed/failed/total) in rows, short prints only passed/failed numbers in last row."), 1u, multiple_t::OVERRIDE,
+        [&DB](const optionDefinition_t&, values_t& v) {
+            if (v.Values.size() == 0) throw std::runtime_error("Invalid number of arg values.");
+            jj::string_t& s = v.Values.front();
+            if (s == jjT("none")) DB.FinalStatistics = jj::test::options_t::finalStatistics_t::NONE;
+            else if (s == jjT("default")) DB.FinalStatistics = jj::test::options_t::finalStatistics_t::DEFAULT;
+            else if (s == jjT("short")) DB.FinalStatistics = jj::test::options_t::finalStatistics_t::SHORT;
+            else throw std::runtime_error("Value in --summary can be one of none|default|short.");
+            return true; } });
     ArgumentDefinitions->Sections.push_back({
         jjT("SELECTING TESTS"),
         jjT("If no --run/--skip arguments are given then all tests are run.\n")
@@ -231,12 +240,21 @@ void defaultOutput_t::test_result(test_result_t result, const string_t& text)
 
 void defaultOutput_t::statistics(const statistics_t& stats)
 {
+    if (opt_.FinalStatistics == jj::test::options_t::finalStatistics_t::NONE)
+        return;
     if (opt_.Colors)
         jj::cout << jjT("\033[1m");
-    jj::cout << jjT("SUMMARY\n");
-    jj::cout << jjT("Successful tests:   ") << stats.Passed << jjT("\n");
-    jj::cout << jjT("Failed tests:       ") << stats.Failed << jjT("\n");
-    jj::cout << jjT("Tests run in total: ") << stats.total() << jjT("\n");
+    if (opt_.FinalStatistics == jj::test::options_t::finalStatistics_t::DEFAULT)
+    {
+        jj::cout << jjT("SUMMARY\n");
+        jj::cout << jjT("Successful tests:   ") << stats.Passed << jjT("\n");
+        jj::cout << jjT("Failed tests:       ") << stats.Failed << jjT("\n");
+        jj::cout << jjT("Tests run in total: ") << stats.total() << jjT("\n");
+    }
+    else if (opt_.FinalStatistics == jj::test::options_t::finalStatistics_t::SHORT)
+    {
+        jj::cout << stats.Passed << jjT('/') << stats.Failed;
+    }
     if (opt_.Colors)
         jj::cout << jjT("\033[0m");
 }
@@ -556,7 +574,7 @@ void db_t::run_testcase(std::function<void(statistics_t&)> tc, statistics_t& sta
     }
 }
 
-void db_t::run()
+bool db_t::run()
 {
     Statistics.reset();
     for (testclasses_t::value_type& i : testclasses_)
@@ -576,6 +594,7 @@ void db_t::run()
         }
     }
     statistics(Statistics);
+    return Statistics.Failed == 0;
 }
 
 } // namespace test
@@ -614,7 +633,7 @@ int main(int argc, const char** argv)
         else if (DB.Mode == jj::test::db_t::LIST_CLASSES)
             DB.list_testclasses(DB.ListClassVariants);
         else if (DB.Mode == jj::test::db_t::RUN)
-            DB.run();
+            return DB.run() ? 0 : 1;
     }
     catch (const jj::test::testingFailed_t& ex)
     {

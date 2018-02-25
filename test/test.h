@@ -79,14 +79,22 @@ public:
         FAILS, //!< only failed conditions are shown
         ALL //!< all results are shown
     };
+    /*! If and how final statistics are printed. */
+    enum class finalStatistics_t
+    {
+        NONE, //!< nothing printed (only result code will determine if any test failed)
+        DEFAULT, //!< usual format with passed/failed/total in individual rows; this is the default if the -s option is not given
+        SHORT //!< only passed/failed is printed as last row
+    };
 
     bool ClassNames; //!< whether test classes should be shown; implied by the --class-names argument
     caseNames_t CaseNames; //!< whether test cases should be shown
     bool Colors; //!< whether output shall be in colors; implied by the --in-color argument
     testResults_t Tests; //!< how test condition results are presented; set using the --results=(none|fails|all) argument
+    finalStatistics_t FinalStatistics; //!< if and how final statistics are printed
 
     /*! Ctor */
-    options_t() : ClassNames(false), CaseNames(caseNames_t::OFF), Colors(false), Tests(testResults_t::FAILS) {}
+    options_t() : ClassNames(false), CaseNames(caseNames_t::OFF), Colors(false), Tests(testResults_t::FAILS), FinalStatistics(finalStatistics_t::DEFAULT) {}
 };
 
 /*! Abstracts a class that is called to initialize the db_t (and whatever else needs to be initialized).
@@ -431,7 +439,7 @@ public:
     void run_testcase(std::function<void(statistics_t&)> tc, statistics_t& stats);
 
     /*! Runs all testcases. */
-    void run();
+    bool run();
 };
 
 namespace AUX
