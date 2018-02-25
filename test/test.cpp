@@ -36,13 +36,13 @@ void defaultInitializer_t::on_init(db_t& DB)
         [&DB] (const optionDefinition_t&, values_t& v) { DB.Filters.push_back(filter_t(filter_t::ADD, v.Values.front())); return true; } });
     ArgumentDefinitions->Options.push_back({{name_t(jjT('s')), name_t(jjT("skip")), name_t(jjT('t'))}, jjT("Give any number of these to specify which tests shall be skipped."), 1u, multiple_t::JOIN,
         [&DB] (const optionDefinition_t&, values_t& v) { DB.Filters.push_back(filter_t(filter_t::REMOVE, v.Values.front())); return true; } });
-    ArgumentDefinitions->Options.push_back({{name_t(jjT("class-names"))}, jjT("Prints information about entering/leaving testclass."), 0u, multiple_t::OVERRIDE,
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("c")), name_t(jjT("class-names"))}, jjT("Prints information about entering/leaving testclass."), 0u, multiple_t::OVERRIDE,
         [&DB] (const optionDefinition_t&, values_t&) { DB.ClassNames = true; return true; } });
-    ArgumentDefinitions->Options.push_back({{name_t(jjT("case-names"))}, jjT("Prints information about testcase being run."), 0u, multiple_t::OVERRIDE,
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("n")), name_t(jjT("case-names"))}, jjT("Prints information about testcase being run."), 0u, multiple_t::OVERRIDE,
         [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTER; return true; } });
-    ArgumentDefinitions->Options.push_back({{name_t(jjT("full-case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE,
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("N")), name_t(jjT("full-case-names"))}, jjT("Prints information about entering/leaving testcase."), 0u, multiple_t::OVERRIDE,
         [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTERLEAVE; return true; } });
-    ArgumentDefinitions->Options.push_back({{name_t(jjT("in-color"))}, jjT("Prints output in colors."), 0u, multiple_t::OVERRIDE,
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("C")), name_t(jjT("in-color"))}, jjT("Prints output in colors."), 0u, multiple_t::OVERRIDE,
         [&DB] (const optionDefinition_t&, values_t&) { DB.Colors = true; return true; } });
     ArgumentDefinitions->Options.push_back({{name_t(jjT("results"))}, jjT("Based on provided value prints results of individual tests within testcases; none means no results shown, fails shows only failed tests, all shows failed and passed conditions."), 1u, multiple_t::OVERRIDE,
         [&DB](const optionDefinition_t&, values_t& v) {
