@@ -129,6 +129,7 @@ m=debug|_DEBUG
 m=release|NDEBUG
 _CONSOLE
 endef
+VSHEADER_jjbase-tests := $(shell cd "${SRCDIR_jjbase-tests}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
 $(eval $(call define_program,jjbase-tests,tests,clean_tests,jjbase jjtest))
 $(eval $(call define_generate_vsproj,jjbase-tests))
 
