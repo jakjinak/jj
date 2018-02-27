@@ -433,9 +433,7 @@ JJ_TEST_CASE_VARIANTS(valueModes, (const std::initializer_list<jj::string_t>& ar
     setup_single_option(defs, infos, { name_t(jjT("c")) }, 0u, valueMode);
     setup_single_option(defs, infos, { name_t(jjT("long")) }, 1u, valueMode);
     arguments_t args;
-    jj::opt::f<flags_t, flags_t::MAX_FLAGS>& fs = args.ParserOptions;
-    for (auto f : flags)
-        fs.toggle(f);
+    setup_parser(args, flags);
     perform_test(infos, defs, args, ok, count, pvals);
 }
 
@@ -630,9 +628,7 @@ JJ_TEST_CASE_VARIANTS(valueModes, (const std::initializer_list<jj::string_t>& ar
     setup_single_option(defs, infos, { name_t(jjT("longc")) }, jjT(""), valueMode);
     arguments_t args;
     args.ParserOptions << stackOptionValues_t::LOOSE;
-    jj::opt::f<flags_t, flags_t::MAX_FLAGS>& fs = args.ParserOptions;
-    for (auto f : flags)
-        fs.toggle(f);
+    setup_parser(args, flags);
     perform_test(infos, defs, args, ok, count, pvals);
 }
 

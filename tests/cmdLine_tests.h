@@ -96,6 +96,24 @@ struct cmdLineOptionsCommon_t
         infos.infos[names.front()].Type = jj::cmdLine::arguments_t::TLIST;
     }
 
+    void setup_positionals(jj::cmdLine::definitions_t& defs, size_t mandatory, size_t optional)
+    {
+        static jj::string_t shorts[] = { jjT("first"), jjT("second"), jjT("third"), jjT("fourth"), jjT("fifth"), jjT("sixth"), jjT("seventh"), jjT("eight"), jjT("nineth"), jjT("tenth") };
+        JJ_ENSURE(mandatory + optional <= 10);
+        size_t cnt = 0;
+        for (size_t i = 0; i < mandatory; ++i, ++cnt)
+            defs.Positionals.push_back({ shorts[cnt], jjT(""), true, [this](const jj::cmdLine::positionalDefinition_t, jj::string_t& value) { return true; } });
+        for (size_t i = 0; i < optional; ++i, ++cnt)
+            defs.Positionals.push_back({ shorts[cnt], jjT(""), false, [this](const jj::cmdLine::positionalDefinition_t, jj::string_t& value) { return true; } });
+    }
+
+    void setup_parser(jj::cmdLine::arguments_t& args, const std::initializer_list<jj::cmdLine::flags_t>& flags)
+    {
+        jj::opt::f<jj::cmdLine::flags_t, jj::cmdLine::flags_t::MAX_FLAGS>& fs = args.ParserOptions;
+        for (auto f : flags)
+            fs.toggle(f);
+    }
+
     const jj::cmdLine::arguments_t::option_t& checkOption(const jj::cmdLine::arguments_t& args, const jj::cmdLine::definitions_t& defs, const jj::cmdLine::name_t& name, jj::cmdLine::arguments_t::optionType_t type)
     {
         jj::cmdLine::arguments_t::options_t::const_iterator fnd = args.Options.find(name);
@@ -152,26 +170,33 @@ struct cmdLineOptionsCommon_t
 
     void checkValues(const jj::cmdLine::arguments_t::option_t& opt, const std::list<jj::string_t>& vals)
     {
-        JJ_ENSURE(opt.second.Values.size() == vals.size(), jjT("Expected ") << vals.size() << jjT(" values but received ") << opt.second.Values.size());
+        JJ_ENSURE(opt.second.Values.size() == vals.size(), jjT("Expected ") << vals.size() << jjT(" values, received ") << opt.second.Values.size());
         std::list<jj::string_t>::const_iterator it = vals.begin();
         for (const jj::string_t& s : opt.second.Values)
         {
-            JJ_TEST(s == *it, jjT("Expected \"") << *it << jjT("\" but received \"") << s << jjT("\""));
+            JJ_TEST(s == *it, jjT("Expected \"") << *it << jjT("\", received \"") << s << jjT("\""));
             ++it;
         }
     }
 
-    void perform_test(optinfos_t& infos, jj::cmdLine::definitions_t defs, jj::cmdLine::arguments_t args, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals)
+    bool perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, bool ok)
     {
         if (ok)
         {
             args.parse(defs, infos.argv.argc, infos.argv.argv);
+            return true;
         }
         else
         {
             JJ_TEST_THAT_THROWS(args.parse(defs, infos.argv.argc, infos.argv.argv), std::runtime_error);
-            return;
+            return false;
         }
+    }
+
+    void perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals)
+    {
+        if (!perform_test(infos, defs, args, ok))
+            return;
         size_t cnt = infos.names.size();
         JJ_ENSURE(cnt == count.size());
         JJ_ENSURE(cnt == pvals.size());
@@ -187,6 +212,29 @@ struct cmdLineOptionsCommon_t
         for (auto& info : infos.infos)
         {
             JJ_TEST(info.second.Known);
+        }
+    }
+
+    void perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, bool ok, const std::vector<jj::string_t>& pvals)
+    {
+        if (!perform_test(infos, defs, args, ok))
+            return;
+        JJ_ENSURE(args.Positionals.size() == pvals.size(), jjT("Expected ") << pvals.size() << jjT(", ") << args.Positionals.size() << jjT(" were parsed"));
+        size_t i = 0;
+        jj::cmdLine::arguments_t::positionals_t::const_iterator pit = args.Positionals.begin();
+        for (; i < pvals.size(); ++i, ++pit)
+        {
+            JJ_TEST(pit->second == pvals[i]);
+            if (i < defs.Positionals.size())
+            {
+                jj::cmdLine::definitions_t::poss_t::const_iterator def = defs.Positionals.begin();
+                std::advance(def, i);
+                JJ_TEST(pit->first == &*def);
+            }
+            else
+            {
+                JJ_TEST(pit->first == nullptr);
+            }
         }
     }
 #undef JJ_TEST_CLASS_ACCESSOR

@@ -53,3 +53,50 @@ JJ_TEST_CASE_VARIANTS(ProgramNamePath_Parsed,(const jj::char_t* pn),(SEP jjT("pg
 }
 
 JJ_TEST_CLASS_END(cmdLineTests_t, ProgramNameWrong_Throws, ProgramNameNull_Throws, ProgramNamePath_Parsed)
+
+//================================================
+
+JJ_TEST_CLASS_DERIVED(cmdLinePositionalTests_t, public cmdLineOptionsCommon_t)
+
+cmdLinePositionalTests_t() : cmdLineOptionsCommon_t(static_cast<jj::test::testclass_base_t&>(*this)) {}
+
+JJ_TEST_CASE_VARIANTS(basic, (size_t mandatory, size_t optional, const std::initializer_list<jj::string_t>& argv, const std::initializer_list<flags_t>& flags, bool ok, const std::vector<jj::string_t>& pvals), \
+    (1,1,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
+    (0,1,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
+    (1,0,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
+    (0,2,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
+    (2,0,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
+    (0,0,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
+    (0,0,{},{},true,{}),\
+    (1,0,{},{},false,{}),\
+    (0,1,{},{},true,{}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_positionals(defs, mandatory, optional);
+    arguments_t args;
+    setup_parser(args, flags);
+    perform_test(infos, defs, args, ok, pvals);
+}
+
+JJ_TEST_CASE_VARIANTS(noAdditional, (size_t mandatory, size_t optional, const std::initializer_list<jj::string_t>& argv, const std::initializer_list<flags_t>& flags, bool ok, const std::vector<jj::string_t>& pvals), \
+    (1,1,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
+    (0,1,{jjT("1"),jjT("2")},{},false,{}),\
+    (1,0,{jjT("1"),jjT("2")},{},false,{}),\
+    (0,2,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
+    (2,0,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
+    (0,0,{jjT("1"),jjT("2")},{},false,{}),\
+    (0,0,{},{},true,{}),\
+    (1,0,{},{},false,{}),\
+    (0,1,{},{},true,{}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_positionals(defs, mandatory, optional);
+    arguments_t args;
+    args.ParserOptions << flags_t::DENY_ADDITIONAL;
+    setup_parser(args, flags);
+    perform_test(infos, defs, args, ok, pvals);
+}
+
+JJ_TEST_CLASS_END(cmdLinePositionalTests_t, basic, noAdditional)
