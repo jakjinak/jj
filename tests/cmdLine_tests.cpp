@@ -1,9 +1,8 @@
-#include "jj/test/test.h"
-#include "jj/cmdLine.h"
 #include "cmdLine_tests.h"
 
 using namespace jj::cmdLine;
 
+nameCompare_less_t g_CASE_SENSITIVE = nameCompare_less_t(case_t::SENSITIVE), g_CASE_INSENSITIVE = nameCompare_less_t(case_t::INSENSITIVE);
 const jj::char_t* arg_info_t::DefaultProgramName(jjT("ProgramName"));
 
 void arg_info_t::print()
@@ -15,6 +14,8 @@ void arg_info_t::print()
     for (int i = 0; i < argc; ++i)
         jj::cout << jjT("\t'") << argv[i] << jjT("'\n");
 }
+
+//================================================
 
 JJ_TEST_CLASS(cmdLineTests_t)
 

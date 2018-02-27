@@ -1,11 +1,6 @@
-#include "jj/test/test.h"
 #include "cmdLine_tests.h"
-#include "jj/cmdLine.h"
-#include <vector>
 
 using namespace jj::cmdLine;
-
-nameCompare_less_t g_CASE_SENSITIVE = nameCompare_less_t(case_t::SENSITIVE), g_CASE_INSENSITIVE = nameCompare_less_t(case_t::INSENSITIVE);
 
 JJ_TEST_CLASS(cmdLineOptionDefinitionsTests_t)
 
@@ -191,144 +186,7 @@ JJ_TEST_CLASS_END(cmdLineOptionDefinitionsTests_t,\
 
 //================================================
 
-struct cmdLineOptionsCommon_t
-{
-    cmdLineOptionsCommon_t(jj::test::testclass_base_t& base) : base_(base) {}
-#undef JJ_TEST_CLASS_ACCESSOR
-#define JJ_TEST_CLASS_ACCESSOR base_.
-
-    struct optinfo_t
-    {
-        bool Known;
-        arguments_t::optionType_t Type;
-        size_t Count;
-        optinfo_t() : Known(false), Type(arguments_t::TREG), Count(0) {}
-    };
-    struct optinfos_t
-    {
-        typedef std::map<name_t, optinfo_t, nameCompare_less_t> infomap_t;
-        typedef std::vector<name_t> namelists_t;
-
-        infomap_t infos;
-        namelists_t names;
-        arg_info_t argv;
-
-        optinfos_t(const std::initializer_list<jj::string_t>& args) : infos(g_CASE_SENSITIVE), argv(args) {}
-    };
-
-    const arguments_t::option_t& checkOption(const arguments_t& args, const definitions_t& defs, const name_t& name, arguments_t::optionType_t type)
-    {
-        arguments_t::options_t::const_iterator fnd = args.Options.find(name);
-        JJ_ENSURE(fnd!=args.Options.end());
-        const arguments_t::option_t& opt = fnd->second;
-        JJ_ENSURE(opt.first.Type==type);
-        if (type==arguments_t::TREG)
-        {
-            JJ_ENSURE(opt.first.u.Opt!=nullptr);
-            nameCompare_less_t cmp(args.OptionCase);
-            definitions_t::opts_t::const_iterator fndd=defs.Options.begin();
-            for (; fndd!=defs.Options.end();++fndd)
-            {
-                for (auto& n : fndd->Names)
-                {
-                    if (!cmp(n,name)&&!cmp(name,n))
-                    {
-                        JJ_TEST(opt.first.u.Opt==&*fndd);
-                        if (opt.first.u.Opt->Multi == multiple_t::JOIN)
-                        {
-                            if (fndd->ValueCount > 0)
-                            {
-                                JJ_TEST(opt.second.Values.size() % fndd->ValueCount == 0);
-                            }
-                        }
-                        else
-                        {
-                            JJ_TEST(opt.second.Values.size() == fndd->ValueCount);
-                        }
-                        return opt;
-                    }
-                }
-            }
-        }
-        else if (type==arguments_t::TLIST)
-        {
-            JJ_ENSURE(opt.first.u.List!=nullptr);
-            nameCompare_less_t cmp(args.OptionCase);
-            definitions_t::lists_t::const_iterator fndd=defs.ListOptions.begin();
-            for (; fndd!=defs.ListOptions.end();++fndd)
-            {
-                for (auto& n : fndd->Names)
-                {
-                    if (!cmp(n,name)&&!cmp(name,n))
-                    {
-                        JJ_TEST(opt.first.u.List==&*fndd);
-                        return opt;
-                    }
-                }
-            }
-        }
-        JJ_ENSURE(false, jjT("Option definition found."));
-    }
-
-    void checkValues(const arguments_t::option_t& opt, const std::list<jj::string_t>& vals)
-    {
-        JJ_ENSURE(opt.second.Values.size() == vals.size(), jjT("Expected ") << vals.size() << jjT(" values but received ") << opt.second.Values.size());
-        std::list<jj::string_t>::const_iterator it = vals.begin();
-        for (const jj::string_t& s : opt.second.Values)
-        {
-            JJ_TEST(s == *it, jjT("Expected \"") << *it << jjT("\" but received \"") << s << jjT("\""));
-            ++it;
-        }
-    }
-
-    void perform_test(optinfos_t& infos, definitions_t defs, arguments_t args, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals)
-    {
-        if (ok)
-        {
-            args.parse(defs, infos.argv.argc, infos.argv.argv);
-        }
-        else
-        {
-            JJ_TEST_THAT_THROWS(args.parse(defs, infos.argv.argc, infos.argv.argv), std::runtime_error);
-            return;
-        }
-        size_t cnt = infos.names.size();
-        JJ_ENSURE(cnt == count.size());
-        JJ_ENSURE(cnt == pvals.size());
-        for (size_t i = 0; i < cnt; ++i)
-        {
-            if (count[i] == 0)
-                continue; // don't care about
-            optinfos_t::infomap_t::const_iterator fnd = infos.infos.find(infos.names[i]);
-            JJ_ENSURE(fnd != infos.infos.end(), jjT("is a known argument"));
-            const arguments_t::option_t& o = checkOption(args, defs, infos.names[i], fnd->second.Type);
-            checkValues(o, pvals[i]);
-        }
-        for (auto& info : infos.infos)
-        {
-            JJ_TEST(info.second.Known);
-        }
-    }
-#undef JJ_TEST_CLASS_ACCESSOR
-#define JJ_TEST_CLASS_ACCESSOR
-private:
-    jj::test::testclass_base_t& base_;
-};
-
 JJ_TEST_CLASS_DERIVED(cmdLineOptionsTests_t, public cmdLineOptionsCommon_t)
-
-void setup_single_option(definitions_t& defs, optinfos_t& infos, const std::list<name_t>& names, size_t count, multiple_t multi)
-{
-    defs.Options.push_back({ names, jjT(""), count, multi,
-        [this, &infos, names, count](const optionDefinition_t&, values_t& v) {
-        ++infos.infos[names.front()].Count;
-        JJ_TEST(v.Values.size() == count);
-        return true;
-    } });
-    infos.names.push_back(names.front());
-    infos.infos[names.front()].Known = true;
-    infos.infos[names.front()].Type = arguments_t::TREG;
-}
 
 cmdLineOptionsTests_t() : cmdLineOptionsCommon_t(static_cast<jj::test::testclass_base_t&>(*this)) {}
 
@@ -587,18 +445,6 @@ JJ_TEST_CLASS_END(cmdLineOptionsTests_t, parseShortOptions, parseLongOptions, re
 //================================================
 
 JJ_TEST_CLASS_DERIVED(cmdLineListsTests_t, public cmdLineOptionsCommon_t)
-
-void setup_single_option(definitions_t& defs, optinfos_t& infos, const std::list<name_t>& names, jj::string_t end, multiple_t multi)
-{
-    defs.ListOptions.push_back({ names, end, jjT(""), multi,
-        [this, &infos, names](const listDefinition_t&, values_t& v) {
-        ++infos.infos[names.front()].Count;
-        return true;
-    } });
-    infos.names.push_back(names.front());
-    infos.infos[names.front()].Known = true;
-    infos.infos[names.front()].Type = arguments_t::TLIST;
-}
 
 cmdLineListsTests_t() : cmdLineOptionsCommon_t(static_cast<jj::test::testclass_base_t&>(*this)) {}
 
