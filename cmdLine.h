@@ -201,6 +201,7 @@ enum class flags_t
 {
     USE_POSITIONAL_DELIMITER, //!< whether value in PositionalDelimiter shall be taken into account
     USE_RETURN_DELIMITER, //!< whether value in ReturnDelimiter shall be taken into account
+    TREAT_VARIABLES_IN_EXPLICIT_POSITIONALS, //!< if set then parser will check for variable definitions within a section after PositionalDelimiter (before ReturnDelimiter); by default it does not treat variables there
     LIST_MUST_TERMINATE, //!< the list end delimiter must always be specified (even if it would be the last argument)
     DENY_ADDITIONAL, //!< no unprocessed positional parameters can remain
     ALLOW_STACKS, //!< allows specifying short options in stack (eg. -abc instead of -a -b -c)
@@ -320,7 +321,7 @@ private:
     void handle_new_option(missingValues_t& mv, const name_t& name, optionData_t data, const char_t* value);
     void process_long_option(missingValues_t& mv, const string_t& prefix, const char_t* arg);
     void process_short_option(missingValues_t& mv, const string_t& prefix, const char_t* arg);
-    void process_positional(definitions_t::poss_t::const_iterator& cpos, const char_t* arg);
+    void process_positional(bool explicitPositionals, definitions_t::poss_t::const_iterator& cpos, const char_t* arg);
 };
 
 } // namespace cmdLine

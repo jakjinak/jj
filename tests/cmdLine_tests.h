@@ -323,6 +323,15 @@ struct cmdLineOptionsCommon_t
         perform_test(defs, args, vars);
         perform_test(defs, args, pvals);
     }
+
+    void perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& optvals, const std::map<jj::string_t, jj::string_t>& vars, const std::vector<jj::string_t>& posvals)
+    {
+        if (!perform_test(infos, defs, args, ok))
+            return;
+        perform_test(infos, defs, args, count, optvals);
+        perform_test(defs, args, vars);
+        perform_test(defs, args, posvals);
+    }
 #undef JJ_TEST_CLASS_ACCESSOR
 #define JJ_TEST_CLASS_ACCESSOR
 private:

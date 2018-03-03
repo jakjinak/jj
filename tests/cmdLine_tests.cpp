@@ -203,7 +203,10 @@ JJ_TEST_CASE_VARIANTS(caseinsensitive, (const std::initializer_list<jj::string_t
 JJ_TEST_CASE_VARIANTS(unknown, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, bool ok, const std::map<jj::string_t, jj::string_t>& vars, const std::vector<jj::string_t>& pvals), \
     ({jjT("xxx=1")},{},false,{},{}),\
     ({jjT("xxx=1")},{unknownVariableBehavior_t::IS_POSITIONAL},true,{},{jjT("xxx=1")}),\
-    ({jjT("xxx=1")},{unknownVariableBehavior_t::IS_VARIABLE},true,{{jjT("xxx"),jjT("1")}},{}))
+    ({jjT("xxx=1")},{unknownVariableBehavior_t::IS_VARIABLE},true,{{jjT("xxx"),jjT("1")}},{}),\
+    ({jjT("=1")},{},false,{},{}),\
+    ({jjT("=1")},{unknownVariableBehavior_t::IS_POSITIONAL},true,{},{jjT("=1")}),\
+    ({jjT("=1")},{unknownVariableBehavior_t::IS_VARIABLE},false,{},{}))
 {
     optinfos_t infos(argv);
     definitions_t defs;
@@ -229,4 +232,108 @@ JJ_TEST_CASE_VARIANTS(unknown_sensitiveness, (const std::initializer_list<jj::st
     perform_test(infos, defs, args, ok, vars, pvals);
 }
 
-JJ_TEST_CLASS_END(cmdLineVariableTests_t, basic, duplicates, caseinsensitive, unknown, unknown_sensitiveness)
+JJ_TEST_CASE(doubleAssign)
+{
+    optinfos_t infos({ jjT("var=var=var") });
+    definitions_t defs;
+    setup_single_variable(defs, jjT("var"), jjT(""));
+    arguments_t args;
+    perform_test(infos, defs, args, true, { {jjT("var"),jjT("var=var")} }, {});
+}
+
+JJ_TEST_CLASS_END(cmdLineVariableTests_t, basic, duplicates, caseinsensitive, unknown, unknown_sensitiveness, doubleAssign)
+
+//================================================
+
+JJ_TEST_CLASS_DERIVED(cmdLineMixedTypesTests_t, public cmdLineOptionsCommon_t)
+
+cmdLineMixedTypesTests_t() : cmdLineOptionsCommon_t(static_cast<jj::test::testclass_base_t&>(*this)) {}
+
+JJ_TEST_CASE_VARIANTS(complex, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, size_t mandatory, bool ok,\
+        const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& optvals,\
+        const std::vector<jj::string_t>& posvals,\
+        const std::map<jj::string_t, jj::string_t>& vars),\
+    ({jjT("--"),jjT("--list"),jjT("-a"),jjT("var=val"),jjT("--")},{flags_t::USE_POSITIONAL_DELIMITER,flags_t::USE_RETURN_DELIMITER},3,true,{0,0,0,0},{{},{},{},{}},{jjT("--list"),jjT("-a"),jjT("var=val")},{{jjT("var"),jjT("5")}}),\
+    ({jjT("--"),jjT("--list"),jjT("-a"),jjT("var=val"),jjT("--")},{flags_t::USE_POSITIONAL_DELIMITER,flags_t::USE_RETURN_DELIMITER,flags_t::TREAT_VARIABLES_IN_EXPLICIT_POSITIONALS},2,true,{0,0,0,0},{{},{},{},{}},{jjT("--list"),jjT("-a")},{{jjT("var"),jjT("val")}}),\
+    ({jjT("--"),jjT("--list"),jjT("-a"),jjT("var=val"),jjT("--")},{flags_t::USE_POSITIONAL_DELIMITER},3,true,{0,0,0,0},{{},{},{},{}},{jjT("--list"),jjT("-a"),jjT("var=val"),jjT("--")},{{jjT("var"),jjT("5")}}),\
+    ({jjT("--"),jjT("--list"),jjT("-a"),jjT("var=val")},{flags_t::USE_POSITIONAL_DELIMITER,flags_t::USE_RETURN_DELIMITER},3,true,{0,0,0,0},{{},{},{},{}},{jjT("--list"),jjT("-a"),jjT("var=val")},{{jjT("var"),jjT("5")}}),\
+    ({jjT("--list=--"),jjT("--"),jjT("--list")},{flags_t::USE_POSITIONAL_DELIMITER},0,true,{0,0,0,1},{{},{},{},{}},{jjT("--list")},{}),\
+    ({jjT("--list"),jjT("--"),jjT("--list")},{flags_t::USE_POSITIONAL_DELIMITER},0,true,{0,0,0,2},{{},{},{},{}},{},{}),\
+    ({jjT("--list"),jjT("--option-B"),jjT("valueB"),jjT("--"),jjT("--option-B"),jjT("--list")},{flags_t::USE_POSITIONAL_DELIMITER},0,true,{0,1,0,1},{{},{jjT("--list")},{},{jjT("--option-B"),jjT("valueB")}},{},{}),\
+    ({jjT("-bla"),jjT("--"),jjT("--list"),jjT("--option-A"),jjT("--"),jjT("text")},{flags_t::USE_POSITIONAL_DELIMITER,stackOptionValues_t::LOOSE},1,true,{1,1,0,1},{{},{jjT("--")},{},{jjT("--list"),jjT("--option-A")}},{jjT("text")},{}),\
+    ({jjT("-c=-l"),jjT("listvalue"),jjT("--")},{flags_t::USE_POSITIONAL_DELIMITER},0,true,{0,0,1,0},{{},{},{jjT("-l"),jjT("listvalue"),jjT("--")},{}},{},{}),\
+    ({jjT("-b"),jjT("var=val")},{flags_t::USE_POSITIONAL_DELIMITER},0,true,{0,1,0,0},{{},{jjT("var=val")},{},{}},{},{}),\
+    ({jjT("--list"),jjT("var=val"),jjT("--")},{flags_t::USE_POSITIONAL_DELIMITER},0,true,{0,0,0,1},{{},{},{},{jjT("var=val")}},{},{}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_option(defs, infos, { name_t(jjT("a")),name_t(jjT("option-A")) }, 0u, multiple_t::OVERRIDE);
+    setup_single_option(defs, infos, { name_t(jjT("b")),name_t(jjT("option-B")) }, 1u, multiple_t::OVERRIDE);
+    setup_single_option(defs, infos, { name_t(jjT("c")),name_t(jjT("option-C")) }, 3u, multiple_t::OVERRIDE);
+    setup_single_option(defs, infos, { name_t(jjT("l")),name_t(jjT("list")) }, jjT("--"), multiple_t::OVERRIDE);
+    setup_positionals(defs, mandatory, 0);
+    setup_single_variable(defs, jjT("var"), jjT("5"));
+    arguments_t args;
+    args.PositionalDelimiter = jjT("--");
+    args.ReturnDelimiter = jjT("--");
+    setup_parser(args, flags);
+    perform_test(infos, defs, args, ok, count, optvals, vars, posvals);
+}
+
+JJ_TEST_CASE_VARIANTS(sameOptionAndVar, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, \
+        const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& optvals,\
+        const std::map<jj::string_t, jj::string_t>& vars),\
+    ({jjT("-a=X")},{},{1,0,0,0},{{jjT("X")},{},{},{}},{{jjT("a"),jjT("1")}}),\
+    ({jjT("-A=X")},{},{1,0,0,0},{{jjT("X")},{},{},{}},{{jjT("a"),jjT("1")}}),\
+    ({jjT("a=X")},{},{0,0,0,0},{{},{},{},{}},{{jjT("a"),jjT("X")}}),\
+    ({jjT("A=X")},{},{0,0,0,0},{{},{},{},{}},{{jjT("a"),jjT("X")}}),\
+    ({jjT("--long=X")},{},{0,1,0,0},{{},{jjT("X")},{},{}},{{jjT("long"),jjT("2")}}),\
+    ({jjT("--Long=X")},{},{0,1,0,0},{{},{jjT("X")},{},{}},{{jjT("long"),jjT("2")}}),\
+    ({jjT("long=X")},{},{0,0,0,0},{{},{},{},{}},{{jjT("long"),jjT("X")}}),\
+    ({jjT("LONG=X")},{},{0,0,0,0},{{},{},{},{}},{{jjT("long"),jjT("X")}}),\
+    ({jjT("-l=X")},{},{0,0,1,0},{{},{},{jjT("X")},{}},{{jjT("l"),jjT("3")}}),\
+    ({jjT("-L=X")},{},{0,0,1,0},{{},{},{jjT("X")},{}},{{jjT("l"),jjT("3")}}),\
+    ({jjT("l=X")},{},{0,0,0,0},{{},{},{},{}},{{jjT("l"),jjT("X")}}),\
+    ({jjT("L=X")},{},{0,0,0,0},{{},{},{},{}},{{jjT("l"),jjT("X")}}),\
+    ({jjT("--list=X")},{},{0,0,0,1},{{},{},{},{jjT("X")}},{{jjT("list"),jjT("4")}}),\
+    ({jjT("--LIST=X")},{},{0,0,0,1},{{},{},{},{jjT("X")}},{{jjT("list"),jjT("4")}}),\
+    ({jjT("list=X")},{},{0,0,0,0},{{},{},{},{}},{{jjT("list"),jjT("X")}}),\
+    ({jjT("List=X")},{},{0,0,0,0},{{},{},{},{}},{{jjT("list"),jjT("X")}}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_option(defs, infos, { name_t(jjT("a")) }, 1u, multiple_t::OVERRIDE);
+    setup_single_option(defs, infos, { name_t(jjT("long")) }, 1u, multiple_t::OVERRIDE);
+    setup_single_option(defs, infos, { name_t(jjT("l")) }, jjT(""), multiple_t::OVERRIDE);
+    setup_single_option(defs, infos, { name_t(jjT("list")) }, jjT(""), multiple_t::OVERRIDE);
+    setup_single_variable(defs, jjT("a"), jjT("1"));
+    setup_single_variable(defs, jjT("long"), jjT("2"));
+    setup_single_variable(defs, jjT("l"), jjT("3"));
+    setup_single_variable(defs, jjT("list"), jjT("4"));
+    arguments_t args;
+    args.OptionCase = case_t::INSENSITIVE;
+    args.VariableCase = case_t::INSENSITIVE;
+    setup_parser(args, flags);
+    perform_test(infos, defs, args, true, count, optvals, vars, {});
+}
+
+JJ_TEST_CASE(callbackReturnsFalse)
+{
+    optinfos_t infos({ jjT("positional"), jjT("-ab=1"),jjT("ab=X"),jjT("--list"),jjT("value1"),jjT("value2") });
+    definitions_t defs;
+    size_t cnt = 0;
+    defs.Options.push_back({ { name_t(jjT("a")) }, jjT(""), 0u, multiple_t::OVERRIDE, [&cnt](...) { ++cnt; return false; } });
+    defs.Options.push_back({ { name_t(jjT("b")) }, jjT(""), 1u, multiple_t::OVERRIDE, [&cnt](...) { ++cnt; return false; } });
+    defs.ListOptions.push_back({ { name_t(jjT("list")) }, jjT(""), jjT(""), multiple_t::OVERRIDE, [&cnt](...) { ++cnt; return false; } });
+    defs.Variables.push_back({ jjT("ab"), jjT(""), jjT("something"), [&cnt](...) { ++cnt; return false; } });
+    defs.Positionals.push_back({ jjT("positional"), jjT(""), false, [&cnt](...) { ++cnt; return false; } });
+    arguments_t args;
+    args.parse(defs, infos.argv.argc, infos.argv.argv);
+    JJ_TEST(cnt == 5);
+    JJ_TEST(args.Options.size() == 0);
+    JJ_TEST(args.Positionals.size() == 0);
+    JJ_ENSURE(args.Variables.size() == 1);
+    JJ_TEST(args.Variables.begin()->second.Value == jjT("something"));
+}
+
+JJ_TEST_CLASS_END(cmdLineMixedTypesTests_t, complex, sameOptionAndVar, callbackReturnsFalse)
