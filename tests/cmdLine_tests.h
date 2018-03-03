@@ -107,11 +107,42 @@ struct cmdLineOptionsCommon_t
             defs.Positionals.push_back({ shorts[cnt], jjT(""), false, [this](const jj::cmdLine::positionalDefinition_t, jj::string_t& value) { return true; } });
     }
 
-    void setup_parser(jj::cmdLine::arguments_t& args, const std::initializer_list<jj::cmdLine::flags_t>& flags)
+    void setup_single_variable(jj::cmdLine::definitions_t& defs, const jj::string_t& name, const jj::string_t& deflt)
+    {
+        defs.Variables.push_back({ name, jjT(""), deflt, nullptr });
+    }
+
+    struct parserSetupWrap_t
+    {
+        enum t { FLAGS, SOVS, UVS } t_;
+        union {
+            jj::cmdLine::flags_t f;
+            jj::cmdLine::stackOptionValues_t sov;
+            jj::cmdLine::unknownVariableBehavior_t uv;
+        } v_;
+        parserSetupWrap_t(jj::cmdLine::flags_t v) : t_(FLAGS) { v_.f = v; }
+        parserSetupWrap_t(jj::cmdLine::stackOptionValues_t v) : t_(SOVS) { v_.sov = v; }
+        parserSetupWrap_t(jj::cmdLine::unknownVariableBehavior_t v) : t_(UVS) { v_.uv = v; }
+    };
+
+    void setup_parser(jj::cmdLine::arguments_t& args, const std::initializer_list<parserSetupWrap_t>& setup)
     {
         jj::opt::f<jj::cmdLine::flags_t, jj::cmdLine::flags_t::MAX_FLAGS>& fs = args.ParserOptions;
-        for (auto f : flags)
-            fs.toggle(f);
+        for (auto s : setup)
+        {
+            switch (s.t_)
+            {
+            case parserSetupWrap_t::FLAGS:
+                fs.toggle(s.v_.f);
+                break;
+            case parserSetupWrap_t::SOVS:
+                args.ParserOptions << s.v_.sov;
+                break;
+            case parserSetupWrap_t::UVS:
+                args.ParserOptions << s.v_.uv;
+                break;
+            }
+        }
     }
 
     const jj::cmdLine::arguments_t::option_t& checkOption(const jj::cmdLine::arguments_t& args, const jj::cmdLine::definitions_t& defs, const jj::cmdLine::name_t& name, jj::cmdLine::arguments_t::optionType_t type)
@@ -179,6 +210,7 @@ struct cmdLineOptionsCommon_t
         }
     }
 
+    /* verifies whether parsing is successful or throws */
     bool perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, bool ok)
     {
         if (ok)
@@ -193,10 +225,9 @@ struct cmdLineOptionsCommon_t
         }
     }
 
-    void perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals)
+    /* verifies that options have given values and counts and so ... */
+    void perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals)
     {
-        if (!perform_test(infos, defs, args, ok))
-            return;
         size_t cnt = infos.names.size();
         JJ_ENSURE(cnt == count.size());
         JJ_ENSURE(cnt == pvals.size());
@@ -215,10 +246,9 @@ struct cmdLineOptionsCommon_t
         }
     }
 
-    void perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, bool ok, const std::vector<jj::string_t>& pvals)
+    /* verifies that positional arguments have the given values (and associated the correct definition) */
+    void perform_test(jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, const std::vector<jj::string_t>& pvals)
     {
-        if (!perform_test(infos, defs, args, ok))
-            return;
         JJ_ENSURE(args.Positionals.size() == pvals.size(), jjT("Expected ") << pvals.size() << jjT(", ") << args.Positionals.size() << jjT(" were parsed"));
         size_t i = 0;
         jj::cmdLine::arguments_t::positionals_t::const_iterator pit = args.Positionals.begin();
@@ -236,6 +266,62 @@ struct cmdLineOptionsCommon_t
                 JJ_TEST(pit->first == nullptr);
             }
         }
+    }
+
+    /* verifies that variables have values as given vars (and correctly associated definitions) */
+    void perform_test(jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, const std::map<jj::string_t, jj::string_t>& vars)
+    {
+        for (auto& v : vars)
+        {
+            jj::cmdLine::arguments_t::varmap_t::const_iterator fnd = args.Variables.find(v.first);
+            JJ_ENSURE_MSG(fnd != args.Variables.end(), jjT("Variable ") << v.first << jjT(" is defined"));
+            JJ_TEST(v.second == fnd->second.Value);
+
+            // check correct definition associated
+            bool(*cmpfn)(const jj::string_t&, const jj::string_t&) = (args.VariableCase == jj::cmdLine::case_t::SENSITIVE
+                ? static_cast<bool(*)(const jj::string_t&, const jj::string_t&)>(jj::str::less)
+                : static_cast<bool(*)(const jj::string_t&, const jj::string_t&)>(jj::str::lessi));
+            jj::cmdLine::variableDefinition_t* def = nullptr;
+            for (auto& d : defs.Variables)
+            {
+                // means equal; TODO replace less/lessi above with equal/equali when available
+                if (!cmpfn(d.Name, v.first) && !cmpfn(v.first, d.Name))
+                {
+                    def = &d;
+                    break;
+                }
+            }
+            JJ_TEST_MSG(fnd->second.Var == def, jjT("Variable has ") << (def == nullptr ? jjT("correctly no") : jjT("correct non-NULL")) << jjT(" definition associated."));
+        }
+    }
+
+    void perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals)
+    {
+        if (!perform_test(infos, defs, args, ok))
+            return;
+        perform_test(infos, defs, args, count, pvals);
+    }
+
+    void perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, bool ok, const std::vector<jj::string_t>& pvals)
+    {
+        if (!perform_test(infos, defs, args, ok))
+            return;
+        perform_test(defs, args, pvals);
+    }
+
+    void perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, bool ok, const std::map<jj::string_t, jj::string_t>& vars)
+    {
+        if (!perform_test(infos, defs, args, ok))
+            return;
+        perform_test(defs, args, vars);
+    }
+
+    void perform_test(optinfos_t& infos, jj::cmdLine::definitions_t& defs, jj::cmdLine::arguments_t& args, bool ok, const std::map<jj::string_t, jj::string_t>& vars, const std::vector<jj::string_t>& pvals)
+    {
+        if (!perform_test(infos, defs, args, ok))
+            return;
+        perform_test(defs, args, vars);
+        perform_test(defs, args, pvals);
     }
 #undef JJ_TEST_CLASS_ACCESSOR
 #define JJ_TEST_CLASS_ACCESSOR

@@ -408,7 +408,7 @@ JJ_TEST_CASE_VARIANTS(disabledAssigns, (const std::initializer_list<jj::string_t
     perform_test(infos, defs, args, ok, count, pvals);
 }
 
-JJ_TEST_CASE_VARIANTS(valueModes, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<flags_t>& flags, multiple_t valueMode, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals),\
+JJ_TEST_CASE_VARIANTS(valueModes, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, multiple_t valueMode, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals),\
     ({jjT("-a"),jjT("X"),jjT("-a"),jjT("Y"),jjT("-a"),jjT("Z")},{},multiple_t::OVERRIDE,true,{3,0,0,0},{{jjT("Z")},{},{},{}}),\
     ({jjT("-a"),jjT("X"),jjT("-a"),jjT("Y"),jjT("-a"),jjT("Z")},{},multiple_t::PRESERVE,true,{3,0,0,0},{{jjT("X")},{},{},{}}),\
     ({jjT("-a"),jjT("X"),jjT("-a"),jjT("Y"),jjT("-a"),jjT("Z")},{},multiple_t::JOIN,true,{3,0,0,0},{{jjT("X"),jjT("Y"),jjT("Z")},{},{},{}}),\
@@ -598,7 +598,7 @@ JJ_TEST_CASE_VARIANTS(disabledAssigns,(const std::initializer_list<jj::string_t>
     perform_test(infos, defs, args, ok, count, pvals);
 }
 
-JJ_TEST_CASE_VARIANTS(valueModes, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<flags_t>& flags, multiple_t valueMode, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals), \
+JJ_TEST_CASE_VARIANTS(valueModes, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, multiple_t valueMode, bool ok, const std::vector<int>& count, const std::vector<std::list<jj::string_t>>& pvals), \
     ({jjT("-a"),jjT("X"),jjT("END"),jjT("-a"),jjT("Y"),jjT("END")},{},multiple_t::OVERRIDE,true,{2,0,0,0},{{jjT("Y")},{},{},{}}),\
     ({jjT("-a"),jjT("X"),jjT("END"),jjT("-a"),jjT("Y"),jjT("END")},{},multiple_t::PRESERVE,true,{2,0,0,0},{{jjT("X")},{},{},{}}),\
     ({jjT("-a"),jjT("X"),jjT("END"),jjT("-a"),jjT("Y"),jjT("END")},{},multiple_t::JOIN,true,{2,0,0,0},{{jjT("X"),jjT("Y")},{},{},{}}),\

@@ -12,9 +12,9 @@ name_t::defaultPolicy_t name_t::DefaultPolicy(DASH);
 string_t name_t::DefaultPrefix;
 
 arguments_t::arguments_t()
-    : OptionCase(case_t::SENSITIVE), VariableCase(case_t::SENSITIVE), ParseStart(0), Options(nameCompare_less_t(case_t::SENSITIVE)), opts_(nameCompare_less_t(case_t::SENSITIVE)), vars_(nameCompare_less_t(case_t::SENSITIVE)), defs_(nullptr)
+    : OptionCase(case_t::SENSITIVE), VariableCase(case_t::SENSITIVE), ParseStart(0), Options(nameCompare_less_t(case_t::SENSITIVE)), opts_(nameCompare_less_t(case_t::SENSITIVE)), Variables(nameCompare_less_t(case_t::SENSITIVE)), defs_(nullptr)
 {
-    ParserOptions << flags_t::ALLOW_STACKS << flags_t::ALLOW_SHORT_ASSIGN << flags_t::ALLOW_LONG_ASSIGN;
+    ParserOptions << flags_t::ALLOW_STACKS << flags_t::ALLOW_SHORT_ASSIGN << flags_t::ALLOW_LONG_ASSIGN << unknownVariableBehavior_t::IS_ERROR;
     setup_basic_prefixes();
 }
 
@@ -73,12 +73,12 @@ void arguments_t::parse(const definitions_t& defs)
     }
 
     // reset variables metadata and rebuild them from definition list
-    vars_ = varmap_t(nameCompare_less_t(VariableCase));
+    Variables = varmap_t(nameCompare_less_t(VariableCase));
     for (const definitions_t::vars_t::value_type& v : defs.Variables)
     {
         if (v.Name.empty())
             throw std::runtime_error("Empty variable name");
-        bool ret = vars_.insert(varmap_t::value_type(v.Name, varproxy_t{ v.Default, &v })).second;
+        bool ret = Variables.insert(varmap_t::value_type(v.Name, varproxy_t{ v.Default, true, &v })).second;
         if (!ret)
             throw std::runtime_error(strcvt::to_string(jjS(jjT("Duplicate definition for variable '") << v.Name << jjT("'"))));
     }
@@ -108,7 +108,7 @@ void arguments_t::print_default_help()
         jj::cout << ProgramName;
     if (opts_.size()>0)
         jj::cout << jjT(" OPTIONS...");
-    if (vars_.size()>0)
+    if (Variables.size()>0)
         jj::cout << jjT(" VARIABLES...");
 
     const definitions_t::poss_t& pospar = defs_->Positionals;
@@ -167,7 +167,7 @@ void arguments_t::print_default_help()
         }
     }
 
-    if (vars_.size() > 0)
+    if (Variables.size() > 0)
     {
         jj::cout << jjT("\nVARIABLES\n");
         jj::cout << jjT("\tThe following variables can be set per arguments in form variable=value.\n");
@@ -310,8 +310,13 @@ void arguments_t::clear_data()
 {
     Options = options_t(nameCompare_less_t(OptionCase));
     Positionals.clear();
-    for (varmap_t::value_type& v : vars_)
-        v.second.Value = v.second.Var->Default;
+    for (varmap_t::value_type& v : Variables)
+    {
+        if (v.second.Var == nullptr)
+            v.second.Value == jjT(""); // TODO replace with jj::string_t::Empty when available
+        else
+            v.second.Value = v.second.Var->Default;
+    }
 }
 
 void arguments_t::add_option(options_t::value_type& opt)
@@ -497,24 +502,42 @@ void arguments_t::process_short_option(missingValues_t& mv, const string_t& pref
 
 void arguments_t::process_positional(definitions_t::poss_t::const_iterator& cpos, const char_t* arg)
 {
-    if (!vars_.empty())
+    jj::opt::e<unknownVariableBehavior_t>& uv = ParserOptions;
+    if (!Variables.empty() || uv.Value != unknownVariableBehavior_t::IS_POSITIONAL)
     {
         // try locate =
         const char_t* fnd = str::find(arg, jjT('='));
         if (fnd != nullptr)
         {
             string_t name(arg, fnd - arg), value(++fnd);
-            varmap_t::iterator var = vars_.find(name);
-            if (var != vars_.end())
+            varmap_t::iterator var = Variables.find(name);
+            if (var != Variables.end())
             {
-                if (var->second.Var->CB == nullptr || var->second.Var->CB(*var->second.Var, value))
+                if (var->second.Var == nullptr)
+                {
+                    // "unknown" variables allowed and rewriting one already found
                     var->second.Value = value;
+                    var->second.IsDefault = value.empty();
+                    return; // processed as "unknown" variable
+                }
+                if (var->second.Var->CB == nullptr || var->second.Var->CB(*var->second.Var, value))
+                {
+                    var->second.Value = value;
+                    var->second.IsDefault = value == var->second.Var->Default;
+                }
                 return; // positional processed as variable definition
             }
-            else if (ParserOptions*flags_t::UNKNOWN_VARS_ARE_POSITIONALS)
-                ; // simply ignore
-            else
+            switch (uv.Value)
+            {
+            case unknownVariableBehavior_t::IS_POSITIONAL:
+                break; // simply ignore; handle below as positional argument
+            case unknownVariableBehavior_t::IS_VARIABLE:
+                Variables[name] = varproxy_t{ value, value.empty(), nullptr };
+                return; // processed as "unknown" variable
+            case unknownVariableBehavior_t::IS_ERROR:
+            default:
                 throw std::runtime_error(strcvt::to_string(jjS(jjT("Found unknown variable '") << name << jjT("'."))));
+            }
         }
     }
 

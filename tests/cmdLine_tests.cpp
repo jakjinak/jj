@@ -60,7 +60,7 @@ JJ_TEST_CLASS_DERIVED(cmdLinePositionalTests_t, public cmdLineOptionsCommon_t)
 
 cmdLinePositionalTests_t() : cmdLineOptionsCommon_t(static_cast<jj::test::testclass_base_t&>(*this)) {}
 
-JJ_TEST_CASE_VARIANTS(basic, (size_t mandatory, size_t optional, const std::initializer_list<jj::string_t>& argv, const std::initializer_list<flags_t>& flags, bool ok, const std::vector<jj::string_t>& pvals), \
+JJ_TEST_CASE_VARIANTS(basic, (size_t mandatory, size_t optional, const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, bool ok, const std::vector<jj::string_t>& pvals), \
     (1,1,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
     (0,1,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
     (1,0,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
@@ -79,7 +79,7 @@ JJ_TEST_CASE_VARIANTS(basic, (size_t mandatory, size_t optional, const std::init
     perform_test(infos, defs, args, ok, pvals);
 }
 
-JJ_TEST_CASE_VARIANTS(noAdditional, (size_t mandatory, size_t optional, const std::initializer_list<jj::string_t>& argv, const std::initializer_list<flags_t>& flags, bool ok, const std::vector<jj::string_t>& pvals), \
+JJ_TEST_CASE_VARIANTS(noAdditional, (size_t mandatory, size_t optional, const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, bool ok, const std::vector<jj::string_t>& pvals), \
     (1,1,{jjT("1"),jjT("2")},{},true,{jjT("1"),jjT("2")}),\
     (0,1,{jjT("1"),jjT("2")},{},false,{}),\
     (1,0,{jjT("1"),jjT("2")},{},false,{}),\
@@ -99,7 +99,7 @@ JJ_TEST_CASE_VARIANTS(noAdditional, (size_t mandatory, size_t optional, const st
     perform_test(infos, defs, args, ok, pvals);
 }
 
-JJ_TEST_CASE_VARIANTS(delimiters, (size_t mandatory, const std::initializer_list<jj::string_t>& delimiters, const std::initializer_list<jj::string_t>& argv, const std::initializer_list<flags_t>& flags, bool ok, const std::vector<jj::string_t>& pvals), \
+JJ_TEST_CASE_VARIANTS(delimiters, (size_t mandatory, const std::initializer_list<jj::string_t>& delimiters, const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, bool ok, const std::vector<jj::string_t>& pvals), \
     (0,{},{jjT("-")},{},false,{}),\
     (0,{},{jjT("--")},{},false,{}),\
     (0,{},{jjT("-a")},{},false,{}),\
@@ -136,3 +136,97 @@ JJ_TEST_CASE_VARIANTS(delimiters, (size_t mandatory, const std::initializer_list
 }
 
 JJ_TEST_CLASS_END(cmdLinePositionalTests_t, basic, noAdditional, delimiters)
+
+//================================================
+
+JJ_TEST_CLASS_DERIVED(cmdLineVariableTests_t, public cmdLineOptionsCommon_t)
+
+cmdLineVariableTests_t() : cmdLineOptionsCommon_t(static_cast<jj::test::testclass_base_t&>(*this)) {}
+
+JJ_TEST_CASE_VARIANTS(basic, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, bool ok, const std::map<jj::string_t, jj::string_t>& vars), \
+    ({},{},true,{{jjT("var"),jjT("")},{jjT("Var"),jjT("1")},{jjT("VAR"),jjT(" ")}}),/*default values*/\
+    ({jjT("var=val")},{},true,{{jjT("var"),jjT("val")},{jjT("Var"),jjT("1")},{jjT("VAR"),jjT(" ")}}),\
+    ({jjT("Var=")},{},true,{{jjT("var"),jjT("")},{jjT("Var"),jjT("")},{jjT("VAR"),jjT(" ")}}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_variable(defs, jjT("var"), jjT(""));
+    setup_single_variable(defs, jjT("Var"), jjT("1"));
+    setup_single_variable(defs, jjT("VAR"), jjT(" "));
+    arguments_t args;
+    setup_parser(args, flags);
+    perform_test(infos, defs, args, ok, vars);
+}
+
+JJ_TEST_CASE_VARIANTS(duplicates, (const std::initializer_list<jj::string_t>& names, case_t varCase, bool ok),\
+    ({jjT("")},case_t::SENSITIVE,false),\
+    ({jjT("A"),jjT("a"),jjT("b")},case_t::SENSITIVE,true),\
+    ({jjT("A"),jjT("a"),jjT("b")},case_t::INSENSITIVE,false),\
+    ({jjT("A"),jjT("b")},case_t::INSENSITIVE,true),\
+    ({jjT("blabla"),jjT("BLABLA")},case_t::INSENSITIVE,false),\
+    ({jjT("blabla"),jjT("BLABLA")},case_t::SENSITIVE,true),\
+    ({jjT("Bla-Bla"),jjT("BLA-BLA")},case_t::INSENSITIVE,false),\
+    ({jjT("Bla-Bla"),jjT("BLA-BLA")},case_t::SENSITIVE,true))
+{
+    definitions_t defs;
+    for (auto& x : names)
+        setup_single_variable(defs, x, jjT(""));
+
+    arguments_t args;
+    args.VariableCase = varCase;
+
+    if (ok)
+    {
+        args.parse(defs);
+        JJ_TEST(true, jjT("parsing does not throw"));
+    }
+    else
+    {
+        JJ_TEST_THAT_THROWS(args.parse(defs), std::runtime_error);
+    }
+}
+
+JJ_TEST_CASE_VARIANTS(caseinsensitive, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, bool ok, const std::map<jj::string_t, jj::string_t>& vars), \
+    ({jjT("var=10")},{},true,{{jjT("var"),jjT("10")}}),\
+    ({jjT("Var=10")},{},true,{{jjT("var"),jjT("10")}}),\
+    ({jjT("VAR=10")},{},true,{{jjT("var"),jjT("10")}}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_variable(defs, jjT("var"), jjT("5"));
+    arguments_t args;
+    args.VariableCase = case_t::INSENSITIVE;
+    setup_parser(args, flags);
+    perform_test(infos, defs, args, ok, vars);
+}
+
+JJ_TEST_CASE_VARIANTS(unknown, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, bool ok, const std::map<jj::string_t, jj::string_t>& vars, const std::vector<jj::string_t>& pvals), \
+    ({jjT("xxx=1")},{},false,{},{}),\
+    ({jjT("xxx=1")},{unknownVariableBehavior_t::IS_POSITIONAL},true,{},{jjT("xxx=1")}),\
+    ({jjT("xxx=1")},{unknownVariableBehavior_t::IS_VARIABLE},true,{{jjT("xxx"),jjT("1")}},{}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    arguments_t args;
+    setup_parser(args, flags);
+    perform_test(infos, defs, args, ok, vars, pvals);
+}
+
+JJ_TEST_CASE_VARIANTS(unknown_sensitiveness, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, case_t cs, bool ok, const std::map<jj::string_t, jj::string_t>& vars, const std::vector<jj::string_t>& pvals), \
+    ({jjT("VAR=1")},{unknownVariableBehavior_t::IS_ERROR},case_t::SENSITIVE,false,{},{}),\
+    ({jjT("VAR=1")},{unknownVariableBehavior_t::IS_ERROR},case_t::INSENSITIVE,true,{{jjT("var"),jjT("1")}},{}),\
+    ({jjT("VAR=1")},{unknownVariableBehavior_t::IS_POSITIONAL},case_t::SENSITIVE,true,{},{jjT("VAR=1")}),\
+    ({jjT("VAR=1")},{unknownVariableBehavior_t::IS_POSITIONAL},case_t::INSENSITIVE,true,{{jjT("var"),jjT("1")}},{}),\
+    ({jjT("VAR=1")},{unknownVariableBehavior_t::IS_VARIABLE},case_t::SENSITIVE,true,{{jjT("var"),jjT("5")},{jjT("VAR"),jjT("1")}},{}),\
+    ({jjT("VAR=1")},{unknownVariableBehavior_t::IS_VARIABLE},case_t::INSENSITIVE,true,{{jjT("var"),jjT("1")}},{}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_variable(defs, jjT("var"), jjT("5"));
+    arguments_t args;
+    args.VariableCase = cs;
+    setup_parser(args, flags);
+    perform_test(infos, defs, args, ok, vars, pvals);
+}
+
+JJ_TEST_CLASS_END(cmdLineVariableTests_t, basic, duplicates, caseinsensitive, unknown, unknown_sensitiveness)

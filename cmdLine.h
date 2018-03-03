@@ -207,7 +207,6 @@ enum class flags_t
     ALLOW_STACK_VALUES, //!< when an option that requires a value is encountered in stack then the remaining characters in stack (if any) are considered to be the value (eg. -avalue instead of -a value); if such option is last character in stack then still the next argument is taken as value; this works also without ALLOW_STACKS
     ALLOW_SHORT_ASSIGN, //!< allow values to be part of same argument behind a = (eg. -a=value instead of -a value); note: such = does not work with LOOSE_STACK_VALUES
     ALLOW_LONG_ASSIGN, //!< allow values to be part of same argument behind a = (eg. --arg=value instead of --arg value)
-    UNKNOWN_VARS_ARE_POSITIONALS, //!< arguments in form name=value for which no corresponding variable definition is found are treated as regular positional arguments; normally this would throw
 
     MAX_FLAGS
 };
@@ -215,8 +214,15 @@ enum class flags_t
 enum class stackOptionValues_t
 {
     REGULAR, //!< default; in stacks of short options, only the last in stack can have value
-    LOOSE, //!< allows values for short options in stack not only at the end (eg. -ab 3 5 instead of -a 3 -b 5)
-    MAX_FLAGS
+    LOOSE //!< allows values for short options in stack not only at the end (eg. -ab 3 5 instead of -a 3 -b 5)
+};
+
+/*! Determines what happens with arguments in form 'var=value' where var is unknown. */
+enum class unknownVariableBehavior_t
+{
+    IS_POSITIONAL, //!< arguments are considered additional positional arguments
+    IS_VARIABLE, //!< arguments are considered a new variable; such ones will have no associated definition
+    IS_ERROR //!< encountering this will cause throwing std::runtime_error
 };
 
 /*! Specifies how individual option prefixes are treated.
@@ -240,7 +246,7 @@ struct arguments_t
     /*! Ctor */
     arguments_t();
 
-    typedef jj::options_T<opt::f<flags_t, flags_t::MAX_FLAGS>, opt::e<stackOptionValues_t>> parserOptions_t;
+    typedef jj::options_T<opt::f<flags_t, flags_t::MAX_FLAGS>, opt::e<stackOptionValues_t>, opt::e<unknownVariableBehavior_t>> parserOptions_t;
     parserOptions_t ParserOptions; //!< options of the parser
     case_t OptionCase, //!< whether option names shall be treated case-sensitively
         VariableCase; //!< whether variable names shall be treated case-sensitively
@@ -284,6 +290,12 @@ struct arguments_t
         optionData_t(const optionDefinition_t* opt) : Type(TREG) { u.Opt = opt; }
         optionData_t(const listDefinition_t* lst) : Type(TLIST) { u.List = lst; }
     };
+    struct varproxy_t
+    {
+        string_t Value;
+        bool IsDefault;
+        const variableDefinition_t* Var;
+    };
 
     string_t ProgramName; //!< holds the program name (argv[0] usually)
     typedef std::pair<optionData_t, values_t> option_t;
@@ -292,18 +304,12 @@ struct arguments_t
     typedef std::pair<const positionalDefinition_t*, string_t> positional_t;
     typedef std::list<positional_t> positionals_t;
     positionals_t Positionals; //!< holds the parsed positional arguments (both defined through positionalDefinition_t definitions and undefined (for those definition pointer is nullptr))
+    typedef std::map<string_t, varproxy_t, nameCompare_less_t> varmap_t;
+    varmap_t Variables; //!< preprocessed variable definition data (and actual variable values after argv parsed)
 
 private:
     typedef std::map<name_t, optionData_t, nameCompare_less_t> optmap_t;
     optmap_t opts_; //!< preprocessed option definition data
-
-    struct varproxy_t
-    {
-        string_t Value;
-        const variableDefinition_t* Var;
-    };
-    typedef std::map<string_t, varproxy_t, nameCompare_less_t> varmap_t;
-    varmap_t vars_; //!< preprocessed variable definition data (and actual variable values after argv parsed)
 
     const definitions_t* defs_; //!< definitions as passed to parse()
 
