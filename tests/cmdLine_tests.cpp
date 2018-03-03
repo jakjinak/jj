@@ -322,11 +322,11 @@ JJ_TEST_CASE(callbackReturnsFalse)
     optinfos_t infos({ jjT("positional"), jjT("-ab=1"),jjT("ab=X"),jjT("--list"),jjT("value1"),jjT("value2") });
     definitions_t defs;
     size_t cnt = 0;
-    defs.Options.push_back({ { name_t(jjT("a")) }, jjT(""), 0u, multiple_t::OVERRIDE, [&cnt](...) { ++cnt; return false; } });
-    defs.Options.push_back({ { name_t(jjT("b")) }, jjT(""), 1u, multiple_t::OVERRIDE, [&cnt](...) { ++cnt; return false; } });
-    defs.ListOptions.push_back({ { name_t(jjT("list")) }, jjT(""), jjT(""), multiple_t::OVERRIDE, [&cnt](...) { ++cnt; return false; } });
-    defs.Variables.push_back({ jjT("ab"), jjT(""), jjT("something"), [&cnt](...) { ++cnt; return false; } });
-    defs.Positionals.push_back({ jjT("positional"), jjT(""), false, [&cnt](...) { ++cnt; return false; } });
+    defs.Options.push_back({ { name_t(jjT("a")) }, jjT(""), 0u, multiple_t::OVERRIDE, [&cnt](const optionDefinition_t&, values_t&) { ++cnt; return false; } });
+    defs.Options.push_back({ { name_t(jjT("b")) }, jjT(""), 1u, multiple_t::OVERRIDE, [&cnt](const optionDefinition_t&, values_t&) { ++cnt; return false; } });
+    defs.ListOptions.push_back({ { name_t(jjT("list")) }, jjT(""), jjT(""), multiple_t::OVERRIDE, [&cnt](const listDefinition_t&, values_t&) { ++cnt; return false; } });
+    defs.Variables.push_back({ jjT("ab"), jjT(""), jjT("something"), [&cnt](const variableDefinition_t&, jj::string_t&) { ++cnt; return false; } });
+    defs.Positionals.push_back({ jjT("positional"), jjT(""), false, [&cnt](const positionalDefinition_t&, jj::string_t&) { ++cnt; return false; } });
     arguments_t args;
     args.parse(defs, infos.argv.argc, infos.argv.argv);
     JJ_TEST(cnt == 5);
