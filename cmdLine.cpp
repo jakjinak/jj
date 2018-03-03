@@ -444,6 +444,8 @@ void arguments_t::process_long_option(missingValues_t& mv, const string_t& prefi
 
 void arguments_t::process_short_option(missingValues_t& mv, const string_t& prefix, const char_t* arg)
 {
+    if (*arg == 0) // verify that there is more than just the prefix
+        throw std::runtime_error(strcvt::to_string(jjS(jjT("No option given with prefix '") << prefix << jjT("'."))));
     // note that the parse(definitions_t) ensures that there are only single letter options among the short options
     while (*arg != 0)
     {

@@ -99,4 +99,40 @@ JJ_TEST_CASE_VARIANTS(noAdditional, (size_t mandatory, size_t optional, const st
     perform_test(infos, defs, args, ok, pvals);
 }
 
-JJ_TEST_CLASS_END(cmdLinePositionalTests_t, basic, noAdditional)
+JJ_TEST_CASE_VARIANTS(delimiters, (size_t mandatory, const std::initializer_list<jj::string_t>& delimiters, const std::initializer_list<jj::string_t>& argv, const std::initializer_list<flags_t>& flags, bool ok, const std::vector<jj::string_t>& pvals), \
+    (0,{},{jjT("-")},{},false,{}),\
+    (0,{},{jjT("--")},{},false,{}),\
+    (0,{},{jjT("-a")},{},false,{}),\
+    (0,{jjT("--")},{jjT("--")},{},true,{}),\
+    (0,{jjT("--")},{jjT("--"),jjT("-a")},{},true,{jjT("-a")}),\
+    (0,{jjT("")},{jjT(""),jjT("-a")},{},true,{jjT("-a")}),\
+    (0,{jjT("-a")},{jjT(""),jjT("-a")},{},true,{jjT("")}),\
+    (0,{jjT("-a"),jjT("-a")},{ jjT("X"),jjT("-a"),jjT("-a"),jjT("Y")},{},true,{jjT("X"),jjT("Y")}),\
+    (1,{jjT("--")},{jjT("--"),jjT("-a")},{},true,{jjT("-a")}),\
+    (1,{jjT("--")},{jjT("--")},{},false,{}),
+    (0,{jjT("--"),jjT("++")},{jjT("1"),jjT("--"),jjT("-a"),jjT("++"),jjT("2")},{},true,{jjT("1"),jjT("-a"),jjT("2")}),\
+    (0,{jjT("-"),jjT("-")},{jjT("1"),jjT("-"),jjT("-a"),jjT("-"),jjT("2")},{},true,{jjT("1"),jjT("-a"),jjT("2")}),\
+    (0,{jjT(""),jjT("")},{jjT("1"),jjT(""),jjT("-a"),jjT(""),jjT("2")},{},true,{jjT("1"),jjT("-a"),jjT("2")}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_positionals(defs, mandatory, 0);
+    arguments_t args;
+    std::initializer_list<jj::string_t>::const_iterator dit = delimiters.begin();
+    if (dit != delimiters.end())
+    {
+        args.ParserOptions << flags_t::USE_POSITIONAL_DELIMITER;
+        args.PositionalDelimiter = *dit;
+        ++dit;
+    }
+    if (dit != delimiters.end())
+    {
+        args.ParserOptions << flags_t::USE_RETURN_DELIMITER;
+        args.ReturnDelimiter = *dit;
+        ++dit;
+    }
+    setup_parser(args, flags);
+    perform_test(infos, defs, args, ok, pvals);
+}
+
+JJ_TEST_CLASS_END(cmdLinePositionalTests_t, basic, noAdditional, delimiters)
