@@ -99,7 +99,7 @@ void defaultInitializer_t::on_setup(int argc, const char_t** argv)
     catch (const std::exception& ex)
     {
         jj::cout << jjT("Exception caught: ") << jj::strcvt::to_string_t(ex.what()) << jjT("\n");
-        // TODO print help
+        Arguments->print_default_help();
         exit(1);
     }
     catch (...)
