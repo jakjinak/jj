@@ -4,6 +4,12 @@
 #include <cctype>
 #include <cwctype>
 
+#if defined(_WINDOWS) || defined(_WIN32)
+#include <string.h> // _strnicmp, _wcsnicmp
+#else
+#include <strings.h> // strncasecmp, wcsncasecmp
+#endif
+
 #if defined(_WINDOWS) || defined(_WIN32) || ( __GNUC__ > 5 ) || (__GNUC__ == 5 && (__GNUC_MINOR__ > 1 ) )
 // this is only supported on windows (vs2017) or with g++ newer than
 #include <locale>
@@ -17,7 +23,7 @@ namespace strcvt
 std::string to_string(const wchar_t* str)
 {
     if (str == nullptr)
-        return "";
+        return jj::str::EmptyString;
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     return converter.to_bytes(str);
 }
@@ -31,7 +37,7 @@ std::string to_string(const std::wstring& str)
 std::wstring to_wstring(const char* str)
 {
     if (str == nullptr)
-        return L"";
+        return jj::str::EmptyWString;
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
     return converter.from_bytes(str);
 }
@@ -84,6 +90,72 @@ namespace jj
 namespace str
 {
 
+const std::string EmptyString;
+const std::wstring EmptyWString;
+#if defined(_WINDOWS) || defined(_WIN32)
+const string_t& Empty = EmptyWString;
+#else
+const string_t& Empty = EmptyString;
+#endif
+
+namespace // <anonymous>
+{
+template<typename CH> struct CHtrait;
+template<> struct CHtrait<char>
+{
+    static inline const char* empty() { return ""; }
+};
+template<> struct CHtrait<wchar_t>
+{
+    static inline const wchar_t* empty() { return L""; }
+};
+} // namespace <anonymous>
+
+template<typename CH>
+inline void strprecheck(const CH*& a, const CH*& b, size_t& pos)
+{
+    if (a == nullptr)
+        a = CHtrait<CH>::empty();
+    if (b == nullptr)
+        b = CHtrait<CH>::empty();
+    while (pos > 0 && *a != 0 && *b != 0)
+    {
+        --pos;
+        ++a;
+        ++b;
+    }
+    while (pos > 0 && *a != 0)
+    {
+        --pos;
+        ++a;
+    }
+    while (pos > 0 && *b != 0)
+    {
+        --pos;
+        ++b;
+    }
+}
+
+static inline int sgn(int n)
+{
+    if (n < 0)
+        return -1;
+    if (n > 0)
+        return 1;
+    return 0;
+}
+
+int cmp(const char* a, const char* b, size_t pos, size_t len)
+{
+    strprecheck(a, b, pos);
+    return sgn(strncmp(a, b, len));
+}
+int cmp(const wchar_t* a, const wchar_t* b, size_t pos, size_t len)
+{
+    strprecheck(a, b, pos);
+    return sgn(wcsncmp(a, b, len));
+}
+
 bool isspace(char ch)
 {
     return std::isspace(ch);
@@ -92,6 +164,51 @@ bool isspace(char ch)
 bool isspace(wchar_t ch)
 {
     return std::iswspace(ch);
+}
+
+int cmpi(char a, char b)
+{
+    a = std::tolower(a);
+    b = std::tolower(b);
+
+    if (a < b)
+        return -1;
+    if (b < a)
+        return 1;
+    return 0;
+}
+int cmpi(const char* a, const char* b, size_t pos, size_t len)
+{
+    strprecheck(a, b, pos);
+#if defined(_WINDOWS) || defined(_WIN32)
+    if (len == std::string::npos)
+        return sgn(_strcmpi(a, b));
+    return sgn(_strnicmp(a, b, len));
+#else
+    return sgn(strncasecmp(a, b, len));
+#endif
+}
+int cmpi(wchar_t a, wchar_t b)
+{
+    a = std::towlower(a);
+    b = std::towlower(b);
+
+    if (a < b)
+        return -1;
+    if (b < a)
+        return 1;
+    return 0;
+}
+int cmpi(const wchar_t* a, const wchar_t* b, size_t pos, size_t len)
+{
+    strprecheck(a, b, pos);
+#if defined(_WINDOWS) || defined(_WIN32)
+    if (len == std::wstring::npos)
+        return sgn(_wcsicmp(a, b));
+    return sgn(_wcsnicmp(a, b, len));
+#else
+    return sgn(wcsncasecmp(a, b, len));
+#endif
 }
 
 bool lessi(char a, char b)

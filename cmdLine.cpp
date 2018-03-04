@@ -313,7 +313,7 @@ void arguments_t::clear_data()
     for (varmap_t::value_type& v : Variables)
     {
         if (v.second.Var == nullptr)
-            v.second.Value == jjT(""); // TODO replace with jj::string_t::Empty when available
+            v.second.Value == jj::str::Empty;
         else
             v.second.Value = v.second.Var->Default;
     }

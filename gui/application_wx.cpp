@@ -57,7 +57,7 @@ class theApp : public wxApp
 {
     virtual void OnInitCmdLine(wxCmdLineParser& parser)
     {
-        parser.SetCmdLine("");
+        parser.SetCmdLine(jj::str::EmptyString);
     }
     virtual bool OnCmdLineParsed(wxCmdLineParser& parser)
     {

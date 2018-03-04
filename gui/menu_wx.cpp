@@ -154,7 +154,7 @@ std::weak_ptr<menuItem_t> menu_t::append(menuItem_t::options_t setup)
     if (type_ == menu_t::BAR) // TODO this (in theory) is also allowed (via wxMenuBar::Append(0, "txt"); try and implement
         throw std::invalid_argument("no regular items in menu bar");
     wxMenu* m = GET<wxMenu>::from(this);
-    wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id(), setup.Text, jjT(""), k2wxk(setup.Value));
+    wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id(), setup.Text, jj::str::Empty, k2wxk(setup.Value));
     m->Append(tmp);
     if (!setup.Accelerator.empty())
     {
@@ -171,7 +171,7 @@ std::weak_ptr<menuItem_t> menu_t::append(menuItem_t::separator_t)
     if (type_ == menu_t::BAR)
         throw std::invalid_argument("no separators in menu bar");
     wxMenu* m = GET<wxMenu>::from(this);
-    wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id()/*wxID_SEPARATOR*/, jjT(""), jjT(""), wxITEM_SEPARATOR);
+    wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id()/*wxID_SEPARATOR*/, jj::str::Empty, jj::str::Empty, wxITEM_SEPARATOR);
     m->Append(tmp);
     item_t x(new menuItem_t(*this, tmp->GetId()));
     items_.push_back(x);
@@ -191,7 +191,7 @@ std::weak_ptr<menuItem_t> menu_t::append(menu_t* sub, menuItem_t::submenuOptions
     else
     {
         wxMenu* m = GET<wxMenu>::from(this);
-        wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id(), setup.Text, jjT(""), wxITEM_NORMAL, GET<wxMenu>::from(sub));
+        wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id(), setup.Text, jj::str::Empty, wxITEM_NORMAL, GET<wxMenu>::from(sub));
         m->Append(tmp);
         item_t x(new menuItem_t(*this, tmp->GetId()));
         items_.push_back(x);

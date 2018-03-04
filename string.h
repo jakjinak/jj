@@ -2,7 +2,6 @@
 #define JJ_STRING_H
 
 #include <string>
-#include <cstring>
 
 #if defined(_WINDOWS) || defined(_WIN32)
 namespace jj
@@ -26,10 +25,22 @@ typedef std::string string_t;
 
 namespace jj
 {
+namespace str
+{
+
+extern const std::string EmptyString;
+extern const std::wstring EmptyWString;
+extern const string_t& Empty;
+
+} // namespace str
+} // namespace jj
+
+namespace jj
+{
 namespace strcvt
 {
 /*! Returns a std::string object constructed from input parameter, does conversions when necessary. */
-inline std::string to_string(const char* str) { if (str==nullptr) return ""; return str; }
+inline std::string to_string(const char* str) { if (str==nullptr) return jj::str::EmptyString; return str; }
 /*! Returns a std::string object constructed from input parameter, does conversions when necessary. */
 inline std::string to_string(const std::string& str) { return str; }
 /*! Returns a std::string object constructed from input parameter, does conversions when necessary. */
@@ -41,7 +52,7 @@ std::wstring to_wstring(const char* str);
 /*! Returns a std::wstring object constructed from input parameter, does conversions when necessary. */
 std::wstring to_wstring(const std::string& str);
 /*! Returns a std::wstring object constructed from input parameter, does conversions when necessary. */
-inline std::wstring to_wstring(const wchar_t* str) { if (str==nullptr) return L""; return str; }
+inline std::wstring to_wstring(const wchar_t* str) { if (str==nullptr) return jj::str::EmptyWString; return str; }
 /*! Returns a std::wstring object constructed from input parameter, does conversions when necessary. */
 inline std::wstring to_wstring(const std::wstring& str) { return str; }
 
@@ -69,13 +80,99 @@ inline string_t to_string_t(const std::wstring& str) { return to_string(str); }
 namespace str
 {
 
-// TODO locale enabled variants
+// TODO locale enabled variants of all those below
 
 /*! Returns whether given character can be considered a whitespace. */
 bool isspace(char ch);
 /*! Returns whether given character can be considered a whitespace. */
 bool isspace(wchar_t ch);
 // TODO inline these
+
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmp(char a, char b)
+{
+    if (a < b)
+        return -1;
+    if (b < a)
+        return 1;
+    return 0;
+}
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmp(char a, char b, size_t pos, size_t len = 1)
+{
+    if (pos > 0 || len == 0)
+        return 0;
+    return cmp(a, b);
+}
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+int cmp(const char* a, const char* b, size_t pos = 0, size_t len = std::string::npos);
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmp(const std::string& a, const char* b, size_t pos = 0, size_t len = std::string::npos) { return cmp(a.c_str(), b, pos, len); }
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmp(const char* a, const std::string& b, size_t pos = 0, size_t len = std::string::npos) { return cmp(a, b.c_str(), pos, len); }
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmp(const std::string& a, const std::string& b, size_t pos = 0, size_t len = std::string::npos) { return cmp(a.c_str(), b.c_str(), pos, len); }
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmp(wchar_t a, wchar_t b)
+{
+    if (a < b)
+        return -1;
+    if (b < a)
+        return 1;
+    return 0;
+}
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmp(wchar_t a, wchar_t b, size_t pos, size_t len = 1)
+{
+    if (pos > 0 || len == 0)
+        return 0;
+    return cmp(a, b);
+}
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+int cmp(const wchar_t* a, const wchar_t* b, size_t pos = 0, size_t len = std::wstring::npos);
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmp(const std::wstring& a, const wchar_t* b, size_t pos = 0, size_t len = std::wstring::npos) { return cmp(a.c_str(), b, pos, len); }
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmp(const wchar_t* a, const std::wstring& b, size_t pos = 0, size_t len = std::wstring::npos) { return cmp(a, b.c_str(), pos, len); }
+/*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmp(const std::wstring& a, const std::wstring& b, size_t pos = 0, size_t len = std::wstring::npos) { return cmp(a.c_str(), b.c_str(), pos, len); }
+
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+int cmpi(char a, char b);
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmpi(char a, char b, size_t pos, size_t len = 1)
+{
+    if (pos > 0 || len == 0)
+        return 0;
+    return cmpi(a, b);
+}
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+int cmpi(const char* a, const char* b, size_t pos = 0, size_t len = std::string::npos);
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmpi(const std::string& a, const char* b, size_t pos = 0, size_t len = std::string::npos) { return cmpi(a.c_str(), b, pos, len); }
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmpi(const char* a, const std::string& b, size_t pos = 0, size_t len = std::string::npos) { return cmpi(a, b.c_str(), pos, len); }
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmpi(const std::string& a, const std::string& b, size_t pos = 0, size_t len = std::string::npos) { return cmpi(a.c_str(), b.c_str(), pos, len); }
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+int cmpi(wchar_t a, wchar_t b);
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmpi(wchar_t a, wchar_t b, size_t pos, size_t len = 1)
+{
+    if (pos > 0 || len == 0)
+        return 0;
+    return cmpi(a, b);
+}
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+int cmpi(const wchar_t* a, const wchar_t* b, size_t pos = 0, size_t len = std::wstring::npos);
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmpi(const std::wstring& a, const wchar_t* b, size_t pos = 0, size_t len = std::wstring::npos) { return cmpi(a.c_str(), b, pos, len); }
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmpi(const wchar_t* a, const std::wstring& b, size_t pos = 0, size_t len = std::wstring::npos) { return cmpi(a, b.c_str(), pos, len); }
+/*! Ignoring character case, this returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
+inline int cmpi(const std::wstring& a, const std::wstring& b, size_t pos = 0, size_t len = std::wstring::npos) { return cmpi(a.c_str(), b.c_str(), pos, len); }
+
+//=====================================
 
 /*! Returns whether given a is lexicographically less than b. */
 inline bool less(char a, char b) { return a < b; }
@@ -116,6 +213,8 @@ bool lessi(const wchar_t* a, const wchar_t* b);
 /*! Returns whether given a is lexicographically less than b without taking care about character case. */
 bool lessi(const std::wstring& a, const std::wstring& b);
 
+//=====================================
+
 /*! Returns whether given string str begins with given string with. The NUL characters are not compared. */
 template<typename CH>
 bool starts_with_T(const CH* str, const CH* with)
@@ -147,6 +246,8 @@ inline bool starts_with(const std::wstring& str, const wchar_t* with) { return s
 inline bool starts_with(const wchar_t* str, const std::wstring& with) { return starts_with(str, with.c_str()); }
 /*! Returns whether given string str begins with given string with. */
 inline bool starts_with(const std::wstring& str, const std::wstring& with) { return starts_with(str.c_str(), with.c_str()); }
+
+//=====================================
 
 /*! Returns pointer to first occurrence of what within str since position pos or nullptr if not found. */
 const char* find(const char* str, char what, size_t pos = 0);

@@ -69,6 +69,272 @@ const wchar_t* xstrcvtTests_t::long_wstring = L"AbC023as;lk/./.as2190";
 
 //================================================
 
+JJ_TEST_CLASS(cmpTests_t)
+
+JJ_TEST_CASE_VARIANTS(cmpc, (char a, char b, int result), \
+    ('A','a',-1),('a','A',1),('A','A',0),('a','a',0),\
+    ('a','b',-1),('b','a',1),('a','a',0),('X','Y',-1),('Y','X',1),('X','X',0),\
+    ('0','1',-1),('1','0',1),('0','0',0),('0','9',-1),('9','0',1),('9','9',0))
+{
+    JJ_TEST(jj::str::cmp(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(cmp0, (const char* a, const char* b, int result), \
+    (nullptr,nullptr,0),(nullptr,"",0),("",nullptr,0),\
+    (nullptr,"A",-1),("A",nullptr,1),(nullptr,"xyz",-1),("xyz",nullptr,1),\
+    ("","",0),("","A",-1),("A","",1),("","a",-1),("a","",1),("","xyz",-1),("xyz","",1))
+{
+    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::string(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmp,(const char*a, const char* b, int result),\
+    ("A","a",-1),("a","A",1),("a","a",0),("abC","abc",-1),("aBc","abc",-1),("abc","aBc",1),("abc","abc",0),\
+    ("a","b",-1),("b","a",1),("X","Y",-1),("Y","X",1),\
+    ("ijk","pjk",-1),("pjk","ijk",1),("idk","ijk",-1),("ijk","idk",1),("   ","   ",0),\
+    ("a","aa",-1),("aa","a",1),("abcde","abcdef",-1),("abcdef","abcde",1))
+{
+    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::string(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpno, (const char*a, const char* b, int result), \
+    ("0","1",-1),("1","0",1),("0","9",-1),("9","0",1),("123","1234",-1),("1234","123",1),("0123456789", "0123456789", 0))
+{
+    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::string(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpp, (const char* a, const char* b, size_t pos, int result), \
+    ("XBC","ABC",1,0),("XBC","Abc",1,-1),("Xbc","ABC",1,1),\
+    ("Xa","Aaa",1,-1),("Xaa","Aa",1,1),("X","Ab",1,-1),("Xb","A",1,1),("X","Aabcde",4,-1),("A","Xabcde",4,-1),("Aabcde","X",4,1))
+{
+    JJ_TEST(jj::str::cmp(a, b, pos) == result);
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), b, pos) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::string(b), pos) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b), pos) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpn, (const char* a, const char* b, size_t len, int result), \
+    ("abcbla","abcxyz",3,0),("Abc","Bbc",1,-1),("ab","abc",2,0))
+{
+    JJ_TEST(jj::str::cmp(a, b, 0, len) == result);
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), b, 0, len) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::string(b), 0, len) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b), 0, len) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpc_w, (wchar_t a, wchar_t b, int result), \
+    (L'A',L'a',-1),(L'a',L'A',1),(L'A',L'A',0),(L'a',L'a',0),\
+    (L'a',L'b',-1),(L'b',L'a',1),(L'a',L'a',0),(L'X',L'Y',-1),(L'Y',L'X',1),(L'X',L'X',0),\
+    (L'0',L'1',-1),(L'1',L'0',1),(L'0',L'0',0),(L'0',L'9',-1),(L'9',L'0',1),(L'9',L'9',0))
+{
+    JJ_TEST(jj::str::cmp(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(cmp0_w, (const wchar_t* a, const wchar_t* b, int result), \
+    (nullptr,nullptr,0),(nullptr,L"",0),(L"",nullptr,0),\
+    (nullptr,L"A",-1),(L"A",nullptr,1),(nullptr,L"xyz",-1),(L"xyz",nullptr,1),\
+    (L"",L"",0),(L"",L"A",-1),(L"A",L"",1),(L"",L"a",-1),(L"a",L"",1),(L"",L"xyz",-1),(L"xyz",L"",1))
+{
+    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::wstring(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmp_w,(const wchar_t* a, const wchar_t* b, int result),\
+    (L"A",L"a",-1),(L"a",L"A",1),(L"a",L"a",0),(L"abC",L"abc",-1),(L"aBc",L"abc",-1),(L"abc",L"aBc",1),(L"abc",L"abc",0),\
+    (L"a",L"b",-1),(L"b",L"a",1),(L"X",L"Y",-1),(L"Y",L"X",1),\
+    (L"ijk",L"pjk",-1),(L"pjk",L"ijk",1),(L"idk",L"ijk",-1),(L"ijk",L"idk",1),(L"   ",L"   ",0),\
+    (L"a",L"aa",-1),(L"aa",L"a",1),(L"abcde",L"abcdef",-1),(L"abcdef",L"abcde",1))
+{
+    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::wstring(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpno_w, (const wchar_t* a, const wchar_t* b, int result), \
+    (L"0",L"1",-1),(L"1",L"0",1),(L"0",L"9",-1),(L"9",L"0",1),(L"123",L"1234",-1),(L"1234",L"123",1),(L"0123456789", L"0123456789", 0))
+{
+    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::wstring(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpp_w, (const wchar_t* a, const wchar_t* b, size_t pos, int result), \
+    (L"XBC",L"ABC",1,0),(L"XBC",L"Abc",1,-1),(L"Xbc",L"ABC",1,1),\
+    (L"Xa",L"Aaa",1,-1),(L"Xaa",L"Aa",1,1),(L"X",L"Ab",1,-1),(L"Xb",L"A",1,1),(L"X",L"Aabcde",4,-1),(L"A",L"Xabcde",4,-1),(L"Aabcde",L"X",4,1))
+{
+    JJ_TEST(jj::str::cmp(a, b, pos) == result);
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), b, pos) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::wstring(b), pos) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b), pos) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpn_w, (const wchar_t* a, const wchar_t* b, size_t len, int result), \
+    (L"abcbla",L"abcxyz",3,0),(L"Abc",L"Bbc",1,-1),(L"ab",L"abc",2,0))
+{
+    JJ_TEST(jj::str::cmp(a, b, 0, len) == result);
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), b, 0, len) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::wstring(b), 0, len) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b), 0, len) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpc_i, (char a, char b, int result), \
+    ('A','a',0),('a','A',0),('A','A',0),('a','a',0),\
+    ('a','b',-1),('b','a',1),('a','a',0),('X','Y',-1),('Y','X',1),('X','X',0),\
+    ('0','1',-1),('1','0',1),('0','0',0),('0','9',-1),('9','0',1),('9','9',0))
+{
+    JJ_TEST(jj::str::cmpi(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(cmp0_i, (const char* a, const char* b, int result), \
+    (nullptr,nullptr,0),(nullptr,"",0),("",nullptr,0),\
+    (nullptr,"A",-1),("A",nullptr,1),(nullptr,"xyz",-1),("xyz",nullptr,1),\
+    ("","",0),("","A",-1),("A","",1),("","a",-1),("a","",1),("","xyz",-1),("xyz","",1))
+{
+    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::string(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmp_i,(const char*a, const char* b, int result),\
+    ("A","a",0),("a","A",0),("a","a",0),("abC","abc",0),("aBc","abc",0),("abc","aBc",0),("abc","abc",0),\
+    ("a","b",-1),("b","a",1),("X","Y",-1),("Y","X",1),\
+    ("ijk","pjk",-1),("pjk","ijk",1),("idk","ijk",-1),("ijk","idk",1),("   ","   ",0),\
+    ("a","aa",-1),("aa","a",1),("abcde","abcdef",-1),("abcdef","abcde",1))
+{
+    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::string(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpno_i, (const char*a, const char* b, int result), \
+    ("0","1",-1),("1","0",1),("0","9",-1),("9","0",1),("123","1234",-1),("1234","123",1),("0123456789", "0123456789", 0))
+{
+    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::string(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpp_i, (const char* a, const char* b, size_t pos, int result), \
+    ("XBC","ABC",1,0),("XBC","Abc",1,0),("Xbc","ABC",1,0),\
+    ("Xa","Aaa",1,-1),("Xaa","Aa",1,1),("X","Ab",1,-1),("Xb","A",1,1),("X","Aabcde",4,-1),("A","Xabcde",4,-1),("Aabcde","X",4,1))
+{
+    JJ_TEST(jj::str::cmpi(a, b, pos) == result);
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), b, pos) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::string(b), pos) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b), pos) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpn_i, (const char* a, const char* b, size_t len, int result), \
+    ("abcbla","abcxyz",3,0),("Abc","Bbc",1,-1),("ab","abc",2,0))
+{
+    JJ_TEST(jj::str::cmpi(a, b, 0, len) == result);
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), b, 0, len) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::string(b), 0, len) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b), 0, len) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpc_iw, (wchar_t a, wchar_t b, int result), \
+    (L'A',L'a',0),(L'a',L'A',0),(L'A',L'A',0),(L'a',L'a',0),\
+    (L'a',L'b',-1),(L'b',L'a',1),(L'a',L'a',0),(L'X',L'Y',-1),(L'Y',L'X',1),(L'X',L'X',0),\
+    (L'0',L'1',-1),(L'1',L'0',1),(L'0',L'0',0),(L'0',L'9',-1),(L'9',L'0',1),(L'9',L'9',0))
+{
+    JJ_TEST(jj::str::cmpi(a, b) == result);
+}
+
+JJ_TEST_CASE_VARIANTS(cmp0_iw, (const wchar_t* a, const wchar_t* b, int result), \
+    (nullptr,nullptr,0),(nullptr,L"",0),(L"",nullptr,0),\
+    (nullptr,L"A",-1),(L"A",nullptr,1),(nullptr,L"xyz",-1),(L"xyz",nullptr,1),\
+    (L"",L"",0),(L"",L"A",-1),(L"A",L"",1),(L"",L"a",-1),(L"a",L"",1),(L"",L"xyz",-1),(L"xyz",L"",1))
+{
+    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::wstring(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmp_iw,(const wchar_t* a, const wchar_t* b, int result),\
+    (L"A",L"a",0),(L"a",L"A",0),(L"a",L"a",0),(L"abC",L"abc",0),(L"aBc",L"abc",0),(L"abc",L"aBc",0),(L"abc",L"abc",0),\
+    (L"a",L"b",-1),(L"b",L"a",1),(L"X",L"Y",-1),(L"Y",L"X",1),\
+    (L"ijk",L"pjk",-1),(L"pjk",L"ijk",1),(L"idk",L"ijk",-1),(L"ijk",L"idk",1),(L"   ",L"   ",0),\
+    (L"a",L"aa",-1),(L"aa",L"a",1),(L"abcde",L"abcdef",-1),(L"abcdef",L"abcde",1))
+{
+    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::wstring(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpno_iw, (const wchar_t* a, const wchar_t* b, int result), \
+    (L"0",L"1",-1),(L"1",L"0",1),(L"0",L"9",-1),(L"9",L"0",1),(L"123",L"1234",-1),(L"1234",L"123",1),(L"0123456789", L"0123456789", 0))
+{
+    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
+    JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), b) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::wstring(b)) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b)) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpp_iw, (const wchar_t* a, const wchar_t* b, size_t pos, int result), \
+    (L"XBC",L"ABC",1,0),(L"XBC",L"Abc",1,0),(L"Xbc",L"ABC",1,0),\
+    (L"Xa",L"Aaa",1,-1),(L"Xaa",L"Aa",1,1),(L"X",L"Ab",1,-1),(L"Xb",L"A",1,1),(L"X",L"Aabcde",4,-1),(L"A",L"Xabcde",4,-1),(L"Aabcde",L"X",4,1))
+{
+    JJ_TEST(jj::str::cmpi(a, b, pos) == result);
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), b, pos) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::wstring(b), pos) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b), pos) == result); }
+}
+
+JJ_TEST_CASE_VARIANTS(cmpn_iw, (const wchar_t* a, const wchar_t* b, size_t len, int result), \
+    (L"abcbla",L"abcxyz",3,0),(L"Abc",L"Bbc",1,-1),(L"ab",L"abc",2,0))
+{
+    JJ_TEST(jj::str::cmpi(a, b, 0, len) == result);
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), b, 0, len) == result); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::wstring(b), 0, len) == result); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b), 0, len) == result); }
+}
+
+JJ_TEST_CLASS_END(cmpTests_t, cmpc, cmp0, cmp, cmpno, cmpp, cmpn, cmpc_w, cmp0_w, cmp_w, cmpno_w, cmpp_w, cmpn_w, cmpc_i, cmp0_i, cmp_i, cmpno_i, cmpp_i, cmpn_i, cmpc_iw, cmp0_iw, cmp_iw, cmpno_iw, cmpp_iw, cmpn_iw)
+
+//================================================
+
 JJ_TEST_CLASS(str_lessTests_t)
 
 JJ_TEST_CASE_VARIANTS(lessc, (char a, char b, bool result),\
