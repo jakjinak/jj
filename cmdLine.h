@@ -112,7 +112,10 @@ enum class multiple_t
     OVERRIDE, //!< default; subsequent occurence overrides the previous one
     PRESERVE, //!< keep the value set in previous occurence; note that this does not work with empty list for list options (behavior undefined)
     JOIN, //!< append the new values to the previous; note that this works even with optionDefinition_t::ValueCount, but leads to "strange" results
-    ERROR //!< providing option twice results in error
+    ERROR, //!< providing option twice results in error
+    VARIABLE /*!< this special value forces the parser assume that the argument value is in form var=value and is processed as a variable and stored among variables.
+        If the argument has no values then nothing is done, if there are multiple values then each is processed as a separate variable.
+        If any of the values is not in form var=value then it throws. Available for both - regular and list options. */
 };
 
 /*! An option is an argument with a name of one or more characters prefixed by a special character (eg. - or --) with exact number of values (0 by default) following it. 
@@ -167,7 +170,8 @@ struct positionalDefinition_t
     CB_t CB; //!< the callback is called before the values are assigned to the parsed arguments; throw to signalize error in value, return false to ignore the value
 };
 
-/*! A variable is a special positional parameter in form name=value*/
+/*! A variable is a special positional parameter in form name=value.
+Note that there can also be "variable" options. See multiple_t::VARIABLE. */
 struct variableDefinition_t
 {
     string_t Name; //!< name variable
@@ -321,6 +325,7 @@ private:
     void handle_new_option(missingValues_t& mv, const name_t& name, optionData_t data, const char_t* value);
     void process_long_option(missingValues_t& mv, const string_t& prefix, const char_t* arg);
     void process_short_option(missingValues_t& mv, const string_t& prefix, const char_t* arg);
+    bool process_variable(bool mustbe, const char_t* arg);
     void process_positional(bool explicitPositionals, definitions_t::poss_t::const_iterator& cpos, const char_t* arg);
 };
 

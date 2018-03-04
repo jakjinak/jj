@@ -633,3 +633,86 @@ JJ_TEST_CASE_VARIANTS(valueModes, (const std::initializer_list<jj::string_t>& ar
 }
 
 JJ_TEST_CLASS_END(cmdLineListsTests_t, parseShortOptions, parseLongOptions, looseStackValues, stackedValues, disabledStacksButStackedValues, disabledAssigns, valueModes)
+
+//================================================
+
+JJ_TEST_CLASS_DERIVED(cmdVarOptions_t, public cmdLineOptionsCommon_t)
+
+cmdVarOptions_t() : cmdLineOptionsCommon_t(static_cast<jj::test::testclass_base_t&>(*this)) {}
+
+JJ_TEST_CASE_VARIANTS(shortOptions, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, bool ok\
+        , const std::vector<int>& count, const std::map<jj::string_t, jj::string_t>& vars),\
+    ({jjT("-n")},{},true,{1,0,0,0},{{jjT("var"),jjT("0")}}),\
+    ({jjT("-a"),jjT("var=1")},{},true,{0,1,0,0},{{jjT("var"),jjT("1")}}),\
+    ({jjT("-a=var=1")},{},true,{0,1,0,0},{{jjT("var"),jjT("1")}}),\
+    ({jjT("-avar=1")},{},false,{},{}),/* effectively avar are all short options, 1 would be value of r -> unknown variables */\
+    ({jjT("-avar=1")},{flags_t::ALLOW_SHORT_ASSIGN},false,{},{}),/* effectively avar are all short options even with disabled = */\
+    ({jjT("-avar=1")},{flags_t::ALLOW_STACK_VALUES,flags_t::ALLOW_SHORT_ASSIGN},true,{0,1,0,0},{{jjT("var"),jjT("1")}}),\
+    ({jjT("-b"),jjT("var=1"),jjT("bla=XYZ"),jjT("var=2")},{},true,{0,0,1,0},{{jjT("var"),jjT("2")},{jjT("bla"),jjT("XYZ")}}),\
+    ({jjT("-b=var=1"),jjT("bla=XYZ"),jjT("var=2")},{},true,{0,0,1,0},{{jjT("var"),jjT("2")},{jjT("bla"),jjT("XYZ")}}),\
+    ({jjT("-l"),jjT("var=1"),jjT("bla=XYZ"),jjT("var=2")},{},true,{0,0,0,1},{{jjT("var"),jjT("2")},{jjT("bla"),jjT("XYZ")}}),\
+    ({jjT("-l"),jjT("var=1"),jjT("bla=XYZ"),jjT("var=2"),jjT("")},{},true,{0,0,0,1},{{jjT("var"),jjT("2")},{jjT("bla"),jjT("XYZ")}}),\
+    ({jjT("-l=var=1"),jjT("bla=XYZ"),jjT("var=2")},{},true,{0,0,0,1},{{jjT("var"),jjT("2")},{jjT("bla"),jjT("XYZ")}}),\
+    ({jjT("-a=var")},{},false,{},{}),\
+    ({jjT("-a"),jjT("var")},{},false,{},{}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_option(defs, infos, { name_t(jjT("n")) }, 0u, multiple_t::VARIABLE);
+    setup_single_option(defs, infos, { name_t(jjT("a")) }, 1u, multiple_t::VARIABLE);
+    setup_single_option(defs, infos, { name_t(jjT("b")) }, 3u, multiple_t::VARIABLE);
+    setup_single_option(defs, infos, { name_t(jjT("l")) }, jjT(""), multiple_t::VARIABLE);
+    setup_single_variable(defs, jjT("var"), jjT("0"));
+    setup_single_variable(defs, jjT("bla"), jjT(""));
+    arguments_t args;
+    setup_parser(args, flags);
+    perform_test(infos, defs, args, ok, count, { {},{},{},{} }, vars, {});
+}
+
+JJ_TEST_CASE_VARIANTS(longOptions, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, bool ok\
+        , const std::vector<int>& count, const std::map<jj::string_t, jj::string_t>& vars),\
+    ({jjT("--none")},{},true,{1,0,0,0},{{jjT("var"),jjT("0")}}),\
+    ({jjT("--aa"),jjT("var=1")},{},true,{0,1,0,0},{{jjT("var"),jjT("1")}}),\
+    ({jjT("--aa=var=1")},{},true,{0,1,0,0},{{jjT("var"),jjT("1")}}),\
+    ({jjT("--bb"),jjT("var=1"),jjT("bla=XYZ"),jjT("var=2")},{},true,{0,0,1,0},{{jjT("var"),jjT("2")},{jjT("bla"),jjT("XYZ")}}),\
+    ({jjT("--bb=var=1"),jjT("bla=XYZ"),jjT("var=2")},{},true,{0,0,1,0},{{jjT("var"),jjT("2")},{jjT("bla"),jjT("XYZ")}}),\
+    ({jjT("--list"),jjT("var=1"),jjT("bla=XYZ"),jjT("var=2")},{},true,{0,0,0,1},{{jjT("var"),jjT("2")},{jjT("bla"),jjT("XYZ")}}),\
+    ({jjT("--list"),jjT("var=1"),jjT("bla=XYZ"),jjT("var=2"),jjT("")},{},true,{0,0,0,1},{{jjT("var"),jjT("2")},{jjT("bla"),jjT("XYZ")}}),\
+    ({jjT("--list=var=1"),jjT("bla=XYZ"),jjT("var=2")},{},true,{0,0,0,1},{{jjT("var"),jjT("2")},{jjT("bla"),jjT("XYZ")}}),\
+    ({jjT("--aa=var")},{},false,{},{}),\
+    ({jjT("--aa"),jjT("var")},{},false,{},{}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_option(defs, infos, { name_t(jjT("none")) }, 0u, multiple_t::VARIABLE);
+    setup_single_option(defs, infos, { name_t(jjT("aa")) }, 1u, multiple_t::VARIABLE);
+    setup_single_option(defs, infos, { name_t(jjT("bb")) }, 3u, multiple_t::VARIABLE);
+    setup_single_option(defs, infos, { name_t(jjT("list")) }, jjT(""), multiple_t::VARIABLE);
+    setup_single_variable(defs, jjT("var"), jjT("0"));
+    setup_single_variable(defs, jjT("bla"), jjT(""));
+    arguments_t args;
+    setup_parser(args, flags);
+    perform_test(infos, defs, args, ok, count, { {},{},{},{} }, vars, {});
+}
+
+JJ_TEST_CASE_VARIANTS(caseInsensitive, (const std::initializer_list<jj::string_t>& argv, const std::initializer_list<parserSetupWrap_t>& flags, bool ok\
+        , const std::vector<int>& count, const std::map<jj::string_t, jj::string_t>& vars),\
+    ({jjT("-a"),jjT("VAR=1")},{},true,{1,0},{{jjT("var"),jjT("1")}}),\
+    ({jjT("-a=VAR=1")},{},true,{1,0},{{jjT("var"),jjT("1")}}),\
+    ({jjT("-aVAR=1")},{flags_t::ALLOW_STACK_VALUES,flags_t::ALLOW_SHORT_ASSIGN},true,{1,0},{{jjT("var"),jjT("1")}}),\
+    ({jjT("-l"),jjT("VAR=1"),jjT("BLA=XYZ"),jjT("Var=2")},{},true,{0,1},{{jjT("var"),jjT("2")},{jjT("bla"),jjT("XYZ")}}),\
+    ({jjT("-l=VAR=1")},{},true,{0,1},{{jjT("var"),jjT("1")},{jjT("bla"),jjT("")}}))
+{
+    optinfos_t infos(argv);
+    definitions_t defs;
+    setup_single_option(defs, infos, { name_t(jjT("a")) }, 1u, multiple_t::VARIABLE);
+    setup_single_option(defs, infos, { name_t(jjT("l")) }, jjT(""), multiple_t::VARIABLE);
+    setup_single_variable(defs, jjT("var"), jjT("0"));
+    setup_single_variable(defs, jjT("bla"), jjT(""));
+    arguments_t args;
+    setup_parser(args, flags);
+    args.VariableCase = case_t::INSENSITIVE;
+    perform_test(infos, defs, args, ok, count, { {},{} }, vars, {});
+}
+
+JJ_TEST_CLASS_END(cmdVarOptions_t, shortOptions, longOptions, caseInsensitive)

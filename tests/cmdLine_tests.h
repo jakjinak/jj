@@ -55,9 +55,10 @@ struct cmdLineOptionsCommon_t
     struct optinfo_t
     {
         bool Known;
+        bool IsVariable;
         jj::cmdLine::arguments_t::optionType_t Type;
         size_t Count;
-        optinfo_t() : Known(false), Type(jj::cmdLine::arguments_t::TREG), Count(0) {}
+        optinfo_t() : Known(false), IsVariable(false), Type(jj::cmdLine::arguments_t::TREG), Count(0) {}
     };
     struct optinfos_t
     {
@@ -80,8 +81,10 @@ struct cmdLineOptionsCommon_t
                 return true;
             } });
         infos.names.push_back(names.front());
-        infos.infos[names.front()].Known = true;
-        infos.infos[names.front()].Type = jj::cmdLine::arguments_t::TREG;
+        optinfo_t& theinfo = infos.infos[names.front()];
+        theinfo.Known = true;
+        theinfo.IsVariable = multi == jj::cmdLine::multiple_t::VARIABLE;
+        theinfo.Type = jj::cmdLine::arguments_t::TREG;
     }
 
     void setup_single_option(jj::cmdLine::definitions_t& defs, optinfos_t& infos, const std::list<jj::cmdLine::name_t>& names, jj::string_t end, jj::cmdLine::multiple_t multi)
@@ -92,8 +95,10 @@ struct cmdLineOptionsCommon_t
                 return true;
             } });
         infos.names.push_back(names.front());
-        infos.infos[names.front()].Known = true;
-        infos.infos[names.front()].Type = jj::cmdLine::arguments_t::TLIST;
+        optinfo_t& theinfo = infos.infos[names.front()];
+        theinfo.Known = true;
+        theinfo.IsVariable = multi == jj::cmdLine::multiple_t::VARIABLE;
+        theinfo.Type = jj::cmdLine::arguments_t::TLIST;
     }
 
     void setup_positionals(jj::cmdLine::definitions_t& defs, size_t mandatory, size_t optional)
@@ -237,6 +242,11 @@ struct cmdLineOptionsCommon_t
                 continue; // don't care about
             optinfos_t::infomap_t::const_iterator fnd = infos.infos.find(infos.names[i]);
             JJ_ENSURE(fnd != infos.infos.end(), jjT("is a known argument"));
+            if (fnd->second.IsVariable)
+            {
+                JJ_TEST_MSG(args.Options.find(infos.names[i]) == args.Options.end(), jjT("Variable option is not stored in option list."));
+                continue;
+            }
             const jj::cmdLine::arguments_t::option_t& o = checkOption(args, defs, infos.names[i], fnd->second.Type);
             checkValues(o, pvals[i]);
         }

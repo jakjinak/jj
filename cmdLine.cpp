@@ -338,6 +338,13 @@ void arguments_t::add_option(options_t::value_type& opt)
         break;
     }
 
+    if (multi == multiple_t::VARIABLE)
+    {
+        for (const jj::string_t& v : opt.second.second.Values)
+            process_variable(true, v.c_str());
+        return;
+    }
+
     auto ret = Options.insert(opt);
 
     if (ret.second)
@@ -500,49 +507,63 @@ void arguments_t::process_short_option(missingValues_t& mv, const string_t& pref
     }
 }
 
+bool arguments_t::process_variable(bool mustbe, const char_t* arg)
+{
+    // try locate =
+    const char_t* fnd = str::find(arg, jjT('='));
+    if (fnd == nullptr)
+    {
+        if (mustbe)
+            throw std::runtime_error(jj::strcvt::to_string(jjS(jjT("The '") << arg << jjT("' assumed to be a variable definition, but no '=' found."))));
+        return false; // no = found
+    }
+
+    string_t name(arg, fnd - arg), value(++fnd);
+    varmap_t::iterator var = Variables.find(name);
+    if (var != Variables.end())
+    {
+        if (var->second.Var == nullptr)
+        {
+            if (name.empty())
+                throw std::runtime_error("Encountered empty variable name.");
+            // "unknown" variables allowed and rewriting one already found
+            var->second.Value = value;
+            var->second.IsDefault = value.empty();
+            return true; // processed as "unknown" variable
+        }
+        if (var->second.Var->CB == nullptr || var->second.Var->CB(*var->second.Var, value))
+        {
+            var->second.Value = value;
+            var->second.IsDefault = value == var->second.Var->Default;
+        }
+        return true; // processed as variable definition
+    }
+
+    jj::opt::e<unknownVariableBehavior_t>& uv = ParserOptions;
+    switch (uv.Value)
+    {
+    case unknownVariableBehavior_t::IS_POSITIONAL:
+        if (mustbe)
+            throw std::runtime_error(jj::strcvt::to_string(jjS(jjT("The '") << arg << jjT("' assumed to be a variable definition, but no '=' found."))));
+        return false; // simply ignore; handle below as positional argument
+    case unknownVariableBehavior_t::IS_VARIABLE:
+        if (name.empty())
+            throw std::runtime_error("Encountered empty variable name.");
+        Variables[name] = varproxy_t{ value, value.empty(), nullptr };
+        return true; // processed as "unknown" variable
+    case unknownVariableBehavior_t::IS_ERROR:
+    default:
+        throw std::runtime_error(strcvt::to_string(jjS(jjT("Found unknown variable '") << name << jjT("'."))));
+    }
+}
+
 void arguments_t::process_positional(bool explicitPositionals, definitions_t::poss_t::const_iterator& cpos, const char_t* arg)
 {
     jj::opt::e<unknownVariableBehavior_t>& uv = ParserOptions;
     if ((!explicitPositionals || ParserOptions*flags_t::TREAT_VARIABLES_IN_EXPLICIT_POSITIONALS) && (!Variables.empty() || uv.Value != unknownVariableBehavior_t::IS_POSITIONAL))
     {
-        // try locate =
-        const char_t* fnd = str::find(arg, jjT('='));
-        if (fnd != nullptr)
-        {
-            string_t name(arg, fnd - arg), value(++fnd);
-            varmap_t::iterator var = Variables.find(name);
-            if (var != Variables.end())
-            {
-                if (var->second.Var == nullptr)
-                {
-                    if (name.empty())
-                        throw std::runtime_error("Encountered empty variable name.");
-                    // "unknown" variables allowed and rewriting one already found
-                    var->second.Value = value;
-                    var->second.IsDefault = value.empty();
-                    return; // processed as "unknown" variable
-                }
-                if (var->second.Var->CB == nullptr || var->second.Var->CB(*var->second.Var, value))
-                {
-                    var->second.Value = value;
-                    var->second.IsDefault = value == var->second.Var->Default;
-                }
-                return; // positional processed as variable definition
-            }
-            switch (uv.Value)
-            {
-            case unknownVariableBehavior_t::IS_POSITIONAL:
-                break; // simply ignore; handle below as positional argument
-            case unknownVariableBehavior_t::IS_VARIABLE:
-                if (name.empty())
-                    throw std::runtime_error("Encountered empty variable name.");
-                Variables[name] = varproxy_t{ value, value.empty(), nullptr };
-                return; // processed as "unknown" variable
-            case unknownVariableBehavior_t::IS_ERROR:
-            default:
-                throw std::runtime_error(strcvt::to_string(jjS(jjT("Found unknown variable '") << name << jjT("'."))));
-            }
-        }
+        if (process_variable(false, arg))
+            return;
     }
 
     // no matching variable definition found so we are definitely positional
