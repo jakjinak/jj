@@ -242,6 +242,7 @@ struct cmdLineOptionsCommon_t
                 continue; // don't care about
             optinfos_t::infomap_t::const_iterator fnd = infos.infos.find(infos.names[i]);
             JJ_ENSURE(fnd != infos.infos.end(), jjT("is a known argument"));
+            JJ_TEST(fnd->second.Count == count[i], jjT("encountered ") << fnd->second.Count << jjT(" times; expected ") << count[i] << jjT(" times"));
             if (fnd->second.IsVariable)
             {
                 JJ_TEST_MSG(args.Options.find(infos.names[i]) == args.Options.end(), jjT("Variable option is not stored in option list."));
