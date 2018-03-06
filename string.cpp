@@ -211,6 +211,38 @@ int cmpi(const wchar_t* a, const wchar_t* b, size_t pos, size_t len)
 #endif
 }
 
+bool equali(char a, char b)
+{
+    return std::tolower(a) == std::tolower(b);
+}
+
+bool equali(const char* a, const char* b)
+{
+    if (a == nullptr)
+        return b == nullptr || *b == 0;
+    if (b == nullptr)
+        return *a == 0;
+    for (; *a != 0 && *b != 0 && std::tolower(*a) == std::tolower(*b); ++a, ++b)
+        ;
+    return *a == *b;
+}
+
+bool equali(wchar_t a, wchar_t b)
+{
+    return std::tolower(a) == std::tolower(b);
+}
+
+bool equali(const wchar_t* a, const wchar_t* b)
+{
+    if (a == nullptr)
+        return b == nullptr || *b == 0;
+    if (b == nullptr)
+        return *a == 0;
+    for (; *a != 0 && *b != 0 && std::tolower(*a) == std::tolower(*b); ++a, ++b)
+        ;
+    return *a == *b;
+}
+
 bool lessi(char a, char b)
 {
     return std::tolower(a) < std::tolower(b);

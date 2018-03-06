@@ -175,6 +175,49 @@ inline int cmpi(const std::wstring& a, const std::wstring& b, size_t pos = 0, si
 
 //=====================================
 
+/*! Returns whether a and b do have same value. */
+inline bool equal(char a, char b) { return a == b; }
+/*! Returns whether a and b do have same value. */
+inline bool equal(const char* a, const char* b) { return strcmp(a == nullptr ? "" : a, b == nullptr ? "" : b) == 0; }
+/*! Returns whether a and b do have same value. */
+inline bool equal(const std::string& a, const char* b) { return equal(a.c_str(), b); }
+/*! Returns whether a and b do have same value. */
+inline bool equal(const char* a, const std::string& b) { return equal(a, b.c_str()); }
+/*! Returns whether a and b do have same value. */
+inline bool equal(const std::string& a, const std::string& b) { return a == b; }
+/*! Returns whether a and b do have same value. */
+inline bool equal(wchar_t a, wchar_t b) { return a == b; }
+/*! Returns whether a and b do have same value. */
+inline bool equal(const wchar_t* a, const wchar_t* b) { return wcscmp(a == nullptr ? L"" : a, b == nullptr ? L"" : b) == 0; }
+/*! Returns whether a and b do have same value. */
+inline bool equal(const std::wstring& a, const wchar_t* b) { return equal(a.c_str(), b); }
+/*! Returns whether a and b do have same value. */
+inline bool equal(const wchar_t* a, const std::wstring& b) { return equal(a, b.c_str()); }
+/*! Returns whether a and b do have same value. */
+inline bool equal(const std::wstring& a, const std::wstring& b) { return a == b; }
+/*! Returns whether a and b do have same value when ignoring character case. */
+bool equali(char a, char b);
+/*! Returns whether a and b do have same value when ignoring character case. */
+bool equali(const char* a, const char* b);
+/*! Returns whether a and b do have same value when ignoring character case. */
+inline bool equali(const std::string& a, const char* b) { return equali(a.c_str(), b); }
+/*! Returns whether a and b do have same value when ignoring character case. */
+inline bool equali(const char* a, const std::string& b) { return equali(a, b.c_str()); }
+/*! Returns whether a and b do have same value when ignoring character case. */
+inline bool equali(const std::string& a, const std::string& b) { return equali(a.c_str(), b.c_str()); }
+/*! Returns whether a and b do have same value when ignoring character case. */
+bool equali(wchar_t a, wchar_t b);
+/*! Returns whether a and b do have same value when ignoring character case. */
+bool equali(const wchar_t* a, const wchar_t* b);
+/*! Returns whether a and b do have same value when ignoring character case. */
+inline bool equali(const std::wstring& a, const wchar_t* b) { return equali(a.c_str(), b); }
+/*! Returns whether a and b do have same value when ignoring character case. */
+inline bool equali(const wchar_t* a, const std::wstring& b) { return equali(a, b.c_str()); }
+/*! Returns whether a and b do have same value when ignoring character case. */
+inline bool equali(const std::wstring& a, const std::wstring& b) { return equali(a.c_str(), b.c_str()); }
+
+//=====================================
+
 /*! Returns whether given a is lexicographically less than b. */
 inline bool less(char a, char b) { return a < b; }
 /*! Returns whether given a is lexicographically less than b. */
@@ -186,6 +229,10 @@ inline bool less(const char* a, const char* b)
         return true;
     return std::strcmp(a, b) < 0;
 }
+/*! Returns whether given a is lexicographically less than b. */
+inline bool less(const std::string& a, const char* b) { return less(a.c_str(), b); }
+/*! Returns whether given a is lexicographically less than b. */
+inline bool less(const char* a, const std::string& b) { return less(a, b.c_str()); }
 /*! Returns whether given a is lexicographically less than b. */
 inline bool less(const std::string& a, const std::string& b) { return a < b; }
 /*! Returns whether given a is lexicographically less than b. */
@@ -200,17 +247,29 @@ inline bool less(const wchar_t* a, const wchar_t* b)
     return std::wcscmp(a, b) < 0;
 }
 /*! Returns whether given a is lexicographically less than b. */
+inline bool less(const std::wstring& a, const wchar_t* b) { return less(a.c_str(), b); }
+/*! Returns whether given a is lexicographically less than b. */
+inline bool less(const wchar_t* a, const std::wstring& b) { return less(a, b.c_str()); }
+/*! Returns whether given a is lexicographically less than b. */
 inline bool less(const std::wstring& a, const std::wstring& b) { return a < b; }
 /*! Returns whether given a is lexicographically less than b without taking care about character case. */
 bool lessi(char a, char b);
 /*! Returns whether given a is lexicographically less than b without taking care about character case. */
 bool lessi(const char* a, const char* b);
 /*! Returns whether given a is lexicographically less than b without taking care about character case. */
+inline bool lessi(const std::string& a, const char* b) { return lessi(a.c_str(), b); }
+/*! Returns whether given a is lexicographically less than b without taking care about character case. */
+inline bool lessi(const char* a, const std::string& b) { return lessi(a, b.c_str()); }
+/*! Returns whether given a is lexicographically less than b without taking care about character case. */
 bool lessi(const std::string& a, const std::string& b);
 /*! Returns whether given a is lexicographically less than b without taking care about character case. */
 bool lessi(wchar_t a, wchar_t b);
 /*! Returns whether given a is lexicographically less than b without taking care about character case. */
 bool lessi(const wchar_t* a, const wchar_t* b);
+/*! Returns whether given a is lexicographically less than b without taking care about character case. */
+inline bool lessi(const std::wstring& a, const wchar_t* b) { return lessi(a.c_str(), b); }
+/*! Returns whether given a is lexicographically less than b without taking care about character case. */
+inline bool lessi(const wchar_t* a, const std::wstring& b) { return lessi(a, b.c_str()); }
 /*! Returns whether given a is lexicographically less than b without taking care about character case. */
 bool lessi(const std::wstring& a, const std::wstring& b);
 

@@ -69,52 +69,80 @@ const wchar_t* xstrcvtTests_t::long_wstring = L"AbC023as;lk/./.as2190";
 
 //================================================
 
-JJ_TEST_CLASS(cmpTests_t)
+JJ_TEST_CLASS(str_comparisonTests_t)
 
-JJ_TEST_CASE_VARIANTS(cmpc, (char a, char b, int result), \
-    ('A','a',-1),('a','A',1),('A','A',0),('a','a',0),\
-    ('a','b',-1),('b','a',1),('a','a',0),('X','Y',-1),('Y','X',1),('X','X',0),\
-    ('0','1',-1),('1','0',1),('0','0',0),('0','9',-1),('9','0',1),('9','9',0))
+JJ_TEST_CASE_VARIANTS(cmpc, (char a, char b, int result_cmp, bool result_eq, bool result_less), \
+    ('A','a',-1,false,true),('a','A',1,false,false),('A','A',0,true,false),('a','a',0,true,false),\
+    ('a','b',-1,false,true),('b','a',1,false,false),('X','Y',-1,false,true),('Y','X',1,false,false),('X','X',0,true,false),\
+    ('a','X',1,false,false),('X','a',-1,false,true),('A','x',-1,false,true),('x','A',1,false,false),\
+    ('0','1',-1,false,true),('1','0',1,false,false),('0','0',0,true,false),('0','9',-1,false,true),('9','0',1,false,false),('9','9',0,true,false))
 {
-    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b) == result_cmp);
+    JJ_TEST(jj::str::equal(a, b) == result_eq);
+    JJ_TEST(jj::str::less(a, b) == result_less);
 }
 
-JJ_TEST_CASE_VARIANTS(cmp0, (const char* a, const char* b, int result), \
-    (nullptr,nullptr,0),(nullptr,"",0),("",nullptr,0),\
-    (nullptr,"A",-1),("A",nullptr,1),(nullptr,"xyz",-1),("xyz",nullptr,1),\
-    ("","",0),("","A",-1),("A","",1),("","a",-1),("a","",1),("","xyz",-1),("xyz","",1))
+JJ_TEST_CASE_VARIANTS(cmp0, (const char* a, const char* b, int result_cmp, bool result_eq, bool result_less), \
+    (nullptr,nullptr,0,true,false),(nullptr,"",0,true,false),("",nullptr,0,true,false),\
+    (nullptr,"A",-1,false,true),("A",nullptr,1,false,false),(nullptr,"xyz",-1,false,true),("xyz",nullptr,1,false,false),\
+    ("","",0,true,false),("","A",-1,false,true),("A","",1,false,false),("","a",-1,false,true),("a","",1,false,false),("","xyz",-1,false,true),("xyz","",1,false,false))
 {
-    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b) == result_cmp);
     JJ_TEST(jj::str::cmp(a, b, 10) == 0);
     JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::string(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::string(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b)) == result_cmp); }
+    JJ_TEST(jj::str::equal(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equal(std::string(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equal(a, std::string(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equal(std::string(a), std::string(b)) == result_eq); }
+    JJ_TEST(jj::str::less(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::less(std::string(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::less(a, std::string(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::less(std::string(a), std::string(b)) == result_less); }
 }
 
-JJ_TEST_CASE_VARIANTS(cmp,(const char*a, const char* b, int result),\
-    ("A","a",-1),("a","A",1),("a","a",0),("abC","abc",-1),("aBc","abc",-1),("abc","aBc",1),("abc","abc",0),\
-    ("a","b",-1),("b","a",1),("X","Y",-1),("Y","X",1),\
-    ("ijk","pjk",-1),("pjk","ijk",1),("idk","ijk",-1),("ijk","idk",1),("   ","   ",0),\
-    ("a","aa",-1),("aa","a",1),("abcde","abcdef",-1),("abcdef","abcde",1))
+JJ_TEST_CASE_VARIANTS(cmp,(const char* a, const char* b, int result_cmp, bool result_eq, bool result_less),\
+    ("A","a",-1,false,true),("a","A",1,false,false),("a","a",0,true,false),("abC","abc",-1,false,true),("abc","abC",1,false,false),("aBc","abc",-1,false,true),("abc","aBc",1,false,false),("abc","abc",0,true,false),\
+    ("a","b",-1,false,true),("b","a",1,false,false),("X","Y",-1,false,true),("Y","X",1,false,false),\
+    ("a","X",1,false,false),("X","a",-1,false,true),("A","x",-1,false,true),("x","A",1,false,false),\
+    ("ijk","pjk",-1,false,true),("pjk","ijk",1,false,false),("idk","ijk",-1,false,true),("ijk","idk",1,false,false),("   ","   ",0,true,false),\
+    ("a","aa",-1,false,true),("aa","a",1,false,false),("abcde","abcdef",-1,false,true),("abcdef","abcde",1,false,false))
 {
-    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b) == result_cmp);
     JJ_TEST(jj::str::cmp(a, b, 10) == 0);
     JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::string(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::string(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b)) == result_cmp); }
+    JJ_TEST(jj::str::equal(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equal(std::string(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equal(a, std::string(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equal(std::string(a), std::string(b)) == result_eq); }
+    JJ_TEST(jj::str::less(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::less(std::string(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::less(a, std::string(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::less(std::string(a), std::string(b)) == result_less); }
 }
 
-JJ_TEST_CASE_VARIANTS(cmpno, (const char*a, const char* b, int result), \
-    ("0","1",-1),("1","0",1),("0","9",-1),("9","0",1),("123","1234",-1),("1234","123",1),("0123456789", "0123456789", 0))
+JJ_TEST_CASE_VARIANTS(cmpno, (const char* a, const char* b, int result_cmp, bool result_eq, bool result_less), \
+    ("0","0",0,true,false),("0","1",-1,false,true),("1","0",1,false,false),("0","9",-1,false,true),("9","0",1,false,false),("123","1234",-1,false,true),("1234","123",1,false,false),("0123456789","0123456789",0,true,false))
 {
-    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b) == result_cmp);
     JJ_TEST(jj::str::cmp(a, b, 10) == 0);
     JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::string(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::string(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b)) == result_cmp); }
+    JJ_TEST(jj::str::equal(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equal(std::string(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equal(a, std::string(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equal(std::string(a), std::string(b)) == result_eq); }
+    JJ_TEST(jj::str::less(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::less(std::string(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::less(a, std::string(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::less(std::string(a), std::string(b)) == result_less); }
 }
 
 JJ_TEST_CASE_VARIANTS(cmpp, (const char* a, const char* b, size_t pos, int result), \
@@ -136,50 +164,78 @@ JJ_TEST_CASE_VARIANTS(cmpn, (const char* a, const char* b, size_t len, int resul
     if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::string(a), std::string(b), 0, len) == result); }
 }
 
-JJ_TEST_CASE_VARIANTS(cmpc_w, (wchar_t a, wchar_t b, int result), \
-    (L'A',L'a',-1),(L'a',L'A',1),(L'A',L'A',0),(L'a',L'a',0),\
-    (L'a',L'b',-1),(L'b',L'a',1),(L'a',L'a',0),(L'X',L'Y',-1),(L'Y',L'X',1),(L'X',L'X',0),\
-    (L'0',L'1',-1),(L'1',L'0',1),(L'0',L'0',0),(L'0',L'9',-1),(L'9',L'0',1),(L'9',L'9',0))
+JJ_TEST_CASE_VARIANTS(cmpc_w, (wchar_t a, wchar_t b, int result_cmp, bool result_eq, bool result_less), \
+    (L'A',L'a',-1,false,true),(L'a',L'A',1,false,false),(L'A',L'A',0,true,false),(L'a',L'a',0,true,false),\
+    (L'a',L'b',-1,false,true),(L'b',L'a',1,false,false),(L'X',L'Y',-1,false,true),(L'Y',L'X',1,false,false),(L'X',L'X',0,true,false),\
+    (L'a',L'X',1,false,false),(L'X',L'a',-1,false,true),(L'A',L'x',-1,false,true),(L'x',L'A',1,false,false),\
+    (L'0',L'1',-1,false,true),(L'1',L'0',1,false,false),(L'0',L'0',0,true,false),(L'0',L'9',-1,false,true),(L'9',L'0',1,false,false),(L'9',L'9',0,true,false))
 {
-    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b) == result_cmp);
+    JJ_TEST(jj::str::equal(a, b) == result_eq);
+    JJ_TEST(jj::str::less(a, b) == result_less);
 }
 
-JJ_TEST_CASE_VARIANTS(cmp0_w, (const wchar_t* a, const wchar_t* b, int result), \
-    (nullptr,nullptr,0),(nullptr,L"",0),(L"",nullptr,0),\
-    (nullptr,L"A",-1),(L"A",nullptr,1),(nullptr,L"xyz",-1),(L"xyz",nullptr,1),\
-    (L"",L"",0),(L"",L"A",-1),(L"A",L"",1),(L"",L"a",-1),(L"a",L"",1),(L"",L"xyz",-1),(L"xyz",L"",1))
+JJ_TEST_CASE_VARIANTS(cmp0_w, (const wchar_t* a, const wchar_t* b, int result_cmp, bool result_eq, bool result_less), \
+    (nullptr,nullptr,0,true,false),(nullptr,L"",0,true,false),(L"",nullptr,0,true,false),\
+    (nullptr,L"A",-1,false,true),(L"A",nullptr,1,false,false),(nullptr,L"xyz",-1,false,true),(L"xyz",nullptr,1,false,false),\
+    (L"",L"",0,true,false),(L"",L"A",-1,false,true),(L"A",L"",1,false,false),(L"",L"a",-1,false,true),(L"a",L"",1,false,false),(L"",L"xyz",-1,false,true),(L"xyz",L"",1,false,false))
 {
-    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b) == result_cmp);
     JJ_TEST(jj::str::cmp(a, b, 10) == 0);
     JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::wstring(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::wstring(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b)) == result_cmp); }
+    JJ_TEST(jj::str::equal(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equal(std::wstring(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equal(a, std::wstring(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equal(std::wstring(a), std::wstring(b)) == result_eq); }
+    JJ_TEST(jj::str::less(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::less(std::wstring(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::less(a, std::wstring(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::less(std::wstring(a), std::wstring(b)) == result_less); }
 }
 
-JJ_TEST_CASE_VARIANTS(cmp_w,(const wchar_t* a, const wchar_t* b, int result),\
-    (L"A",L"a",-1),(L"a",L"A",1),(L"a",L"a",0),(L"abC",L"abc",-1),(L"aBc",L"abc",-1),(L"abc",L"aBc",1),(L"abc",L"abc",0),\
-    (L"a",L"b",-1),(L"b",L"a",1),(L"X",L"Y",-1),(L"Y",L"X",1),\
-    (L"ijk",L"pjk",-1),(L"pjk",L"ijk",1),(L"idk",L"ijk",-1),(L"ijk",L"idk",1),(L"   ",L"   ",0),\
-    (L"a",L"aa",-1),(L"aa",L"a",1),(L"abcde",L"abcdef",-1),(L"abcdef",L"abcde",1))
+JJ_TEST_CASE_VARIANTS(cmp_w,(const wchar_t* a, const wchar_t* b, int result_cmp, bool result_eq, bool result_less),\
+    (L"A",L"a",-1,false,true),(L"a",L"A",1,false,false),(L"a",L"a",0,true,false),(L"abC",L"abc",-1,false,true),(L"abc",L"abC",1,false,false),(L"aBc",L"abc",-1,false,true),(L"abc",L"aBc",1,false,false),(L"abc",L"abc",0,true,false),\
+    (L"a",L"b",-1,false,true),(L"b",L"a",1,false,false),(L"X",L"Y",-1,false,true),(L"Y",L"X",1,false,false),\
+    (L"a",L"X",1,false,false),(L"X",L"a",-1,false,true),(L"A",L"x",-1,false,true),(L"x",L"A",1,false,false),\
+    (L"ijk",L"pjk",-1,false,true),(L"pjk",L"ijk",1,false,false),(L"idk",L"ijk",-1,false,true),(L"ijk",L"idk",1,false,false),(L"   ",L"   ",0,true,false),\
+    (L"a",L"aa",-1,false,true),(L"aa",L"a",1,false,false),(L"abcde",L"abcdef",-1,false,true),(L"abcdef",L"abcde",1,false,false))
 {
-    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b) == result_cmp);
     JJ_TEST(jj::str::cmp(a, b, 10) == 0);
     JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::wstring(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::wstring(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b)) == result_cmp); }
+    JJ_TEST(jj::str::equal(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equal(std::wstring(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equal(a, std::wstring(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equal(std::wstring(a), std::wstring(b)) == result_eq); }
+    JJ_TEST(jj::str::less(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::less(std::wstring(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::less(a, std::wstring(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::less(std::wstring(a), std::wstring(b)) == result_less); }
 }
 
-JJ_TEST_CASE_VARIANTS(cmpno_w, (const wchar_t* a, const wchar_t* b, int result), \
-    (L"0",L"1",-1),(L"1",L"0",1),(L"0",L"9",-1),(L"9",L"0",1),(L"123",L"1234",-1),(L"1234",L"123",1),(L"0123456789", L"0123456789", 0))
+JJ_TEST_CASE_VARIANTS(cmpno_w, (const wchar_t* a, const wchar_t* b, int result_cmp, bool result_eq, bool result_less), \
+    (L"0",L"0",0,true,false),(L"0",L"1",-1,false,true),(L"1",L"0",1,false,false),(L"0",L"9",-1,false,true),(L"9",L"0",1,false,false),(L"123",L"1234",-1,false,true),(L"1234",L"123",1,false,false),(L"0123456789",L"0123456789",0,true,false))
 {
-    JJ_TEST(jj::str::cmp(a, b) == result);
+    JJ_TEST(jj::str::cmp(a, b) == result_cmp);
     JJ_TEST(jj::str::cmp(a, b, 10) == 0);
     JJ_TEST(jj::str::cmp(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::wstring(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmp(a, std::wstring(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b)) == result_cmp); }
+    JJ_TEST(jj::str::equal(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equal(std::wstring(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equal(a, std::wstring(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equal(std::wstring(a), std::wstring(b)) == result_eq); }
+    JJ_TEST(jj::str::less(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::less(std::wstring(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::less(a, std::wstring(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::less(std::wstring(a), std::wstring(b)) == result_less); }
 }
 
 JJ_TEST_CASE_VARIANTS(cmpp_w, (const wchar_t* a, const wchar_t* b, size_t pos, int result), \
@@ -201,50 +257,78 @@ JJ_TEST_CASE_VARIANTS(cmpn_w, (const wchar_t* a, const wchar_t* b, size_t len, i
     if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmp(std::wstring(a), std::wstring(b), 0, len) == result); }
 }
 
-JJ_TEST_CASE_VARIANTS(cmpc_i, (char a, char b, int result), \
-    ('A','a',0),('a','A',0),('A','A',0),('a','a',0),\
-    ('a','b',-1),('b','a',1),('a','a',0),('X','Y',-1),('Y','X',1),('X','X',0),\
-    ('0','1',-1),('1','0',1),('0','0',0),('0','9',-1),('9','0',1),('9','9',0))
+JJ_TEST_CASE_VARIANTS(cmpc_i, (char a, char b, int result_cmp, bool result_eq, bool result_less), \
+    ('A','a',0,true,false),('a','A',0,true,false),('A','A',0,true,false),('a','a',0,true,false),\
+    ('a','b',-1,false,true),('b','a',1,false,false),('X','Y',-1,false,true),('Y','X',1,false,false),('X','X',0,true,false),\
+    ('a','X',-1,false,true),('X','a',1,false,false),('A','x',-1,false,true),('x','A',1,false,false),\
+    ('0','1',-1,false,true),('1','0',1,false,false),('0','0',0,true,false),('0','9',-1,false,true),('9','0',1,false,false),('9','9',0,true,false))
 {
-    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b) == result_cmp);
+    JJ_TEST(jj::str::equali(a, b) == result_eq);
+    JJ_TEST(jj::str::lessi(a, b) == result_less);
 }
 
-JJ_TEST_CASE_VARIANTS(cmp0_i, (const char* a, const char* b, int result), \
-    (nullptr,nullptr,0),(nullptr,"",0),("",nullptr,0),\
-    (nullptr,"A",-1),("A",nullptr,1),(nullptr,"xyz",-1),("xyz",nullptr,1),\
-    ("","",0),("","A",-1),("A","",1),("","a",-1),("a","",1),("","xyz",-1),("xyz","",1))
+JJ_TEST_CASE_VARIANTS(cmp0_i, (const char* a, const char* b, int result_cmp, bool result_eq, bool result_less), \
+    (nullptr,nullptr,0,true,false),(nullptr,"",0,true,false),("",nullptr,0,true,false),\
+    (nullptr,"A",-1,false,true),("A",nullptr,1,false,false),(nullptr,"xyz",-1,false,true),("xyz",nullptr,1,false,false),\
+    ("","",0,true,false),("","A",-1,false,true),("A","",1,false,false),("","a",-1,false,true),("a","",1,false,false),("","xyz",-1,false,true),("xyz","",1,false,false))
 {
-    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b) == result_cmp);
     JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
     JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::string(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::string(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b)) == result_cmp); }
+    JJ_TEST(jj::str::equali(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equali(std::string(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equali(a, std::string(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equali(std::string(a), std::string(b)) == result_eq); }
+    JJ_TEST(jj::str::lessi(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::lessi(std::string(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::lessi(a, std::string(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::lessi(std::string(a), std::string(b)) == result_less); }
 }
 
-JJ_TEST_CASE_VARIANTS(cmp_i,(const char*a, const char* b, int result),\
-    ("A","a",0),("a","A",0),("a","a",0),("abC","abc",0),("aBc","abc",0),("abc","aBc",0),("abc","abc",0),\
-    ("a","b",-1),("b","a",1),("X","Y",-1),("Y","X",1),\
-    ("ijk","pjk",-1),("pjk","ijk",1),("idk","ijk",-1),("ijk","idk",1),("   ","   ",0),\
-    ("a","aa",-1),("aa","a",1),("abcde","abcdef",-1),("abcdef","abcde",1))
+JJ_TEST_CASE_VARIANTS(cmp_i,(const char* a, const char* b, int result_cmp, bool result_eq, bool result_less),\
+    ("A","a",0,true,false),("a","A",0,true,false),("a","a",0,true,false),("abC","abc",0,true,false),("abc","abC",0,true,false),("aBc","abc",0,true,false),("abc","aBc",0,true,false),("abc","abc",0,true,false),\
+    ("a","b",-1,false,true),("b","a",1,false,false),("X","Y",-1,false,true),("Y","X",1,false,false),\
+    ("a","X",-1,false,true),("X","a",1,false,false),("A","x",-1,false,true),("x","A",1,false,false),\
+    ("ijk","pjk",-1,false,true),("pjk","ijk",1,false,false),("idk","ijk",-1,false,true),("ijk","idk",1,false,false),("   ","   ",0,true,false),\
+    ("a","aa",-1,false,true),("aa","a",1,false,false),("abcde","abcdef",-1,false,true),("abcdef","abcde",1,false,false))
 {
-    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b) == result_cmp);
     JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
     JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::string(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::string(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b)) == result_cmp); }
+    JJ_TEST(jj::str::equali(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equali(std::string(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equali(a, std::string(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equali(std::string(a), std::string(b)) == result_eq); }
+    JJ_TEST(jj::str::lessi(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::lessi(std::string(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::lessi(a, std::string(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::lessi(std::string(a), std::string(b)) == result_less); }
 }
 
-JJ_TEST_CASE_VARIANTS(cmpno_i, (const char*a, const char* b, int result), \
-    ("0","1",-1),("1","0",1),("0","9",-1),("9","0",1),("123","1234",-1),("1234","123",1),("0123456789", "0123456789", 0))
+JJ_TEST_CASE_VARIANTS(cmpno_i, (const char* a, const char* b, int result_cmp, bool result_eq, bool result_less), \
+    ("0","0",0,true,false),("0","1",-1,false,true),("1","0",1,false,false),("0","9",-1,false,true),("9","0",1,false,false),("123","1234",-1,false,true),("1234","123",1,false,false),("0123456789","0123456789",0,true,false))
 {
-    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b) == result_cmp);
     JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
     JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::string(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::string(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b)) == result_cmp); }
+    JJ_TEST(jj::str::equali(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equali(std::string(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equali(a, std::string(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equali(std::string(a), std::string(b)) == result_eq); }
+    JJ_TEST(jj::str::lessi(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::lessi(std::string(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::lessi(a, std::string(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::lessi(std::string(a), std::string(b)) == result_less); }
 }
 
 JJ_TEST_CASE_VARIANTS(cmpp_i, (const char* a, const char* b, size_t pos, int result), \
@@ -266,50 +350,78 @@ JJ_TEST_CASE_VARIANTS(cmpn_i, (const char* a, const char* b, size_t len, int res
     if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::string(a), std::string(b), 0, len) == result); }
 }
 
-JJ_TEST_CASE_VARIANTS(cmpc_iw, (wchar_t a, wchar_t b, int result), \
-    (L'A',L'a',0),(L'a',L'A',0),(L'A',L'A',0),(L'a',L'a',0),\
-    (L'a',L'b',-1),(L'b',L'a',1),(L'a',L'a',0),(L'X',L'Y',-1),(L'Y',L'X',1),(L'X',L'X',0),\
-    (L'0',L'1',-1),(L'1',L'0',1),(L'0',L'0',0),(L'0',L'9',-1),(L'9',L'0',1),(L'9',L'9',0))
+JJ_TEST_CASE_VARIANTS(cmpc_iw, (wchar_t a, wchar_t b, int result_cmp, bool result_eq, bool result_less), \
+    (L'A',L'a',0,true,false),(L'a',L'A',0,true,false),(L'A',L'A',0,true,false),(L'a',L'a',0,true,false),\
+    (L'a',L'b',-1,false,true),(L'b',L'a',1,false,false),(L'X',L'Y',-1,false,true),(L'Y',L'X',1,false,false),(L'X',L'X',0,true,false),\
+    (L'a',L'X',-1,false,true),(L'X',L'a',1,false,false),(L'A',L'x',-1,false,true),(L'x',L'A',1,false,false),\
+    (L'0',L'1',-1,false,true),(L'1',L'0',1,false,false),(L'0',L'0',0,true,false),(L'0',L'9',-1,false,true),(L'9',L'0',1,false,false),(L'9',L'9',0,true,false))
 {
-    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b) == result_cmp);
+    JJ_TEST(jj::str::equali(a, b) == result_eq);
+    JJ_TEST(jj::str::lessi(a, b) == result_less);
 }
 
-JJ_TEST_CASE_VARIANTS(cmp0_iw, (const wchar_t* a, const wchar_t* b, int result), \
-    (nullptr,nullptr,0),(nullptr,L"",0),(L"",nullptr,0),\
-    (nullptr,L"A",-1),(L"A",nullptr,1),(nullptr,L"xyz",-1),(L"xyz",nullptr,1),\
-    (L"",L"",0),(L"",L"A",-1),(L"A",L"",1),(L"",L"a",-1),(L"a",L"",1),(L"",L"xyz",-1),(L"xyz",L"",1))
+JJ_TEST_CASE_VARIANTS(cmp0_iw, (const wchar_t* a, const wchar_t* b, int result_cmp, bool result_eq, bool result_less), \
+    (nullptr,nullptr,0,true,false),(nullptr,L"",0,true,false),(L"",nullptr,0,true,false),\
+    (nullptr,L"A",-1,false,true),(L"A",nullptr,1,false,false),(nullptr,L"xyz",-1,false,true),(L"xyz",nullptr,1,false,false),\
+    (L"",L"",0,true,false),(L"",L"A",-1,false,true),(L"A",L"",1,false,false),(L"",L"a",-1,false,true),(L"a",L"",1,false,false),(L"",L"xyz",-1,false,true),(L"xyz",L"",1,false,false))
 {
-    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b) == result_cmp);
     JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
     JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::wstring(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::wstring(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b)) == result_cmp); }
+    JJ_TEST(jj::str::equali(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equali(std::wstring(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equali(a, std::wstring(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equali(std::wstring(a), std::wstring(b)) == result_eq); }
+    JJ_TEST(jj::str::lessi(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::lessi(std::wstring(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::lessi(a, std::wstring(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::lessi(std::wstring(a), std::wstring(b)) == result_less); }
 }
 
-JJ_TEST_CASE_VARIANTS(cmp_iw,(const wchar_t* a, const wchar_t* b, int result),\
-    (L"A",L"a",0),(L"a",L"A",0),(L"a",L"a",0),(L"abC",L"abc",0),(L"aBc",L"abc",0),(L"abc",L"aBc",0),(L"abc",L"abc",0),\
-    (L"a",L"b",-1),(L"b",L"a",1),(L"X",L"Y",-1),(L"Y",L"X",1),\
-    (L"ijk",L"pjk",-1),(L"pjk",L"ijk",1),(L"idk",L"ijk",-1),(L"ijk",L"idk",1),(L"   ",L"   ",0),\
-    (L"a",L"aa",-1),(L"aa",L"a",1),(L"abcde",L"abcdef",-1),(L"abcdef",L"abcde",1))
+JJ_TEST_CASE_VARIANTS(cmp_iw,(const wchar_t* a, const wchar_t* b, int result_cmp, bool result_eq, bool result_less),\
+    (L"A",L"a",0,true,false),(L"a",L"A",0,true,false),(L"a",L"a",0,true,false),(L"abC",L"abc",0,true,false),(L"abc",L"abC",0,true,false),(L"aBc",L"abc",0,true,false),(L"abc",L"aBc",0,true,false),(L"abc",L"abc",0,true,false),\
+    (L"a",L"b",-1,false,true),(L"b",L"a",1,false,false),(L"X",L"Y",-1,false,true),(L"Y",L"X",1,false,false),\
+    (L"a",L"X",-1,false,true),(L"X",L"a",1,false,false),(L"A",L"x",-1,false,true),(L"x",L"A",1,false,false),\
+    (L"ijk",L"pjk",-1,false,true),(L"pjk",L"ijk",1,false,false),(L"idk",L"ijk",-1,false,true),(L"ijk",L"idk",1,false,false),(L"   ",L"   ",0,true,false),\
+    (L"a",L"aa",-1,false,true),(L"aa",L"a",1,false,false),(L"abcde",L"abcdef",-1,false,true),(L"abcdef",L"abcde",1,false,false))
 {
-    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b) == result_cmp);
     JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
     JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::wstring(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::wstring(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b)) == result_cmp); }
+    JJ_TEST(jj::str::equali(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equali(std::wstring(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equali(a, std::wstring(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equali(std::wstring(a), std::wstring(b)) == result_eq); }
+    JJ_TEST(jj::str::lessi(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::lessi(std::wstring(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::lessi(a, std::wstring(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::lessi(std::wstring(a), std::wstring(b)) == result_less); }
 }
 
-JJ_TEST_CASE_VARIANTS(cmpno_iw, (const wchar_t* a, const wchar_t* b, int result), \
-    (L"0",L"1",-1),(L"1",L"0",1),(L"0",L"9",-1),(L"9",L"0",1),(L"123",L"1234",-1),(L"1234",L"123",1),(L"0123456789", L"0123456789", 0))
+JJ_TEST_CASE_VARIANTS(cmpno_iw, (const wchar_t* a, const wchar_t* b, int result_cmp, bool result_eq, bool result_less), \
+    (L"0",L"0",0,true,false),(L"0",L"1",-1,false,true),(L"1",L"0",1,false,false),(L"0",L"9",-1,false,true),(L"9",L"0",1,false,false),(L"123",L"1234",-1,false,true),(L"1234",L"123",1,false,false),(L"0123456789",L"0123456789",0,true,false))
 {
-    JJ_TEST(jj::str::cmpi(a, b) == result);
+    JJ_TEST(jj::str::cmpi(a, b) == result_cmp);
     JJ_TEST(jj::str::cmpi(a, b, 10) == 0);
     JJ_TEST(jj::str::cmpi(a, b, 0, 0) == 0);
-    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), b) == result); }
-    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::wstring(b)) == result); }
-    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b)) == result); }
+    if (a != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), b) == result_cmp); }
+    if (b != nullptr) { JJ_TEST(jj::str::cmpi(a, std::wstring(b)) == result_cmp); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b)) == result_cmp); }
+    JJ_TEST(jj::str::equali(a, b) == result_eq);
+    if (a != nullptr) { JJ_TEST(jj::str::equali(std::wstring(a), b) == result_eq); }
+    if (b != nullptr) { JJ_TEST(jj::str::equali(a, std::wstring(b)) == result_eq); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::equali(std::wstring(a), std::wstring(b)) == result_eq); }
+    JJ_TEST(jj::str::lessi(a, b) == result_less);
+    if (a != nullptr) { JJ_TEST(jj::str::lessi(std::wstring(a), b) == result_less); }
+    if (b != nullptr) { JJ_TEST(jj::str::lessi(a, std::wstring(b)) == result_less); }
+    if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::lessi(std::wstring(a), std::wstring(b)) == result_less); }
 }
 
 JJ_TEST_CASE_VARIANTS(cmpp_iw, (const wchar_t* a, const wchar_t* b, size_t pos, int result), \
@@ -331,145 +443,7 @@ JJ_TEST_CASE_VARIANTS(cmpn_iw, (const wchar_t* a, const wchar_t* b, size_t len, 
     if (a != nullptr && b != nullptr) { JJ_TEST(jj::str::cmpi(std::wstring(a), std::wstring(b), 0, len) == result); }
 }
 
-JJ_TEST_CLASS_END(cmpTests_t, cmpc, cmp0, cmp, cmpno, cmpp, cmpn, cmpc_w, cmp0_w, cmp_w, cmpno_w, cmpp_w, cmpn_w, cmpc_i, cmp0_i, cmp_i, cmpno_i, cmpp_i, cmpn_i, cmpc_iw, cmp0_iw, cmp_iw, cmpno_iw, cmpp_iw, cmpn_iw)
-
-//================================================
-
-JJ_TEST_CLASS(str_lessTests_t)
-
-JJ_TEST_CASE_VARIANTS(lessc, (char a, char b, bool result),\
-    ('a','A',false), ('A','a',true),\
-    ('a','b',true), ('b','a',false), ('X','Y',true), ('Y','X',false),\
-    ('0','0',false), ('0','1',true), ('1','0',false), ('0','9',true), ('9','0',false))
-{
-    JJ_TEST(jj::str::less(a, b) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(less0,(const char* a, const char* b, bool result),\
-    (nullptr,nullptr,false),(nullptr,"",false),("",nullptr,false),\
-    (nullptr,"A",true),("A",nullptr,false),(nullptr,"xyz",true),("xyz",nullptr,false))
-{
-    JJ_TEST(jj::str::less(a, b) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(less,(const char* a, const char* b, bool result),\
-    ("","",false), ("","A",true), ("A","",false), ("","a",true), ("a","",false), ("","abc",true), ("abc","", false),\
-    ("a","A",false), ("A","a",true), ("abc","abC",false), ("abC","abc",true), ("abc","aBc",false), ("aBc","abc",true),\
-    ("a","b",true), ("b","a",false), ("X","Y",true), ("Y","X",false),\
-    ("ijk","pjk",true), ("pjk","ijk",false), ("idk","ijk",true), ("ijk","idk",false),\
-    ("a","aa",true), ("aa","a",false), ("abcde","abcdef",true), ("abcdef","abcde",false))
-{
-    JJ_TEST(jj::str::less(a, b) == result);
-    JJ_TEST(jj::str::less(std::string(a), std::string(b)) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lessn, (const char* a, const char* b, bool result),\
-    ("0","0",false), ("0","1",true), ("1","0",false), ("0","9",true), ("9","0",false))
-{
-    JJ_TEST(jj::str::less(a, b) == result);
-    JJ_TEST(jj::str::less(std::string(a), std::string(b)) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lesswc, (wchar_t a, wchar_t b, bool result),\
-    (L'a',L'A',false), (L'A',L'a',true),\
-    (L'a',L'b',true), (L'b',L'a',false), (L'X',L'Y',true), (L'Y',L'X',false),\
-    (L'0',L'0',false), (L'0',L'1',true), (L'1',L'0',false), (L'0',L'9',true), (L'9',L'0',false))
-{
-    JJ_TEST(jj::str::less(a, b) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lessw0,(const wchar_t* a, const wchar_t* b, bool result),\
-    (nullptr,nullptr,false),(nullptr,L"",false),(L"",nullptr,false),\
-    (nullptr,L"A",true),(L"A",nullptr,false),(nullptr,L"xyz",true),(L"xyz",nullptr,false))
-{
-    JJ_TEST(jj::str::less(a, b) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lessw,(const wchar_t* a, const wchar_t* b, bool result),\
-    (L"",L"",false), (L"",L"A",true), (L"A",L"",false), (L"",L"a",true), (L"a",L"",false), (L"",L"abc",true), (L"abc",L"", false),\
-    (L"a",L"A",false), (L"A",L"a",true), (L"abc",L"abC",false), (L"abC",L"abc",true), (L"abc",L"aBc",false), (L"aBc",L"abc",true),\
-    (L"a",L"b",true), (L"b",L"a",false), (L"X",L"Y",true), (L"Y",L"X",false),\
-    (L"ijk",L"pjk",true), (L"pjk",L"ijk",false), (L"idk",L"ijk",true), (L"ijk",L"idk",false),\
-    (L"a",L"aa",true), (L"aa",L"a",false), (L"abcde",L"abcdef",true), (L"abcdef",L"abcde",false))
-{
-    JJ_TEST(jj::str::less(a, b) == result);
-    JJ_TEST(jj::str::less(std::wstring(a), std::wstring(b)) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lesswn, (const wchar_t* a, const wchar_t* b, bool result),\
-    (L"0",L"0",false), (L"0",L"1",true), (L"1",L"0",false), (L"0",L"9",true), (L"9",L"0",false))
-{
-    JJ_TEST(jj::str::less(a, b) == result);
-    JJ_TEST(jj::str::less(std::wstring(a), std::wstring(b)) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lessic, (char a, char b, bool result),\
-    ('a','A',false), ('A','a',false),\
-    ('a','b',true), ('b','a',false), ('X','Y',true), ('Y','X',false),\
-    ('0','0',false), ('0','1',true), ('1','0',false), ('0','9',true), ('9','0',false))
-{
-    JJ_TEST(jj::str::lessi(a, b) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lessi0,(const char* a, const char* b, bool result),\
-    (nullptr,nullptr,false),(nullptr,"",false),("",nullptr,false),\
-    (nullptr,"A",true),("A",nullptr,false),(nullptr,"xyz",true),("xyz",nullptr,false))
-{
-    JJ_TEST(jj::str::lessi(a, b) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lessi, (const char* a, const char* b, bool result),\
-    ("","",false), ("","A",true), ("A","", false), ("","a",true), ("a","",false), ("","abc",true), ("abc","",false),\
-    ("a","A",false), ("A","a",false), ("abc","abC",false), ("abC","abc",false), ("abc","aBc",false), ("aBc","abc",false),\
-    ("a","b",true), ("b","a",false), ("X","Y",true), ("Y","X",false),\
-    ("ijk","pjk",true), ("pjk","ijk",false), ("idk","ijk",true), ("ijk","idk",false),\
-    ("a","aa",true), ("aa","a",false), ("abcde","abcdef",true), ("abcdef","abcde",false))
-{
-    JJ_TEST(jj::str::lessi(a, b) == result);
-    JJ_TEST(jj::str::lessi(std::string(a), std::string(b)) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lessin, (const char* a, const char* b, bool result),\
-    ("0","0",false), ("0","1",true), ("1","0",false), ("0","9",true), ("9","0",false))
-{
-    JJ_TEST(jj::str::lessi(a, b) == result);
-    JJ_TEST(jj::str::lessi(std::string(a), std::string(b)) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lesswic, (wchar_t a, wchar_t b, bool result),\
-    (L'a',L'A',false), (L'A',L'a',false),\
-    (L'a',L'b',true), (L'b',L'a',false), (L'X',L'Y',true), (L'Y',L'X',false),\
-    (L'0',L'0',false), (L'0',L'1',true), (L'1',L'0',false), (L'0',L'9',true), (L'9',L'0',false))
-{
-    JJ_TEST(jj::str::lessi(a, b) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lesswi0,(const wchar_t* a, const wchar_t* b, bool result),\
-    (nullptr,nullptr,false),(nullptr,L"",false),(L"",nullptr,false),\
-    (nullptr,L"A",true),(L"A",nullptr,false),(nullptr,L"xyz",true),(L"xyz",nullptr,false))
-{
-    JJ_TEST(jj::str::less(a, b) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lesswi, (const wchar_t* a, const wchar_t* b, bool result),\
-    (L"",L"",false), (L"",L"A",true), (L"A",L"", false), (L"",L"a",true), (L"a",L"",false), (L"",L"abc",true), (L"abc",L"",false),\
-    (L"a",L"A",false), (L"A",L"a",false), (L"abc",L"abC",false), (L"abC",L"abc",false), (L"abc",L"aBc",false), (L"aBc",L"abc",false),\
-    (L"a",L"b",true), (L"b",L"a",false), (L"X",L"Y",true), (L"Y",L"X",false),\
-    (L"ijk",L"pjk",true), (L"pjk",L"ijk",false), (L"idk",L"ijk",true), (L"ijk",L"idk",false),\
-    (L"a",L"aa",true), (L"aa",L"a",false), (L"abcde",L"abcdef",true), (L"abcdef",L"abcde",false))
-{
-    JJ_TEST(jj::str::lessi(a, b) == result);
-    JJ_TEST(jj::str::lessi(std::wstring(a), std::wstring(b)) == result);
-}
-
-JJ_TEST_CASE_VARIANTS(lesswin, (const wchar_t* a, const wchar_t* b, bool result),\
-    (L"0",L"0",false), (L"0",L"1",true), (L"1",L"0",false), (L"0",L"9",true), (L"9",L"0",false))
-{
-    JJ_TEST(jj::str::lessi(a, b) == result);
-    JJ_TEST(jj::str::lessi(std::wstring(a), std::wstring(b)) == result);
-}
-
-JJ_TEST_CLASS_END(str_lessTests_t, lessc, less0, less, lessn, lessw0, lesswc, lessw, lesswn, lessic, lessi0, lessi, lessin, lesswic, lesswi0, lesswi, lesswin)
+JJ_TEST_CLASS_END(str_comparisonTests_t, cmpc, cmp0, cmp, cmpno, cmpp, cmpn, cmpc_w, cmp0_w, cmp_w, cmpno_w, cmpp_w, cmpn_w, cmpc_i, cmp0_i, cmp_i, cmpno_i, cmpp_i, cmpn_i, cmpc_iw, cmp0_iw, cmp_iw, cmpno_iw, cmpp_iw, cmpn_iw)
 
 //================================================
 
