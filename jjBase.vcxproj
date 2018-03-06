@@ -311,6 +311,7 @@
   <ItemGroup>
     <ClInclude Include="cmdLine.h" />
     <ClInclude Include="defines.h" />
+    <ClInclude Include="defines_auto.h" />
     <ClInclude Include="exception.h" />
     <ClInclude Include="flagSet.h" />
     <ClInclude Include="functionBag.h" />

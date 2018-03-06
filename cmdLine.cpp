@@ -89,9 +89,9 @@ void arguments_t::add_default_help(definitions_t& defs)
 {
     defs.Options.push_back({
        {name_t(jjT('h')), name_t(jjT("help"))
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_OS_WINDOWS)
        ,name_t(jjT('?'))
-#endif // defined(...
+#endif // defined(JJ_OS_WINDOWS)
        },
        jjT("Prints this help and exits."),
        0u,
@@ -194,11 +194,11 @@ void arguments_t::parse_program_name(const char_t* pn)
     const char_t* tmp = pn, *start = pn;
     while (*tmp != 0)
     {
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_OS_WINDOWS)
         if (*tmp == jjT('/') || *tmp == jjT('\\'))
 #else
         if (*tmp == '/')
-#endif //  defined(_WINDOWS) || defined(_WIN32)
+#endif // defined(JJ_OS_WINDOWS)
             start = tmp + 1;
         ++tmp;
     }

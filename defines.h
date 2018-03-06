@@ -1,6 +1,8 @@
 #ifndef JJ_DEFINES_H
 #define JJ_DEFINES_H
 
+#include "defines_auto.h"
+
 #ifdef JJ_CUSTOM_DEFINES_FILE
 #undef JJ_CUSTOM_INCLUDER_HELPER
 #define JJ_CUSTOM_INCLUDER_HELPER(x) #x

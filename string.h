@@ -1,10 +1,11 @@
 #ifndef JJ_STRING_H
 #define JJ_STRING_H
 
+#include "defines.h"
 #include <string>
 #include <cstring> // std::strcmp for gcc
 
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_USE_WSTRING)
 namespace jj
 {
 /*! Uniquely defines a character type in a platform independent fashion. */
@@ -22,7 +23,7 @@ typedef char char_t;
 typedef std::string string_t;
 } // namespace jj
 #define jjT(x) x
-#endif // defined(_WINDOWS) || defined(_WIN32)
+#endif // defined(JJ_USE_WSTRING)
 
 namespace jj
 {
@@ -57,7 +58,7 @@ inline std::wstring to_wstring(const wchar_t* str) { if (str==nullptr) return jj
 /*! Returns a std::wstring object constructed from input parameter, does conversions when necessary. */
 inline std::wstring to_wstring(const std::wstring& str) { return str; }
 
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_USE_WSTRING)
 /*! Returns platform specific string object constructed from input parameter, does conversions when necessary. */
 inline string_t to_string_t(const char* str) { return to_wstring(str); }
 /*! Returns platform specific string object constructed from input parameter, does conversions when necessary. */
@@ -75,7 +76,7 @@ inline string_t to_string_t(const std::string& str) { return str; }
 inline string_t to_string_t(const wchar_t* str) { return to_string(str); }
 /*! Returns platform specific string object constructed from input parameter, does conversions when necessary. */
 inline string_t to_string_t(const std::wstring& str) { return to_string(str); }
-#endif // defined(_WINDOWS) || defined(_WIN32)
+#endif // defined(JJ_USE_WSTRING)
 } // namespace strcvt
 
 namespace str

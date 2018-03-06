@@ -4,7 +4,7 @@
 
 namespace jj
 {
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_USE_WSTRING)
 istream_t& cin = std::wcin;
 ostream_t& cout = std::wcout;
 ostream_t& cerr = std::wcerr;
@@ -12,5 +12,5 @@ ostream_t& cerr = std::wcerr;
 istream_t& cin = std::cin;
 ostream_t& cout = std::cout;
 ostream_t& cerr = std::cerr;
-#endif // defined(_WINDOWS) || defined(_WIN32)
+#endif // defined(JJ_USE_WSTRING)
 } // namespace jj

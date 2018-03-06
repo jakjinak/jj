@@ -4,14 +4,13 @@
 #include <cctype>
 #include <cwctype>
 
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_OS_WINDOWS)
 #include <string.h> // _strnicmp, _wcsnicmp
 #else
 #include <strings.h> // strncasecmp, wcsncasecmp
-#endif
+#endif // defined(JJ_OS_WINDOWS)
 
-#if defined(_WINDOWS) || defined(_WIN32) || ( __GNUC__ > 5 ) || (__GNUC__ == 5 && (__GNUC_MINOR__ > 1 ) )
-// this is only supported on windows (vs2017) or with g++ newer than
+#if defined(JJ_USE_CODECVT)
 #include <locale>
 #include <codecvt>
 
@@ -51,7 +50,7 @@ std::wstring to_wstring(const std::string& str)
 } // namespace strcvt
 } // namespace jj
 
-#else // defined(_WINDOWS)...
+#else // defined(JJ_USE_CODECVT)...
 
 namespace jj
 {
@@ -82,7 +81,7 @@ std::wstring to_wstring(const std::string& str)
 
 } // namespace jj
 
-#endif // defined(_WINDOWS)...
+#endif // defined(JJ_USE_CODECVT)...
 
 namespace jj
 {
@@ -92,11 +91,11 @@ namespace str
 
 const std::string EmptyString;
 const std::wstring EmptyWString;
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_USE_WSTRING)
 const string_t& Empty = EmptyWString;
 #else
 const string_t& Empty = EmptyString;
-#endif
+#endif // defined(JJ_USE_WSTRING)
 
 namespace // <anonymous>
 {
@@ -180,13 +179,13 @@ int cmpi(char a, char b)
 int cmpi(const char* a, const char* b, size_t pos, size_t len)
 {
     strprecheck(a, b, pos);
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_OS_WINDOWS)
     if (len == std::string::npos)
         return sgn(_strcmpi(a, b));
     return sgn(_strnicmp(a, b, len));
 #else
     return sgn(strncasecmp(a, b, len));
-#endif
+#endif // defined(JJ_OS_WINDOWS)
 }
 int cmpi(wchar_t a, wchar_t b)
 {
@@ -202,13 +201,13 @@ int cmpi(wchar_t a, wchar_t b)
 int cmpi(const wchar_t* a, const wchar_t* b, size_t pos, size_t len)
 {
     strprecheck(a, b, pos);
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_OS_WINDOWS)
     if (len == std::wstring::npos)
         return sgn(_wcsicmp(a, b));
     return sgn(_wcsnicmp(a, b, len));
 #else
     return sgn(wcsncasecmp(a, b, len));
-#endif
+#endif // defined(JJ_OS_WINDOWS)
 }
 
 bool equali(char a, char b)

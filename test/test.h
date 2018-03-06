@@ -482,7 +482,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 } // namespace jj
 
 
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_OS_WINDOWS)
 #define JJ___PP_VSCRAP_Y(d,x) x
 #define JJ___PP_VSCRAP_X(a,b) JJ___PP_VSCRAP_Y(~, a ## b)
 #define JJ___PP_VSCRAP(a) JJ___PP_VSCRAP_X(a,)
@@ -538,7 +538,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 #define JJ_PP_SELECTOR24(...) JJ___PP_VSCRAP(JJ___PP_SELECTOR24_X(__VA_ARGS__))
 #define JJ___PP_SELECTOR25_X(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, actual, ...) actual
 #define JJ_PP_SELECTOR25(...) JJ___PP_VSCRAP(JJ___PP_SELECTOR25_X(__VA_ARGS__))
-#else // defined(_WINDOWS) || defined(_WIN32)
+#else // defined(JJ_OS_WINDOWS)
 #define JJ___PP_VSCRAP(a) a
 
 #define JJ_PP_SELECTOR1(p1, actual, ...) actual
@@ -566,7 +566,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 #define JJ_PP_SELECTOR23(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, actual, ...) actual
 #define JJ_PP_SELECTOR24(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, actual, ...) actual
 #define JJ_PP_SELECTOR25(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, actual, ...) actual
-#endif // defined(_WINDOWS) || defined(_WIN32)
+#endif // defined(JJ_OS_WINDOWS)
 
 
 #define jjM1(p1) p1

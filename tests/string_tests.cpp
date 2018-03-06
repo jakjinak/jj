@@ -37,7 +37,7 @@ const wchar_t* wstrcvtTests_t::long_wstring = L"AbC023as;lk/./.as2190";
 
 //================================================
 
-#if defined(_WINDOWS) || defined(_WIN32) || ( __GNUC__ > 5 ) || (__GNUC__ == 5 && (__GNUC_MINOR__ > 1 ) )
+#if defined(JJ_USE_CODECVT)
 JJ_TEST_CLASS(xstrcvtTests_t)
 static const char* long_string;
 static const wchar_t* long_wstring;
@@ -65,7 +65,7 @@ JJ_TEST_CASE_VARIANTS(string2wstring,(const std::string& in, const wchar_t* out)
 JJ_TEST_CLASS_END(xstrcvtTests_t, wcharp2string, wstring2string, charp2wstring, string2wstring)
 const char* xstrcvtTests_t::long_string = "AbC023as;lk/./.as2190";
 const wchar_t* xstrcvtTests_t::long_wstring = L"AbC023as;lk/./.as2190";
-#endif // defined(...
+#endif // defined(JJ_USE_CODECVT)
 
 //================================================
 

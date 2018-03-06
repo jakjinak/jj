@@ -2,7 +2,7 @@
 #include "jj/cmdLine.h"
 #include <iostream>
 #include <deque>
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_OS_WINDOWS)
 #include <tchar.h>
 #endif
 
@@ -602,7 +602,7 @@ bool db_t::run()
 
 int main(int argc, const char** argv)
 {
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_OS_WINDOWS)
     typedef std::list<std::wstring> args_t;
     args_t args;
     const wchar_t** argx = new const wchar_t*[argc];
@@ -614,7 +614,7 @@ int main(int argc, const char** argv)
     }
 #else
     const jj::char_t** argx = argv;
-#endif
+#endif // defined(JJ_OS_WINDOWS)
     jj::test::db_t& DB = jj::test::db_t::instance();
     try
     {

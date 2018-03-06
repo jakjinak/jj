@@ -6,7 +6,7 @@
 
 namespace jj
 {
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_USE_WSTRING)
 typedef std::wostream ostream_t;
 typedef std::wistream istream_t;
 
@@ -28,7 +28,7 @@ typedef std::fstream fstream_t;
 typedef std::ostringstream osstream_t;
 typedef std::istringstream isstream_t;
 typedef std::stringstream sstreamt_t;
-#endif // defined(_WINDOWS) || defined(_WIN32)
+#endif // defined(JJ_USE_WSTRING)
 
 extern istream_t& cin;
 extern ostream_t& cout;

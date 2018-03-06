@@ -19,11 +19,11 @@ void arg_info_t::print()
 
 JJ_TEST_CLASS(cmdLineTests_t)
 
-#if defined(_WINDOWS) || defined(_WIN32)
+#if defined(JJ_OS_WINDOWS)
 #define SEP L"\\"
 #else
 #define SEP "/"
-#endif // defined(_WINDOWS) || defined(_WIN32)
+#endif // defined(JJ_OS_WINDOWS)
 
 JJ_TEST_CASE_VARIANTS(ProgramNameWrong_Throws,(const jj::char_t* pn),(jjT("")),(SEP jjT("bla") SEP),(jjT("bla") SEP),(SEP jjT("bla") SEP jjT("bla") SEP),(jjT("bla") SEP jjT("bla") SEP))
 {
