@@ -11,7 +11,7 @@ typedef std::wostream ostream_t;
 typedef std::wistream istream_t;
 
 typedef std::wofstream ofstream_t;
-typedef std::wifstream ifstraem_t;
+typedef std::wifstream ifstream_t;
 typedef std::wfstream fstream_t;
 
 typedef std::wostringstream osstream_t;
@@ -22,7 +22,7 @@ typedef std::ostream ostream_t;
 typedef std::istream istream_t;
 
 typedef std::ofstream ofstream_t;
-typedef std::ifstream ifstraem_t;
+typedef std::ifstream ifstream_t;
 typedef std::fstream fstream_t;
 
 typedef std::ostringstream osstream_t;
