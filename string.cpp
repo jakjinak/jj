@@ -99,6 +99,7 @@ const string_t& Empty = EmptyString;
 
 namespace // <anonymous>
 {
+
 template<typename CH> struct CHtrait;
 template<> struct CHtrait<char>
 {
@@ -109,6 +110,67 @@ template<> struct CHtrait<wchar_t>
     static inline const wchar_t* empty() { return L""; }
 };
 } // namespace <anonymous>
+
+bool isspace(char ch)
+{
+    return std::isspace(ch);
+}
+
+bool isspace(wchar_t ch)
+{
+    return std::iswspace(ch);
+}
+
+bool isalpha(char ch)
+{
+    return std::isalpha(ch);
+}
+
+bool isalpha(wchar_t ch)
+{
+    return std::iswalpha(ch);
+}
+
+bool isalnum(char ch)
+{
+    return std::isalnum(ch);
+}
+
+bool isalnum(wchar_t ch)
+{
+    return std::iswalnum(ch);
+}
+
+bool isdigit(char ch)
+{
+    return std::isdigit(ch);
+}
+
+bool isdigit(wchar_t ch)
+{
+    return std::iswdigit(ch);
+}
+
+bool isxdigit(char ch)
+{
+    return std::isxdigit(ch);
+}
+
+bool isxdigit(wchar_t ch)
+{
+    return std::iswxdigit(ch);
+}
+
+bool iscntrl(char ch)
+{
+    return std::iscntrl(ch);
+}
+
+bool iscntrl(wchar_t ch)
+{
+    return std::iswcntrl(ch);
+}
+
 
 template<typename CH>
 inline void strprecheck(const CH*& a, const CH*& b, size_t& pos)
@@ -153,16 +215,6 @@ int cmp(const wchar_t* a, const wchar_t* b, size_t pos, size_t len)
 {
     strprecheck(a, b, pos);
     return sgn(wcsncmp(a, b, len));
-}
-
-bool isspace(char ch)
-{
-    return std::isspace(ch);
-}
-
-bool isspace(wchar_t ch)
-{
-    return std::iswspace(ch);
 }
 
 int cmpi(char a, char b)

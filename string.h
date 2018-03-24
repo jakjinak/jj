@@ -88,6 +88,27 @@ namespace str
 bool isspace(char ch);
 /*! Returns whether given character can be considered a whitespace. */
 bool isspace(wchar_t ch);
+/*! Returns whether given character is an alphabetic character. */
+bool isalpha(char ch);
+/*! Returns whether given character is an alphabetic character. */
+bool isalpha(wchar_t ch);
+/*! Returns whether given character is an alphabetic or numeric character. */
+bool isalnum(char ch);
+/*! Returns whether given character is an alphabetic or numeric character. */
+bool isalnum(wchar_t ch);
+/*! Returns whether given character is a numeric character. */
+bool isdigit(char ch);
+/*! Returns whether given character is a numeric character. */
+bool isdigit(wchar_t ch);
+/*! Returns whether given character is a hexadecimal character. */
+bool isxdigit(char ch);
+/*! Returns whether given character is a hexadecimal character. */
+bool isxdigit(wchar_t ch);
+/*! Returns whether given character is a control character. */
+bool iscntrl(char ch);
+/*! Returns whether given character is a control character. */
+bool iscntrl(wchar_t ch);
+
 // TODO inline these
 
 /*! Returns -1 if a is lexicographically lower than b, 0 if they are equal or 1. */
