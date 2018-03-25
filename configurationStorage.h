@@ -207,7 +207,7 @@ public:
                     break;
                 s_.get(ch);
                 s_ >> std::hex;
-                bool r = (s_ >> v);
+                bool r = !!(s_ >> v); // note: the !! is here because of visual studio which cannot convert stream to bool
                 s_ >> std::dec;
                 if (!r)
                     v = dflt;
