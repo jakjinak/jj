@@ -310,6 +310,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="cmdLine.h" />
+    <ClInclude Include="configuration.h" />
+    <ClInclude Include="configurationStorage.h" />
     <ClInclude Include="defines.h" />
     <ClInclude Include="defines_auto.h" />
     <ClInclude Include="exception.h" />
@@ -320,11 +322,14 @@
     <ClInclude Include="options.h" />
     <ClInclude Include="stream.h" />
     <ClInclude Include="string.h" />
+    <ClInclude Include="stringLiterals.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cmdLine.cpp" />
+    <ClCompile Include="configurationStorage.cpp" />
     <ClCompile Include="stream.cpp" />
     <ClCompile Include="string.cpp" />
+    <ClCompile Include="stringLiterals.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

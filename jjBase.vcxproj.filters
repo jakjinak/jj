@@ -18,6 +18,12 @@
     <ClInclude Include="cmdLine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="configurationStorage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -48,15 +54,24 @@
     <ClInclude Include="string.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="stringLiterals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cmdLine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="configurationStorage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="string.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stringLiterals.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

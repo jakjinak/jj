@@ -36,7 +36,7 @@ include BUILD/VS.mk
 ########################################
 # jjbase
 SRCDIR_jjbase := $(realpath .)
-SOURCE_jjbase := string.cpp stream.cpp cmdLine.cpp
+SOURCE_jjbase := string.cpp stringLiterals.cpp stream.cpp cmdLine.cpp configurationStorage.cpp
 CPPFLAGS_jjbase := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase}/..)
 VSNAME_jjbase := jjBase
 VSTYPE_jjbase := lib
@@ -112,7 +112,7 @@ $(eval $(call define_generate_vsproj,jjtest))
 ########################################
 # jjbase-tests
 SRCDIR_jjbase-tests := $(realpath tests)
-SOURCE_jjbase-tests := string_tests.cpp flagSet_tests.cpp options_tests.cpp cmdLine_tests.cpp cmdLineOptions_tests.cpp
+SOURCE_jjbase-tests := string_tests.cpp flagSet_tests.cpp options_tests.cpp cmdLine_tests.cpp cmdLineOptions_tests.cpp configuration_tests.cpp
 CPPFLAGS_jjbase-tests := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
 LIBS_jjbase-tests := ${RESULT_jjtest} ${RESULT_jjbase}
 VSNAME_jjbase-tests := jjbase.Tests
