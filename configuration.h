@@ -2,6 +2,7 @@
 #define JJ_CONFIGURATION_H
 
 #include "jj/string.h"
+#include <stdexcept>
 
 namespace jj
 {
@@ -100,7 +101,7 @@ struct numericRange_T : public numeric_T<T, DFLT>
     {
         if (v < MIN || v > MAX)
             return false;
-        value_ = v;
+        numeric_T<T, DFLT>::value_ = v;
         return true;
     }
     /*! Just like regular set in parent class, but checks if new value fits into the allowed range.
@@ -109,7 +110,7 @@ struct numericRange_T : public numeric_T<T, DFLT>
     {
         if (v < MIN || v > MAX)
             throw std::out_of_range(jj::strcvt::to_string(jjS(jjT("Value ") << v << jjT(" is out of allowed range <") << MIN << jjT(',') << MAX << jjT(">."))));
-        value_ = v;
+        numeric_T<T, DFLT>::value_ = v;
     }
 };
 
@@ -117,13 +118,13 @@ struct numericRange_T : public numeric_T<T, DFLT>
 template<typename T = double> struct floatingPoint_t : public value2_base_T<T>
 {
     /*! Constructor */
-    floatingPoint_t(T v = T()) : value2_base_T(v) {}
+    floatingPoint_t(T v = T()) : value2_base_T<T>(v) {}
 };
 /*! Represents any floating point type information, but allowed range is limited. */
 template<typename T = double> struct floatingPointRange_t : public floatingPoint_t<T>
 {
     /*! Constructor */
-    floatingPointRange_t(T min, T max, T v = T()) : floatingPoint_t(v), min_(min), max_(max) {}
+    floatingPointRange_t(T min, T max, T v = T()) : floatingPoint_t<T>(v), min_(min), max_(max) {}
 
     /*! Just like regular set in parent class, but checks if new value fits into the allowed range.
     Value is changed only if it fits into the range.
@@ -132,7 +133,7 @@ template<typename T = double> struct floatingPointRange_t : public floatingPoint
     {
         if (v < min_ || v > max_)
             return false;
-        value_ = v;
+        floatingPoint_t<T>::value_ = v;
         return true;
     }
     /*! Just like regular set in parent class, but checks if new value fits into the allowed range.
@@ -141,7 +142,7 @@ template<typename T = double> struct floatingPointRange_t : public floatingPoint
     {
         if (v < min_ || v > max_)
             throw std::out_of_range(jj::strcvt::to_string(jjS(jjT("Value ") << v << jjT(" is out of allowed range <") << min_ << jjT(',') << max_ << jjT(">."))));
-        value_ = v;
+        floatingPoint_t<T>::value_ = v;
     }
 private:
     const T min_; //!< holds minimum allowed value
@@ -155,7 +156,7 @@ struct text_base_T : valueRef_base_T<std::basic_string<CH,TR>>
     /*! Default constructor */
     text_base_T() {}
     /*! Constructor */
-    text_base_T(const std::basic_string<CH, TR>& v) : valueRef_base_T(v) {}
+    text_base_T(const std::basic_string<CH, TR>& v) : valueRef_base_T<std::basic_string<CH,TR>>(v) {}
 };
 
 /*! Represents a textual information in the system-preferred character width. */

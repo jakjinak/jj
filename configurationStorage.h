@@ -146,14 +146,14 @@ protected:
 public:
     /*! Returns the internal stream reference.
     \warn To be only used in custom defined load methods. */
-    std::basic_istream<CH, TR>& stream() { return stream_; }
+    std::basic_istream<CH, TR>& stream() { return s_; }
 
     typedef std::basic_string<CH, TR> string_type;
     typedef void (loader_type)(const string_type&, const string_type&);
     typedef std::map<string_type, std::function<loader_type>> loaders_type;
 
     /*! Returns a bool value read from stream.
-    
+
     Checks if the stream contains any of the allowed bool values (0/1/true/false/yes/no).
     Throws otherwise. */
     bool load_logical()
@@ -206,10 +206,17 @@ public:
                 if (ch != jj::str::literals_t<CH>::x)
                     break;
                 s_.get(ch);
-                s_ >> std::hex >> v >> std::dec;
+                s_ >> std::hex;
+                bool r = (s_ >> v);
+                s_ >> std::dec;
+                if (!r)
+                    v = dflt;
             }
             else
-                s_ >> v;
+            {
+                if (!(s_ >> v))
+                    v = dflt;
+            }
         } while (false);
         return v;
     }
@@ -219,7 +226,8 @@ public:
     T load_fpoint(T dflt)
     {
         T v = dflt;
-        s_ >> v;
+        if (!(s_ >> v))
+            return dflt;
         return v;
     }
     /*! Reads from stream a text value. */
@@ -283,7 +291,7 @@ public:
 
             string_type name;
             load_name(name);
-            loaders_type::const_iterator fnd = loaders.find(name);
+            typename loaders_type::const_iterator fnd = loaders.find(name);
             if (fnd == loaders.end() || fnd->second == nullptr)
             {
                 skip_spaces();
@@ -374,7 +382,7 @@ protected:
 public:
     /*! Returns the internal stream reference.
     \warn To be only used in custom defined load methods. */
-    std::basic_ostream<CH, TR>& stream() { return stream_; }
+    std::basic_ostream<CH, TR>& stream() { return s_; }
 
     /*! Stores a bool value into the stream. */
     void save_logical(bool v)
@@ -487,7 +495,7 @@ class isstreamStorage_T : public istreamStorage_base_T<CH, TR>
     std::basic_istringstream<CH, TR> stream_; //!< the actual string stream
 public:
     /*! Constructor - takes the actual serialized value as parameter. */
-    explicit isstreamStorage_T(const std::basic_string<CH, TR>& v) : istreamStorage_base_T(stream_) { stream_.str(v); }
+    explicit isstreamStorage_T(const std::basic_string<CH, TR>& v) : istreamStorage_base_T<CH, TR>(stream_) { stream_.str(v); }
 };
 
 /*! System-preferred type of string stream storage. */
@@ -500,7 +508,7 @@ class osstreamStorage_T : public ostreamStorage_base_T<CH, TR>
     std::basic_ostringstream<CH, TR> stream_; //!< the actual string stream
 public:
     /*! Constructor - creates an emtpy storage. */
-    osstreamStorage_T() : ostreamStorage_base_T(stream_) {}
+    osstreamStorage_T() : ostreamStorage_base_T<CH, TR>(stream_) {}
     /*! Returns the stored (serialized) value. */
     std::basic_string<CH, TR> str() const { return stream_.str(); }
 };
@@ -515,11 +523,11 @@ class ifstreamStorage_T : public istreamStorage_base_T<CH, TR>
     std::basic_ifstream<CH, TR> stream_; //!< the actual file stream
 public:
     /*! Constructor - default, use open() */
-    ifstreamStorage_T() {}
+    ifstreamStorage_T() : istreamStorage_base_T<CH, TR>(stream_) {}
     /*! Constructor - opens given file in given mode */
-    ifstreamStorage_T(const CH* path, std::ios_base::openmode mode = std::ios_base::in) : stream_(path, mode) {}
+    explicit ifstreamStorage_T(const CH* path, std::ios_base::openmode mode = std::ios_base::in) : istreamStorage_base_T<CH, TR>(stream_), stream_(path, mode) {}
     /*! Constructor - opens given file in given mode */
-    ifstreamStorage_T(const std::basic_string<CH, TR>& path, std::ios_base::openmode mode = std::ios_base::in) : stream_(path, mode) {}
+    explicit ifstreamStorage_T(const std::basic_string<CH, TR>& path, std::ios_base::openmode mode = std::ios_base::in) : istreamStorage_base_T<CH, TR>(stream_), stream_(path, mode) {}
 
     /*! Opens file */
     void open(const CH* path, std::ios_base::openmode mode = std::ios_base::in) { stream_.open(path, mode); }
@@ -541,11 +549,11 @@ class ofstreamStorage_T : public ostreamStorage_base_T<CH, TR>
     std::basic_ofstream<CH, TR> stream_; //!< the actual file stream
 public:
     /*! Constructor - default, use open() */
-    ofstreamStorage_T() {}
+    ofstreamStorage_T() : ostreamStorage_base_T<CH, TR>(stream_) {}
     /*! Constructor - opens given file in given mode */
-    ofstreamStorage_T(const CH* path, std::ios_base::openmode mode = std::ios_base::out) : stream_(path, mode) {}
+    explicit ofstreamStorage_T(const CH* path, std::ios_base::openmode mode = std::ios_base::out) : ostreamStorage_base_T<CH, TR>(stream_), stream_(path, mode) {}
     /*! Constructor - opens given file in given mode */
-    ofstreamStorage_T(const std::basic_string<CH, TR>& path, std::ios_base::openmode mode = std::ios_base::out) : stream_(path, mode) {}
+    explicit ofstreamStorage_T(const std::basic_string<CH, TR>& path, std::ios_base::openmode mode = std::ios_base::out) : ostreamStorage_base_T<CH, TR>(stream_), stream_(path, mode) {}
 
     /*! Opens file */
     void open(const CH* path, std::ios_base::openmode mode = std::ios_base::out) { stream_.open(path, mode); }
