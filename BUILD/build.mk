@@ -1,6 +1,14 @@
 BUILD_MODE ?= debug
 BUILD_ARCH ?= x86_64
 
+ifeq ("${ROOTDIR}","")
+$(error Please define ROOTDIR first.)
+endif
+BINDIR ?= ${ROOTDIR}/.bin
+LIBDIR ?= ${ROOTDIR}/.bin
+OBJDIR ?= ${ROOTDIR}/.bin
+
+
 include BUILD/style.mk
 include BUILD/tools.mk
 

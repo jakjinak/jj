@@ -7,14 +7,6 @@ WXLIBDIR := -L${WXDIR}/lib
 WXLIBS := -L${WXDIR}/lib -pthread -Wl,-rpath,${WXDIR}/lib -lwx_gtk2u_xrc-3.0 -lwx_gtk2u_html-3.0 -lwx_gtk2u_qa-3.0 -lwx_gtk2u_adv-3.0 -lwx_gtk2u_core-3.0 -lwx_baseu_xml-3.0 -lwx_baseu_net-3.0 -lwx_baseu-3.0
 
 ROOTDIR := $(realpath .)
-BINDIR := ${ROOTDIR}/.bin
-LIBDIR := ${ROOTDIR}/.bin
-OBJDIR := ${ROOTDIR}/.bin
-
-TOOL_AR ?= ar
-TOOL_CXX ?= g++
-#/opt/gcc-5.5/bin/g++
-#/opt/gcc-7.2/bin/g++
 
 COMMON_CPPFLAGS := -std=c++11 -g
 COMMON_ARFLAGS := 
