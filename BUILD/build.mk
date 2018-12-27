@@ -1,14 +1,17 @@
-BUILD_MODE ?= debug
-BUILD_ARCH ?= x86_64
 
+############################################################
+# setup basic definitions
 ifeq ("${ROOTDIR}","")
 $(error Please define ROOTDIR first.)
 endif
-BUILDCONFIGURATIONDIR ?= ${BUILD_MODE}.${BUILD_ARCH}
-BINDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATIONDIR}
-LIBDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATIONDIR}
-OBJDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATIONDIR}
-TMPDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATIONDIR}/tmp
+
+include BUILD/tools.mk
+include BUILD/style.mk
+
+BINDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATION}
+LIBDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATION}
+OBJDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATION}
+TMPDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATION}/tmp
 
 WIPEDIRS := "${BINDIR}"
 ifneq ("${LIBDIR}","${BINDIR}")
@@ -18,8 +21,14 @@ ifneq ("${OBJDIR}","${BINDIR}")
 WIPEDIRS += "${OBJDIR}"
 endif
 
-include BUILD/style.mk
-include BUILD/tools.mk
+############################################################
+# include specific defines
+include BUILD/specific/${SELECTED_OS}.${SELECTED_ARCH}.mk
+include BUILD/specific/${BUILD_MODE}.mk
+
+COMMON_CXXFLAGS := ${PLATFORMSPECIFIC_CXXFLAGS} ${MODESPECIFIC_CXXFLAGS} ${CUSTOM_CXXFLAGS}
+COMMON_ARFLAGS := ${PLATFORMSPECIFIC_ARFLAGS} ${MODESPECIFIC_ARFLAGS} ${CUSTOM_ARFLAGS}
+COMMON_LDFLAGS := ${PLATFORMSPECIFIC_LDFLAGS} ${MODESPECIFIC_LDFLAGS} ${CUSTOM_LDFLAGS}
 
 ########################################
 # this file contains macros used to generate the targets for individual projects

@@ -8,19 +8,11 @@ WXLIBS := -L${WXDIR}/lib -pthread -Wl,-rpath,${WXDIR}/lib -lwx_gtk2u_xrc-3.0 -lw
 
 ROOTDIR := $(realpath .)
 
-COMMON_CXXFLAGS := -std=c++11 -g
-COMMON_ARFLAGS := 
-COMMON_LDFLAGS := -std=c++11 -g -pthread
+CUSTOM_CXXFLAGS := -std=c++11 -g
+CUSTOM_LDFLAGS := -std=c++11 -g -pthread
 # -static-libgcc -static-libstdc++
 
-ifeq ($(BUILD_MODE),release)
-COMMON_CXXFLAGS += -O2 -DNDEBUG
-COMMON_LDFLAGS += -O2 -DNDEBUG
-else
-COMMON_CXXFLAGS += -O0 -DDEBUG
-COMMON_LDFLAGS += -O0 -DDEBUG
-endif
-
+include BUILD/detect.mk
 include BUILD/build.mk
 include BUILD/VS.mk
 
@@ -29,7 +21,7 @@ include BUILD/VS.mk
 # jjbase
 SRCDIR_jjbase := $(realpath .)
 SOURCE_jjbase := string.cpp stringLiterals.cpp stream.cpp cmdLine.cpp configurationStorage.cpp
-CXXFLAGS_jjbase := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase}/..)
+CXXFLAGS_jjbase := ${COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjbase}/..)
 VSNAME_jjbase := jjBase
 VSTYPE_jjbase := lib
 VSGUID_jjbase := 9D3B6614-DCEB-419C-A035-BE06BF4D7BEF
