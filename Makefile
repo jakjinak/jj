@@ -8,16 +8,16 @@ WXLIBS := -L${WXDIR}/lib -pthread -Wl,-rpath,${WXDIR}/lib -lwx_gtk2u_xrc-3.0 -lw
 
 ROOTDIR := $(realpath .)
 
-COMMON_CPPFLAGS := -std=c++11 -g
+COMMON_CXXFLAGS := -std=c++11 -g
 COMMON_ARFLAGS := 
 COMMON_LDFLAGS := -std=c++11 -g -pthread
 # -static-libgcc -static-libstdc++
 
 ifeq ($(BUILD_MODE),release)
-COMMON_CPPFLAGS += -O2 -DNDEBUG
+COMMON_CXXFLAGS += -O2 -DNDEBUG
 COMMON_LDFLAGS += -O2 -DNDEBUG
 else
-COMMON_CPPFLAGS += -O0 -DDEBUG
+COMMON_CXXFLAGS += -O0 -DDEBUG
 COMMON_LDFLAGS += -O0 -DDEBUG
 endif
 
@@ -29,7 +29,7 @@ include BUILD/VS.mk
 # jjbase
 SRCDIR_jjbase := $(realpath .)
 SOURCE_jjbase := string.cpp stringLiterals.cpp stream.cpp cmdLine.cpp configurationStorage.cpp
-CPPFLAGS_jjbase := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase}/..)
+CXXFLAGS_jjbase := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase}/..)
 VSNAME_jjbase := jjBase
 VSTYPE_jjbase := lib
 VSGUID_jjbase := 9D3B6614-DCEB-419C-A035-BE06BF4D7BEF
@@ -50,7 +50,7 @@ $(eval $(call define_generate_vsproj,jjbase))
 # jjgui
 SRCDIR_jjgui := $(realpath gui)
 SOURCE_jjgui := common_wx.cpp application_wx.cpp window_wx.cpp menu_wx.cpp sizer_wx.cpp control_wx.cpp button_wx.cpp textLabel_wx.cpp textInput_wx.cpp comboBox_wx.cpp
-CPPFLAGS_jjgui := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjgui}/../..) ${WXINCDIR}
+CXXFLAGS_jjgui := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjgui}/../..) ${WXINCDIR}
 VSNAME_jjgui := jjGUI
 VSTYPE_jjgui := lib
 VSGUID_jjgui := 0F2CE363-F079-4F3D-A745-F1E6212EEFC7
@@ -82,7 +82,7 @@ $(eval $(call define_generate_vsproj,jjgui))
 # jjtest
 SRCDIR_jjtest := $(realpath test)
 SOURCE_jjtest := test.cpp
-CPPFLAGS_jjtest := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest}/../..)
+CXXFLAGS_jjtest := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest}/../..)
 VSTYPE_jjtest := lib
 VSGUID_jjtest := AFD50C25-67B4-4BA2-B68B-0AB431A322B5
 VSREFS_jjtest := jjbase
@@ -105,7 +105,7 @@ $(eval $(call define_generate_vsproj,jjtest))
 # jjbase-tests
 SRCDIR_jjbase-tests := $(realpath tests)
 SOURCE_jjbase-tests := string_tests.cpp flagSet_tests.cpp options_tests.cpp cmdLine_tests.cpp cmdLineOptions_tests.cpp configuration_tests.cpp
-CPPFLAGS_jjbase-tests := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
+CXXFLAGS_jjbase-tests := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
 LIBS_jjbase-tests := ${RESULT_jjtest} ${RESULT_jjbase}
 VSNAME_jjbase-tests := jjbase.Tests
 VSTYPE_jjbase-tests := capp
@@ -129,7 +129,7 @@ $(eval $(call define_generate_vsproj,jjbase-tests))
 # jjtest-tests
 SRCDIR_jjtest-tests := $(realpath tests/test)
 SOURCE_jjtest-tests := test_tests.cpp filter_tests.cpp
-CPPFLAGS_jjtest-tests := ${COMMON_CPPFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest-tests}/../../..)
+CXXFLAGS_jjtest-tests := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest-tests}/../../..)
 LIBS_jjtest-tests := ${RESULT_jjtest} ${RESULT_jjbase}
 VSNAME_jjtest-tests := jjtest.Tests
 VSTYPE_jjtest-tests := capp

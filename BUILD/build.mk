@@ -28,9 +28,9 @@ clean_all: clean clean_tests
 # The fourth parameter provides additional targets that the make rule depends on.
 # Assumes SRCDIR_<name>, SOURCE_<name> and RESULT_<name> to be defined.
 # Awaits OBJDIR_<name>, DEPDIR_<name> to be optionally defined, defines them if not found.
-# Assumes any <*>FLAGS_<name> (where <*> stands for CPP, LD, AR,...) to be defined where
+# Assumes any <*>FLAGS_<name> (where <*> stands for CXX, LD, AR,...) to be defined where
 # necessary; if not defined these will be defined to COMMON_<*>FLAGS, except that
-# undefined CPPFLAGS_<name> will be defined to COMMON_CPPFLAGS and INCDIR_<name>,
+# undefined CXXFLAGS_<name> will be defined to COMMON_CXXFLAGS and INCDIR_<name>,
 # undefined LDFLAGS_<name> to COMMON_LDFLAGS and LIBS_<name>
 # Defines SRC_<name>, OBJ_<name> and DEP_<name> and all the rules (except the final one that produces the result)
 #(call define_common_part,name,makerule,cleanrule,adddeps)
@@ -42,7 +42,7 @@ SRC_$(1) := $$(addprefix $${SRCDIR_$(1)}/,$${SOURCE_$(1)})
 OBJ_$(1) := $$(addprefix $${OBJDIR_$(1)}/,$$(SOURCE_$(1):.cpp=.o))
 DEP_$(1) := $$(addprefix $${DEPDIR_$(1)}/,$$(SOURCE_$(1):.cpp=.d))
 
-CPPFLAGS_$(1) ?= ${COMMON_CPPFLAGS} $${INCDIR_$(1)}
+CXXFLAGS_$(1) ?= ${COMMON_CXXFLAGS} $${INCDIR_$(1)}
 LDFLAGS_$(1) ?= ${COMMON_LDFLAGS} $${LIBS_$(1)}
 ARFLAGS_$(1) ?= ${COMMON_ARFLAGS}
 
@@ -63,7 +63,7 @@ clean_$(1)_only:
 info_$(1):
 	@echo -e "SRCDIR_$(1) = [$${COLOR_INFO}$$(SRCDIR_$(1))$${COLOR_0}]"
 	@echo -e "SOURCE_$(1) = [$${COLOR_INFO}$$(SOURCE_$(1))$${COLOR_0}]"
-	@echo -e "CPPFLAGS_$(1) = [$${COLOR_INFO}$$(CPPFLAGS_$(1))$${COLOR_0}]"
+	@echo -e "CXXFLAGS_$(1) = [$${COLOR_INFO}$$(CXXFLAGS_$(1))$${COLOR_0}]"
 	@echo -e "ARFLAGS_$(1) = [$${COLOR_INFO}$$(ARFLAGS_$(1))$${COLOR_0}]"
 	@echo -e "LDFLAGS_$(1) = [$${COLOR_INFO}$$(LDFLAGS_$(1))$${COLOR_0}]"
 	@echo -e "OBJDIR_$(1) = [$${COLOR_INFO}$$(OBJDIR_$(1))$${COLOR_0}]"
@@ -88,7 +88,7 @@ $${DEPDIR_$(1)}/%.d : ;
 
 $${OBJDIR_$(1)}/%.o : $${SRCDIR_$(1)}/%.cpp | $${OBJDIR_$(1)} $${DEPDIR_$(1)}
 	$$(call showhint,"$${COLOR_COMPILE}=== Compiling $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${CPPFLAGS_$(1)} -MMD -MT $$@ -MF $${DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
+	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${CXXFLAGS_$(1)} -MMD -MT $$@ -MF $${DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
 endef
 
 # Defines all the undefined definitions and rules for a library unless already defined
