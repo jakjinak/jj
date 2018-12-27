@@ -1,45 +1,12 @@
 BUILD_MODE ?= debug
 BUILD_ARCH ?= x86_64
 
+include BUILD/style.mk
+include BUILD/tools.mk
+
 ########################################
 # this file contains macros used to generate the targets for individual projects
 # see definition of define_static_library/define_program below on how to use it
-
-#$(call showhint,"hint")
-ifeq ($(SHOW_HINTS),1)
-define showhint
-	@echo -e $(1)
-endef
-else
-define showhint
-endef
-endif
-
-ifeq ($(COLOR_HINTS),1)
-COLOR_HL ?= \\e[1m
-COLOR_0 ?= \\e[0m
-COLOR_SUPPORT ?= \\e[34m
-COLOR_COMPILE ?= \\e[32m
-COLOR_STATLIB ?= \\e[36m
-COLOR_PROGRAM ?= \\e[36m
-COLOR_CLEAN ?= \\e[31m
-COLOR_INFO ?= \\e[1;33m
-else
-COLOR_HL :=
-COLOR_0 :=
-COLOR_SUPPORT :=
-COLOR_COMPILE :=
-COLOR_STATLIB :=
-COLOR_PROGRAM :=
-COLOR_CLEAN :=
-COLOR_INFO :=
-endif
-
-ifeq ($(HIDE_COMMANDS),1)
-COMMAND_HIDE_PREFIX := @
-else
-COMMAND_HIDE_PREFIX :=
-endif
 
 .PHONY: all libs tests clean_all clean clean_tests
 
@@ -101,19 +68,17 @@ info_$(1):
 	@echo -e "Depends on these rules: [$${COLOR_INFO}$(4)$${COLOR_0}]"
 	@echo -e "Is part of these rules: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
 
-$${DEPDIR_$(1)}/dircreated:
+$${DEPDIR_$(1)}:
 	$$(call showhint,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${DEPDIR_$(1)}$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)mkdir -p $${DEPDIR_$(1)}
-	$(COMMAND_HIDE_PREFIX)touch $${DEPDIR_$(1)}/dircreated
+	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} $${DEPDIR_$(1)}
 
-$${OBJDIR_$(1)}/dircreated:
+$${OBJDIR_$(1)}:
 	$$(call showhint,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${OBJDIR_$(1)}$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)mkdir -p $${OBJDIR_$(1)}
-	$(COMMAND_HIDE_PREFIX)touch $${OBJDIR_$(1)}/dircreated
+	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} $${OBJDIR_$(1)}
 
 $${DEPDIR_$(1)}/%.d : ;
 
-$${OBJDIR_$(1)}/%.o : $${SRCDIR_$(1)}/%.cpp $${OBJDIR_$(1)}/dircreated $${DEPDIR_$(1)}/dircreated
+$${OBJDIR_$(1)}/%.o : $${SRCDIR_$(1)}/%.cpp | $${OBJDIR_$(1)} $${DEPDIR_$(1)}
 	$$(call showhint,"$${COLOR_COMPILE}=== Compiling $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${CPPFLAGS_$(1)} -MMD -MT $$@ -MF $${DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
 endef
