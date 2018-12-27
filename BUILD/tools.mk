@@ -1,4 +1,6 @@
 TOOL_MKDIR ?= mkdir -p
+TOOL_RM ?= rm -f
+TOOL_RMR ?= ${TOOL_RM}r
 
 TOOL_AR ?= ar
 

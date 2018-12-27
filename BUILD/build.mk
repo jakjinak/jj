@@ -4,10 +4,18 @@ BUILD_ARCH ?= x86_64
 ifeq ("${ROOTDIR}","")
 $(error Please define ROOTDIR first.)
 endif
-BINDIR ?= ${ROOTDIR}/.bin
-LIBDIR ?= ${ROOTDIR}/.bin
-OBJDIR ?= ${ROOTDIR}/.bin
+BUILDCONFIGURATIONDIR ?= ${BUILD_MODE}.${BUILD_ARCH}
+BINDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATIONDIR}
+LIBDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATIONDIR}
+OBJDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATIONDIR}
 
+WIPEDIRS := "${BINDIR}"
+ifneq ("${LIBDIR}","${BINDIR}")
+WIPEDIRS += "${LIBDIR}"
+endif
+ifneq ("${OBJDIR}","${BINDIR}")
+WIPEDIRS += "${OBJDIR}"
+endif
 
 include BUILD/style.mk
 include BUILD/tools.mk
@@ -21,8 +29,31 @@ include BUILD/tools.mk
 libs:
 all: libs tests
 clean_all: clean clean_tests
+wipe_all:
+	$(call showhint,${COLOR_CLEAN}=== Wiping all for ${COLOR_HL}${WIPEDIRS}${COLOR_0})
+	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${WIPEDIRS}
 
-# Defines all the undefined definitions and rules that are needed in the macros below.
+define define_common_part
+SRC_$(1) := $$(addprefix $${SRCDIR_$(1)}/,$${SOURCE_$(1)})
+
+.PHONY: $(1) $(1)_only clean_$(1) clean_$(1)_only info_$(1) infocommon_$(1)
+
+$(2): $(1)
+$(3): clean_$(1)
+
+infocommon_$(1):
+	@echo -e "SRCDIR_$(1) = [$${COLOR_INFO}$$(SRCDIR_$(1))$${COLOR_0}]"
+	@echo -e "SOURCE_$(1) = [$${COLOR_INFO}$$(SOURCE_$(1))$${COLOR_0}]"
+
+info_$(1): infocommon_$(1)
+	@echo -e "SRC_$(1) = [$${COLOR_INFO}$$(SRC_$(1))$${COLOR_0}]"
+	@echo
+	@echo -e "Defines these rules: [$${COLOR_INFO}$(1) $(1)_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1) clean_$(1)_only$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
+	@echo -e "Depends on these rules: [$${COLOR_INFO}$(4)$${COLOR_0}]"
+	@echo -e "Is part of these rules: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
+endef
+
+# Defines all the undefined definitions and rules that are needed in the macros below (static_library/program).
 # The first parameter is the name of the library and also the suffix of all defines,
 # the second parameter is the parent make rule, third is the parent clean rule.
 # The fourth parameter provides additional targets that the make rule depends on.
@@ -33,12 +64,11 @@ clean_all: clean clean_tests
 # undefined CXXFLAGS_<name> will be defined to COMMON_CXXFLAGS and INCDIR_<name>,
 # undefined LDFLAGS_<name> to COMMON_LDFLAGS and LIBS_<name>
 # Defines SRC_<name>, OBJ_<name> and DEP_<name> and all the rules (except the final one that produces the result)
-#(call define_common_part,name,makerule,cleanrule,adddeps)
-define define_common_part
-OBJDIR_$(1) ?= ${OBJDIR}/${BUILD_MODE}.${BUILD_ARCH}/obj/$(1)
-DEPDIR_$(1) ?= ${OBJDIR}/${BUILD_MODE}.${BUILD_ARCH}/dep/$(1)
+#(call define_staticcommon_part,name,makerule,cleanrule,adddeps)
+define define_staticcommon_part
+OBJDIR_$(1) ?= ${OBJDIR}/obj/$(1)
+DEPDIR_$(1) ?= ${OBJDIR}/dep/$(1)
 
-SRC_$(1) := $$(addprefix $${SRCDIR_$(1)}/,$${SOURCE_$(1)})
 OBJ_$(1) := $$(addprefix $${OBJDIR_$(1)}/,$$(SOURCE_$(1):.cpp=.o))
 DEP_$(1) := $$(addprefix $${DEPDIR_$(1)}/,$$(SOURCE_$(1):.cpp=.d))
 
@@ -48,33 +78,23 @@ ARFLAGS_$(1) ?= ${COMMON_ARFLAGS}
 
 -include $${DEP_$(1)}
 
-.PHONY: $(1) $(1)_only clean_$(1) clean_$(1)_only info_$(1)
+.PHONY: infostaticcommon_$(1)
 
-$(2): $(1)
-$(3): clean_$(1)
 $(1): $${RESULT_$(1)}
 $${RESULT_$(1)}: $(addsuffix },$(addprefix $${RESULT_,$(4)))
 clean_$(1): clean_$(1)_only $(addprefix clean_,$(4))
 
 clean_$(1)_only:
 	$$(call showhint,"$${COLOR_CLEAN}=== Clean all for $${COLOR_HL}$(1)$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)rm -f $${RESULT_$(1)} $${OBJ_$(1)} $${DEP_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_RM} $${RESULT_$(1)} $${OBJ_$(1)} $${DEP_$(1)}
 
-info_$(1):
-	@echo -e "SRCDIR_$(1) = [$${COLOR_INFO}$$(SRCDIR_$(1))$${COLOR_0}]"
-	@echo -e "SOURCE_$(1) = [$${COLOR_INFO}$$(SOURCE_$(1))$${COLOR_0}]"
+infostaticcommon_$(1):
 	@echo -e "CXXFLAGS_$(1) = [$${COLOR_INFO}$$(CXXFLAGS_$(1))$${COLOR_0}]"
-	@echo -e "ARFLAGS_$(1) = [$${COLOR_INFO}$$(ARFLAGS_$(1))$${COLOR_0}]"
-	@echo -e "LDFLAGS_$(1) = [$${COLOR_INFO}$$(LDFLAGS_$(1))$${COLOR_0}]"
 	@echo -e "OBJDIR_$(1) = [$${COLOR_INFO}$$(OBJDIR_$(1))$${COLOR_0}]"
 	@echo -e "DEPDIR_$(1) = [$${COLOR_INFO}$$(DEPDIR_$(1))$${COLOR_0}]"
-	@echo -e "SRC_$(1) = [$${COLOR_INFO}$$(SRC_$(1))$${COLOR_0}]"
 	@echo -e "OBJ_$(1) = [$${COLOR_INFO}$$(OBJ_$(1))$${COLOR_0}]"
 	@echo -e "DEP_$(1) = [$${COLOR_INFO}$$(DEP_$(1))$${COLOR_0}]"
-	@echo
-	@echo -e "Defines these rules: [$${COLOR_INFO}$(1) $(1)_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1) clean_$(1)_only$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
-	@echo -e "Depends on these rules: [$${COLOR_INFO}$(4)$${COLOR_0}]"
-	@echo -e "Is part of these rules: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
+
 
 $${DEPDIR_$(1)}:
 	$$(call showhint,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${DEPDIR_$(1)}$${COLOR_0}")
@@ -101,9 +121,17 @@ endef
 # See define_common_part for descriptions on the <*>FLAGS_<name>.
 #(call define_static_library,name,makerule,cleanrule,adddeps)
 define define_static_library
-RESULT_$(1) ?= ${LIBDIR}/${BUILD_MODE}.${BUILD_ARCH}/$(1).a
+RESULT_$(1) ?= ${LIBDIR}/$(1).a
 
 $(call define_common_part,$(1),$(2),$(3),$(4))
+$(call define_staticcommon_part,$(1),$(2),$(3),$(4))
+
+infostatic_$(1): infostaticcommon_$(1)
+	@echo -e "ARFLAGS_$(1) = [$${COLOR_INFO}$$(ARFLAGS_$(1))$${COLOR_0}]"
+
+info_$(1): infostatic_$(1)
+
+.PHONY: infostatic_$(1)
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
@@ -123,9 +151,17 @@ endef
 # See define_common_part for descriptions on the <*>FLAGS_<name>.
 #(call define_program,name,makerule,cleanrule,adddeps)
 define define_program
-RESULT_$(1) ?= ${BINDIR}/${BUILD_MODE}.${BUILD_ARCH}/$(1)
+RESULT_$(1) ?= ${BINDIR}/$(1)
 
 $(call define_common_part,$(1),$(2),$(3),$(4))
+$(call define_staticcommon_part,$(1),$(2),$(3),$(4))
+
+infoprogram_$(1): infostaticcommon_$(1)
+	@echo -e "LDFLAGS_$(1) = [$${COLOR_INFO}$$(LDFLAGS_$(1))$${COLOR_0}]"
+
+info_$(1): infoprogram_$(1)
+
+.PHONY: infoprogram_$(1)
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showhint, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
