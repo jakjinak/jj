@@ -8,6 +8,7 @@ BUILDCONFIGURATIONDIR ?= ${BUILD_MODE}.${BUILD_ARCH}
 BINDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATIONDIR}
 LIBDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATIONDIR}
 OBJDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATIONDIR}
+TMPDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATIONDIR}/tmp
 
 WIPEDIRS := "${BINDIR}"
 ifneq ("${LIBDIR}","${BINDIR}")
@@ -32,6 +33,10 @@ clean_all: clean clean_tests
 wipe_all:
 	$(call showhint,${COLOR_CLEAN}=== Wiping all for ${COLOR_HL}${WIPEDIRS}${COLOR_0})
 	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${WIPEDIRS}
+
+${TMPDIR}:
+	$(call showhint,"${COLOR_SUPPORT}=== Creating directory ${COLOR_HL}${TMPDIR}${COLOR_0}")
+	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} ${TMPDIR}
 
 define define_common_part
 SRC_$(1) := $$(addprefix $${SRCDIR_$(1)}/,$${SOURCE_$(1)})

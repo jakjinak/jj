@@ -34,15 +34,12 @@ VSNAME_jjbase := jjBase
 VSTYPE_jjbase := lib
 VSGUID_jjbase := 9D3B6614-DCEB-419C-A035-BE06BF4D7BEF
 $(eval $(call define_static_library,jjbase,libs,clean))
-define VSINPUT_jjbase
-includedirs:
-..
-defines:
-a=x86|WIN32
-m=debug|_DEBUG
-m=release|NDEBUG
-_LIB
-endef
+VSINCDIRS_jjbase := ..
+VSDEFINES_jjbase := \
+	a=x86|WIN32 \
+	m=debug|_DEBUG \
+	m=release|NDEBUG \
+	_LIB
 VSHEADER_jjbase := $(shell cd "${SRCDIR_jjbase}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
 $(eval $(call define_generate_vsproj,jjbase))
 
@@ -55,25 +52,22 @@ VSNAME_jjgui := jjGUI
 VSTYPE_jjgui := lib
 VSGUID_jjgui := 0F2CE363-F079-4F3D-A745-F1E6212EEFC7
 VSREFS_jjgui := jjbase
-define VSINPUT_jjgui
-includedirs:
-..\..
-D:\test\wxWidgets\include
-m=debug,r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib\mswud
-m=release,r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib\mswu
-m=debug,r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll\mswud
-m=release,r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll\mswu
-m=debug,r=static,a=x86|D:\test\wxWidgets\lib\vc_lib\mswud
-m=release,r=static,a=x86|D:\test\wxWidgets\lib\vc_lib\mswu
-m=debug,r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll\mswud
-m=release,r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll\mswu
-defines:
-a=x86|WIN32
-m=debug|_DEBUG
-m=release|NDEBUG
-_LIB
-r=dll|WXUSINGDLL
-endef
+VSINCDIRS_jjgui := ..\.. \
+	D:\test\wxWidgets\include \
+	m=debug,r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib\mswud \
+	m=release,r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib\mswu \
+	m=debug,r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll\mswud \
+	m=release,r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll\mswu \
+	m=debug,r=static,a=x86|D:\test\wxWidgets\lib\vc_lib\mswud \
+	m=release,r=static,a=x86|D:\test\wxWidgets\lib\vc_lib\mswu \
+	m=debug,r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll\mswud \
+	m=release,r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll\mswu
+VSDEFINES_jjgui := \
+	a=x86|WIN32 \
+	m=debug|_DEBUG \
+	m=release|NDEBUG \
+	_LIB \
+	r=dll|WXUSINGDLL
 VSHEADER_jjgui := $(shell cd "${SRCDIR_jjgui}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
 $(eval $(call define_static_library,jjgui,libs,clean))
 $(eval $(call define_generate_vsproj,jjgui))
@@ -86,15 +80,12 @@ CXXFLAGS_jjtest := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest}/
 VSTYPE_jjtest := lib
 VSGUID_jjtest := AFD50C25-67B4-4BA2-B68B-0AB431A322B5
 VSREFS_jjtest := jjbase
-define VSINPUT_jjtest
-includedirs:
-..\..
-defines:
-a=x86|WIN32
-m=debug|_DEBUG
-m=release|NDEBUG
-_LIB
-endef
+VSINCDIRS_jjtest := ..\..
+VSDEFINES_jjtest := \
+	a=x86|WIN32 \
+	m=debug|_DEBUG \
+	m=release|NDEBUG \
+	_LIB
 VSHEADER_jjtest := $(shell cd "${SRCDIR_jjtest}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
 $(eval $(call define_static_library,jjtest,libs,clean))
 $(eval $(call define_generate_vsproj,jjtest))
@@ -112,15 +103,12 @@ VSTYPE_jjbase-tests := capp
 VSGUID_jjbase-tests := 1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38
 VSREFS_jjbase-tests := jjtest
 VSFOLDER_jjbase-tests := Tests
-define VSINPUT_jjbase-tests
-includedirs:
-..\..
-defines:
-a=x86|WIN32
-m=debug|_DEBUG
-m=release|NDEBUG
-_CONSOLE
-endef
+VSINCDIRS_jjbase-tests := ..\..
+VSDEFINES_jjbase-tests := \
+	a=x86|WIN32 \
+	m=debug|_DEBUG \
+	m=release|NDEBUG \
+	_CONSOLE
 VSHEADER_jjbase-tests := $(shell cd "${SRCDIR_jjbase-tests}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
 $(eval $(call define_program,jjbase-tests,tests,clean_tests,jjbase jjtest))
 $(eval $(call define_generate_vsproj,jjbase-tests))
@@ -136,15 +124,12 @@ VSTYPE_jjtest-tests := capp
 VSGUID_jjtest-tests := 07D954B6-05DD-4B85-9BFA-0473B5591768
 VSREFS_jjtest-tests := jjtest
 VSFOLDER_jjtest-tests := Tests
-define VSINPUT_jjtest-tests
-includedirs:
-..\..\..
-defines:
-a=x86|WIN32
-m=debug|_DEBUG
-m=release|NDEBUG
-_CONSOLE
-endef
+VSINCDIRS_jjtest-tests := ..\..\..
+VSDEFINES_jjtest-tests := \
+	a=x86|WIN32 \
+	m=debug|_DEBUG \
+	m=release|NDEBUG \
+	_CONSOLE
 $(eval $(call define_program,jjtest-tests,tests,clean_tests,jjbase jjtest))
 $(eval $(call define_generate_vsproj,jjtest-tests))
 
@@ -161,24 +146,21 @@ VSTYPE_TestApp := gapp
 VSGUID_TestApp := 84C36B8F-8BC6-47FF-9027-F8706D3FA72D
 VSREFS_TestApp := jjgui
 VSFOLDER_TestApp := Tests
-define VSINPUT_TestApp
-includedirs:
-..\..
-defines:
-a=x86|WIN32
-m=debug|_DEBUG
-m=release|NDEBUG
-_WINDOWS
-libraries:
-m=debug|wxbase30ud.lib;wxmsw30ud_core.lib;wxmsw30ud_adv.lib;wxpngd.lib;wxzlibd.lib
-m=release|wxbase30u.lib;wxmsw30u_core.lib;wxmsw30u_adv.lib;wxpng.lib;wxzlib.lib
-comctl32.lib;Rpcrt4.lib
-libdirs:
-r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib
-r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll
-r=static,a=x86|D:\test\wxWidgets\lib\vc_lib
-r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll
-endef
+VSINCDIRS_TestApp := ..\..
+VSDEFINES_TestApp := \
+	a=x86|WIN32 \
+	m=debug|_DEBUG \
+	m=release|NDEBUG \
+	_WINDOWS
+VSLIBS_TestApp := \
+	m=debug|wxbase30ud.lib;wxmsw30ud_core.lib;wxmsw30ud_adv.lib;wxpngd.lib;wxzlibd.lib \
+	m=release|wxbase30u.lib;wxmsw30u_core.lib;wxmsw30u_adv.lib;wxpng.lib;wxzlib.lib \
+	comctl32.lib;Rpcrt4.lib
+VSLIBDIRS_TestApp := \
+	r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib \
+	r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll \
+	r=static,a=x86|D:\test\wxWidgets\lib\vc_lib \
+	r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll
 $(eval $(call define_program,TestApp,tests,clean_tests,jjbase jjgui))
 $(eval $(call define_generate_vsproj,TestApp))
 
@@ -187,7 +169,7 @@ $(eval $(call define_generate_vsproj,TestApp))
 VSSLN_GUID1_jjTest := 5D226A8D-49CF-4B24-89CB-FD8DBA82C1E5
 VSSLN_GUID2_jjTest := 8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942
 VSSLN_PROJS_jjTest := TestApp jjbase jjgui jjtest jjbase-tests jjtest-tests
-define VSSLN_FOLDERS_jjTest
-Tests|586B014B-D960-4C75-AEB6-F1129F25082E
-endef
+VSSLN_FOLDERS_jjTest := Tests
+VSSLN_FOLDERDEFS_NAME_jjTest_Tests := Tests
+VSSLN_FOLDERDEFS_GUID_jjTest_Tests := 586B014B-D960-4C75-AEB6-F1129F25082E
 $(eval $(call define_generate_vssln,jjTest,tests))
