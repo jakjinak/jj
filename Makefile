@@ -7,16 +7,13 @@ WXDIR ?= $(abspath .bin/3rdparty/wxWidgets/${BUILD_OS}.${BUILD_ARCH}_static)
 else
 WXDIR ?= $(abspath .bin/3rdparty/wxWidgets/${BUILD_OS}.${BUILD_ARCH})
 endif
-ifeq ("$(realpath ${WXDIR})","")
-$(error WXDIR not set or does not exist '${WXDIR}')
-endif
 
 ifeq (${WXSTATIC},1)
 WXDEFINE := -D_FILE_OFFSET_BITS=64 -D__WXGTK__
 WXSETUPINCDIR := lib/wx/include/gtk2-unicode-static-3.0
 WXLIBDIR := -L${WXDIR}/lib
 WXEXTRALIBS := -lpangocairo-1.0 -lpango-1.0 -lcairo -ldl -lgtk-x11-2.0 -lgdk_pixbuf-2.0 -lgdk-x11-2.0 -lgobject-2.0 -lglib-2.0 -lX11 -lXxf86vm -lpng
-# -lwxpng-3.0 -lwxzlib-3.0 
+# -lwxpng-3.0 -lwxzlib-3.0
 else
 WXDEFINE := -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__
 WXSETUPINCDIR := lib/wx/include/gtk2-unicode-3.0
@@ -31,6 +28,14 @@ ROOTDIR := $(realpath .)
 CUSTOM_CXXFLAGS := -std=c++11 -g
 CUSTOM_LDFLAGS := -std=c++11 -g -pthread
 # -static-libgcc -static-libstdc++
+
+.PHONY: all libs uiall uilibs uitests tests clean_all clean clean_tests
+
+libs:
+all: libs tests
+uilibs: ${WXDIR}
+uiall: uilibs uitests
+clean_all: clean clean_tests
 
 include BUILD/build.mk
 include BUILD/VS.mk
@@ -80,7 +85,7 @@ VSDEFINES_jjgui := \
 	_LIB \
 	r=dll|WXUSINGDLL
 VSHEADER_jjgui := $(shell cd "${SRCDIR_jjgui}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
-$(eval $(call define_static_library,jjgui,libs,clean))
+$(eval $(call define_static_library,jjgui,uilibs,clean))
 $(eval $(call define_generate_vsproj,jjgui))
 
 ########################################
@@ -172,7 +177,7 @@ VSLIBDIRS_TestApp := \
 	r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll \
 	r=static,a=x86|D:\test\wxWidgets\lib\vc_lib \
 	r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll
-$(eval $(call define_program,TestApp,tests,clean_tests,jjbase jjgui))
+$(eval $(call define_program,TestApp,uitests,clean_tests,jjbase jjgui))
 $(eval $(call define_generate_vsproj,TestApp))
 
 ########################################

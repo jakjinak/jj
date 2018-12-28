@@ -34,12 +34,7 @@ COMMON_LDFLAGS := ${PLATFORMSPECIFIC_LDFLAGS} ${MODESPECIFIC_LDFLAGS} ${CUSTOM_L
 # this file contains macros used to generate the targets for individual projects
 # see definition of define_static_library/define_program below on how to use it
 
-.PHONY: all libs tests clean_all clean clean_tests
-
-libs:
-all: libs tests
-clean_all: clean clean_tests
-wipe_all:
+wipeout:
 	$(call showhint,${COLOR_CLEAN}=== Wiping all for ${COLOR_HL}${WIPEDIRS}${COLOR_0})
 	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${WIPEDIRS}
 
