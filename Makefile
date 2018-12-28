@@ -1,10 +1,30 @@
 
-WXDIR ?= $(realpath ../../../src/wxWidgets-3.0.3)
+include BUILD/detect.mk
 
-WXDEFINE := -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__
-WXINCDIR := -isystem ${WXDIR}/include -isystem ${WXDIR}/lib/wx/include/gtk2-unicode-3.0/ -I/usr/include/gtk-unix-print-2.0 -I/usr/include/gtk-2.0 -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/pango-1.0 -I/usr/lib64/gtk-2.0/include -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/harfbuzz -I/usr/include/freetype2 -I/usr/include/pixman-1 -I/usr/include/libpng15 -I/usr/include/libdrm
+WXSTATIC ?= 0
+ifeq (${WXSTATIC},1)
+WXDIR ?= $(abspath .bin/3rdparty/wxWidgets/${BUILD_OS}.${BUILD_ARCH}_static)
+else
+WXDIR ?= $(abspath .bin/3rdparty/wxWidgets/${BUILD_OS}.${BUILD_ARCH})
+endif
+ifeq ("$(realpath ${WXDIR})","")
+$(error WXDIR not set or does not exist '${WXDIR}')
+endif
+
+ifeq (${WXSTATIC},1)
+WXDEFINE := -D_FILE_OFFSET_BITS=64 -D__WXGTK__
+WXSETUPINCDIR := lib/wx/include/gtk2-unicode-static-3.0
 WXLIBDIR := -L${WXDIR}/lib
-WXLIBS := -L${WXDIR}/lib -pthread -Wl,-rpath,${WXDIR}/lib -lwx_gtk2u_xrc-3.0 -lwx_gtk2u_html-3.0 -lwx_gtk2u_qa-3.0 -lwx_gtk2u_adv-3.0 -lwx_gtk2u_core-3.0 -lwx_baseu_xml-3.0 -lwx_baseu_net-3.0 -lwx_baseu-3.0
+WXEXTRALIBS := -lpangocairo-1.0 -lpango-1.0 -lcairo -ldl -lgtk-x11-2.0 -lgdk_pixbuf-2.0 -lgdk-x11-2.0 -lgobject-2.0 -lglib-2.0 -lX11 -lXxf86vm -lpng
+# -lwxpng-3.0 -lwxzlib-3.0 
+else
+WXDEFINE := -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__
+WXSETUPINCDIR := lib/wx/include/gtk2-unicode-3.0
+WXLIBDIR := -L${WXDIR}/lib -Wl,-rpath,${WXDIR}/lib
+WXEXTRALIBS :=
+endif
+WXINCDIR := -isystem ${WXDIR}/include/wx-3.0 -isystem ${WXDIR}/${WXSETUPINCDIR} -I/usr/include/gtk-unix-print-2.0 -I/usr/include/gtk-2.0 -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/pango-1.0 -I/usr/lib64/gtk-2.0/include -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/harfbuzz -I/usr/include/freetype2 -I/usr/include/pixman-1 -I/usr/include/libpng15 -I/usr/include/libdrm
+WXLIBS := -pthread -lwx_gtk2u_xrc-3.0 -lwx_gtk2u_html-3.0 -lwx_gtk2u_qa-3.0 -lwx_gtk2u_adv-3.0 -lwx_gtk2u_core-3.0 -lwx_baseu_xml-3.0 -lwx_baseu_net-3.0 -lwx_baseu-3.0 ${WXEXTRALIBS}
 
 ROOTDIR := $(realpath .)
 
@@ -12,7 +32,6 @@ CUSTOM_CXXFLAGS := -std=c++11 -g
 CUSTOM_LDFLAGS := -std=c++11 -g -pthread
 # -static-libgcc -static-libstdc++
 
-include BUILD/detect.mk
 include BUILD/build.mk
 include BUILD/VS.mk
 
@@ -131,7 +150,7 @@ $(eval $(call define_generate_vsproj,jjtest-tests))
 # TestApp
 SRCDIR_TestApp := $(realpath tests)
 SOURCE_TestApp := TestAppMain.cpp
-LIBS_TestApp := ${RESULT_jjgui} ${RESULT_jjbase} ${WXLIBS}
+LIBS_TestApp := ${RESULT_jjgui} ${RESULT_jjbase} ${WXLIBDIR} ${WXLIBS}
 INCDIR_TestApp := -I$(realpath ${SRCDIR_TestApp}/../..)
 VSNAME_TestApp := jjTestApp
 VSTYPE_TestApp := gapp
