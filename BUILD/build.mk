@@ -51,15 +51,15 @@ $(2): $(1)
 $(3): clean_$(1)
 
 infocommon_$(1):
-	@echo -e "SRCDIR_$(1) = [$${COLOR_INFO}$$(SRCDIR_$(1))$${COLOR_0}]"
-	@echo -e "SOURCE_$(1) = [$${COLOR_INFO}$$(SOURCE_$(1))$${COLOR_0}]"
+	@${TOOL_ECHO} "SRCDIR_$(1) = [$${COLOR_INFO}$$(SRCDIR_$(1))$${COLOR_0}]"
+	@${TOOL_ECHO} "SOURCE_$(1) = [$${COLOR_INFO}$$(SOURCE_$(1))$${COLOR_0}]"
 
 info_$(1): infocommon_$(1)
-	@echo -e "SRC_$(1) = [$${COLOR_INFO}$$(SRC_$(1))$${COLOR_0}]"
-	@echo
-	@echo -e "Defines these rules: [$${COLOR_INFO}$(1) $(1)_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1) clean_$(1)_only$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
-	@echo -e "Depends on these rules: [$${COLOR_INFO}$(4)$${COLOR_0}]"
-	@echo -e "Is part of these rules: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
+	@${TOOL_ECHO} "SRC_$(1) = [$${COLOR_INFO}$$(SRC_$(1))$${COLOR_0}]"
+	@${TOOL_ECHO}
+	@${TOOL_ECHO} "Defines these rules: [$${COLOR_INFO}$(1) $(1)_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1) clean_$(1)_only$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
+	@${TOOL_ECHO} "Depends on these rules: [$${COLOR_INFO}$(4)$${COLOR_0}]"
+	@${TOOL_ECHO} "Is part of these rules: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
 endef
 
 # Defines all the undefined definitions and rules that are needed in the macros below (static_library/program).
@@ -98,11 +98,11 @@ clean_$(1)_only:
 	$(COMMAND_HIDE_PREFIX)${TOOL_RM} $${RESULT_$(1)} $${OBJ_$(1)} $${DEP_$(1)}
 
 infostaticcommon_$(1):
-	@echo -e "CXXFLAGS_$(1) = [$${COLOR_INFO}$$(CXXFLAGS_$(1))$${COLOR_0}]"
-	@echo -e "OBJDIR_$(1) = [$${COLOR_INFO}$$(OBJDIR_$(1))$${COLOR_0}]"
-	@echo -e "DEPDIR_$(1) = [$${COLOR_INFO}$$(DEPDIR_$(1))$${COLOR_0}]"
-	@echo -e "OBJ_$(1) = [$${COLOR_INFO}$$(OBJ_$(1))$${COLOR_0}]"
-	@echo -e "DEP_$(1) = [$${COLOR_INFO}$$(DEP_$(1))$${COLOR_0}]"
+	@${TOOL_ECHO} "CXXFLAGS_$(1) = [$${COLOR_INFO}$$(CXXFLAGS_$(1))$${COLOR_0}]"
+	@${TOOL_ECHO} "OBJDIR_$(1) = [$${COLOR_INFO}$$(OBJDIR_$(1))$${COLOR_0}]"
+	@${TOOL_ECHO} "DEPDIR_$(1) = [$${COLOR_INFO}$$(DEPDIR_$(1))$${COLOR_0}]"
+	@${TOOL_ECHO} "OBJ_$(1) = [$${COLOR_INFO}$$(OBJ_$(1))$${COLOR_0}]"
+	@${TOOL_ECHO} "DEP_$(1) = [$${COLOR_INFO}$$(DEP_$(1))$${COLOR_0}]"
 
 
 $${DEPDIR_$(1)}:
@@ -136,7 +136,7 @@ $(call define_common_part,$(1),$(2),$(3),$(4))
 $(call define_staticcommon_part,$(1),$(2),$(3),$(4))
 
 infostatic_$(1): infostaticcommon_$(1)
-	@echo -e "ARFLAGS_$(1) = [$${COLOR_INFO}$$(ARFLAGS_$(1))$${COLOR_0}]"
+	@${TOOL_ECHO} "ARFLAGS_$(1) = [$${COLOR_INFO}$$(ARFLAGS_$(1))$${COLOR_0}]"
 
 info_$(1): infostatic_$(1)
 
@@ -166,7 +166,7 @@ $(call define_common_part,$(1),$(2),$(3),$(4))
 $(call define_staticcommon_part,$(1),$(2),$(3),$(4))
 
 infoprogram_$(1): infostaticcommon_$(1)
-	@echo -e "LDFLAGS_$(1) = [$${COLOR_INFO}$$(LDFLAGS_$(1))$${COLOR_0}]"
+	@${TOOL_ECHO} "LDFLAGS_$(1) = [$${COLOR_INFO}$$(LDFLAGS_$(1))$${COLOR_0}]"
 
 info_$(1): infoprogram_$(1)
 

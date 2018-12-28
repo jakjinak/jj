@@ -2,10 +2,10 @@
 # setup the build configuration defaults (unless set from outside)
 # note: only the BUILD_* are supposed to be set from outside
 BUILD_MODE ?= debug
-BUILD_ARCH ?= $(shell uname -p | tr '[A-Z]' '[a-z]')
-BUILD_OS ?= $(shell uname -s | tr '[A-Z]' '[a-z]')
-MACHINE_ARCH ?= $(shell uname -p | tr '[A-Z]' '[a-z]')
-MACHINE_OS ?= $(shell uname -s | tr '[A-Z]' '[a-z]')
+BUILD_ARCH ?= $(shell BUILD/detect.sh --arch)
+BUILD_OS ?= $(shell BUILD/detect.sh --os)
+MACHINE_ARCH ?= $(shell BUILD/detect.sh --arch)
+MACHINE_OS ?= $(shell BUILD/detect.sh --os)
 
 ifeq (${BUILD_ARCH},${MACHINE_ARCH})
 SELECTED_ARCH := ${BUILD_ARCH}

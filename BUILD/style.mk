@@ -2,7 +2,7 @@
 #$(call showhint,"hint")
 ifeq ($(SHOW_HINTS),1)
 define showhint
-	@echo -e $(1)
+	@${TOOL_ECHO} $(1)
 endef
 else
 define showhint

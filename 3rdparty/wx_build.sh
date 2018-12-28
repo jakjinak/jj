@@ -6,6 +6,7 @@ then
 Available builds:
 install-centos.x86_64
 install-centos.x86@x86_64
+install-ubuntu.x86
 linux.x86_64
 linux.x86_64_static
 linux.x86
@@ -23,9 +24,10 @@ do
             yum install gcc-c++ gtk2-devel
             ;;
         install-centos.x86@x86_64)
-            yum install glibc-devel.i686 libgcc.i686 libstdc++-devel.i686 atk-devel.i686 glib2-devel.i686 pango-devel.i686 gdk-pixbuf2-devel.i686 gtk2-devel.i686
-            ln /usr/lib/libX11.so.6 /usr/lib/libX11.so
-            ln /usr/lib/libXxf86vm.so.1.0.0 /usr/lib/libXxf86vm.so
+            yum install glibc-devel.i686 libgcc.i686 libstdc++-devel.i686 atk-devel.i686 glib2-devel.i686 pango-devel.i686 gdk-pixbuf2-devel.i686 gtk2-devel.i686 libX11-devel.i686 libXxf86vm-devel.i686
+            ;;
+        install-ubuntu.x86)
+            sudo apt-get install libpango1.0-dev libgtk2.0-dev libxxf86vm-dev
             ;;
         linux.x86_64)
             mkdir -p ../wxout/linux.x86_64
