@@ -12,8 +12,7 @@ ifeq (${WXSTATIC},1)
 WXDEFINE := -D_FILE_OFFSET_BITS=64 -D__WXGTK__
 WXSETUPINCDIR := lib/wx/include/gtk2-unicode-static-3.0
 WXLIBDIR := -L${WXDIR}/lib
-WXEXTRALIBS := -lpangocairo-1.0 -lpango-1.0 -lcairo -ldl -lgtk-x11-2.0 -lgdk_pixbuf-2.0 -lgdk-x11-2.0 -lgobject-2.0 -lglib-2.0 -lX11 -lXxf86vm -lpng
-# -lwxpng-3.0 -lwxzlib-3.0
+WXEXTRALIBS := -lwxpng-3.0 -lwxzlib-3.0 -lpangocairo-1.0 -lpango-1.0 -lcairo -ldl -lgtk-x11-2.0 -lgdk_pixbuf-2.0 -lgdk-x11-2.0 -lgobject-2.0 -lglib-2.0 -lX11 -lXxf86vm
 else
 WXDEFINE := -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__
 WXSETUPINCDIR := lib/wx/include/gtk2-unicode-3.0
