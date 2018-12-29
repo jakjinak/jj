@@ -33,6 +33,7 @@ CUSTOM_LDFLAGS := -std=c++11 -g -pthread
 libs:
 all: libs tests
 uilibs: ${WXDIR}
+uitests: tests
 uiall: uilibs uitests
 clean_all: clean clean_tests
 
