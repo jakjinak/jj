@@ -26,7 +26,12 @@ ROOTDIR := $(realpath .)
 
 CUSTOM_CXXFLAGS := -std=c++11 -g
 CUSTOM_LDFLAGS := -std=c++11 -g -pthread
-# -static-libgcc -static-libstdc++
+
+COMPILER_LIB_LINKAGE ?= shared
+ifeq (${COMPILER_LIB_LINKAGE},static)
+CUSTOM_CXXFLAGS += -static-libgcc -static-libstdc++
+CUSTOM_LDFLAGS += -static-libgcc -static-libstdc++
+endif
 
 .PHONY: all libs uiall uilibs uitests tests clean_all clean clean_tests
 
