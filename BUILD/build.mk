@@ -120,17 +120,17 @@ $${OBJDIR_$(1)}/%.o : $${SRCDIR_$(1)}/%.cpp | $${OBJDIR_$(1)} $${DEPDIR_$(1)}
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${CXXFLAGS_$(1)} -MMD -MT $$@ -MF $${DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
 endef
 
-# Defines all the undefined definitions and rules for a library unless already defined
+# Defines all the undefined definitions and rules for a static library unless already defined
 # The first parameter is the name of the library and also the suffix of all defines,
 # the second parameter is the parent make rule, third is the parent clean rule.
 # The fourth parameter provides additional targets that the make rule depends on.
 # Assumes SRCDIR_<name> and SOURCE_<name> to be defined.
 # Awaits RESULT_<name>, OBJDIR_<name>, DEPDIR_<name> to be optionally defined, defines if not found
 # Defines SRC_<name>, OBJ_<name> and DEP_<name> and all the rules
-# See define_common_part for descriptions on the <*>FLAGS_<name>.
+# See define_*common_part for descriptions on the <*>FLAGS_<name>.
 #(call define_static_library,name,makerule,cleanrule,adddeps)
 define define_static_library
-RESULT_$(1) ?= ${LIBDIR}/$(1).a
+RESULT_$(1) ?= ${LIBDIR}/lib$(1).a
 
 $(call define_common_part,$(1),$(2),$(3),$(4))
 $(call define_staticcommon_part,$(1),$(2),$(3),$(4))
