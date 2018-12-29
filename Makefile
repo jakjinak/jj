@@ -45,6 +45,26 @@ clean_all: clean clean_tests
 include BUILD/build.mk
 include BUILD/VS.mk
 
+.PHONY: infoextratargets infoextravariables
+
+infoextratargets:
+	@${TOOL_ECHO} "${COLOR_HL}libs${COLOR_0} ... build all static and shared non-UI libraries"
+	@${TOOL_ECHO} "${COLOR_HL}uilibs${COLOR_0} ... build all static and shared libraries (UI inclusive)"
+	@${TOOL_ECHO} "${COLOR_HL}clean${COLOR_0} ... clean all static and shared libraries (UI inclusive)"
+	@${TOOL_ECHO} "${COLOR_HL}tests${COLOR_0} ... build all test programs (non-UI)"
+	@${TOOL_ECHO} "${COLOR_HL}uitest${COLOR_0} ... build all test programs (UI inclusive)"
+	@${TOOL_ECHO} "${COLOR_HL}clean_tests${COLOR_0} ... clean all test programs (UI inclusive)"
+	@${TOOL_ECHO} "${COLOR_HL}all${COLOR_0} ... build all libs and programs (non-UI)"
+	@${TOOL_ECHO} "${COLOR_HL}uiall${COLOR_0} ... build all libs and programs (UI inclusive)"
+	@${TOOL_ECHO} "${COLOR_HL}clean_all${COLOR_0} ... clean all libs and programs (UI inclusive)"
+infotargets: infoextratargets
+
+infoextravariables:
+	@${TOOL_ECHO} "Additional variables:"
+	@${TOOL_ECHO} "${COLOR_HL}COMPILER_LIB_LINKAGE${COLOR_0} ... defines whether the libgcc and libstdc++ are linked dynamically or statically"
+	@${TOOL_ECHO} "         possible values: static or shared [${COLOR_HL}${COMPILER_LIB_LINKAGE}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}WXSTATIC${COLOR_0} ... defines whether wxWidgets are linked dynamically or statically, enabled if set to 1 [${COLOR_HL}${WXSTATIC}${COLOR_0}]"
+infovariables: infoextravariables
 
 ########################################
 # jjbase

@@ -38,6 +38,45 @@ SO_COMMON_LDFLAGS ?= -fPIC ${COMMON_LDFLAGS}
 # see definition of define_static_library, define_shared_library, define_static_and_shared_library or
 # define_program below or the common part right above them on how to use it
 
+.PHONY: help info infobody infotargets infotargetscommon infovariables infovariablescommon listnames wipeout
+
+infobody:
+	@${TOOL_ECHO} "These makefiles provide a generic framework how to build static/shared libraries and"
+	@${TOOL_ECHO} "programs. It allows to define simple rules as makefile targets to ease the build usage."
+	@${TOOL_ECHO} "There are also several variables that can tweak the behavior."
+	@${TOOL_ECHO} ""
+
+infotargetscommon:
+	@${TOOL_ECHO} "The highlevel targets are (invoked as 'make <targetname>', of course):"
+	@${TOOL_ECHO} "${COLOR_HL}info${COLOR_0} ... prints this overview"
+	@${TOOL_ECHO} "${COLOR_HL}help${COLOR_0} ... same as ${COLOR_HL}info${COLOR_0}"
+	@${TOOL_ECHO} "${COLOR_HL}listnames${COLOR_0} ... lists all predefined names, further targets and info are available after doing 'make ${COLOR_HL}info_<name>${COLOR_0}'"
+	@${TOOL_ECHO} "${COLOR_HL}wipeout${COLOR_0} ... delete the whole directory containing all intermendiate and result files"
+
+infotargets: infotargetscommon
+	@${TOOL_ECHO} ""
+
+infovariablescommon:
+	@${TOOL_ECHO} "Build configuration variables:"
+	@${TOOL_ECHO} "${COLOR_HL}BUILD_MORE${COLOR_0} ... debug or release [current value=${COLOR_HL}${BUILD_MODE}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}BUILD_ARCH${COLOR_0} ... the target system architecture, x86 or x86_64 [${COLOR_HL}${BUILD_ARCH}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}BUILD_OS${COLOR_0} ... the target operating system, usually linux [${COLOR_HL}${BUILD_OS}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}MACHINE_ARCH${COLOR_0} ... actual system architecture, x86 or x86_64 (assumed to be autodetected) [${COLOR_HL}${MACHINE_ARCH}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}MACHINE_OS${COLOR_0} ... actual system name, usually linux (assumed to be autodetected) [${COLOR_HL}${MACHINE_OS}${COLOR_0}]"
+	@${TOOL_ECHO} ""
+	@${TOOL_ECHO} "Output related variables:"
+	@${TOOL_ECHO} "${COLOR_HL}SHOW_HINTS${COLOR_0} ... Show extra output describing what is going on, enabled if set to 1 [${COLOR_HL}${SHOW_HINTS}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}COLOR_HINTS${COLOR_0} ... Print hints in color, enabled if set to 1 [${COLOR_HL}${COLOR_HINTS}${COLOR_0}]"
+	@${TOOL_ECHO} "         Note: also tweaks the info target output"
+	@${TOOL_ECHO} "${COLOR_HL}HIDE_COMMANDS${COLOR_0} ... Forces to not echo the commands executed if enabled by setting to 1 [${COLOR_HL}${HIDE_COMMANDS}${COLOR_0}]"
+	@${TOOL_ECHO} ""
+
+infovariables: infovariablescommon
+
+info: infobody infotargets infovariables
+
+help: info
+
 wipeout:
 	$(call showhint,${COLOR_CLEAN}=== Wiping all for ${COLOR_HL}${WIPEDIRS}${COLOR_0})
 	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${WIPEDIRS}
@@ -53,7 +92,7 @@ ${TMPDIR}:
 define define_common_part
 SRC_$(1) := $$(addprefix $${SRCDIR_$(1)}/,$${SOURCE_$(1)})
 
-.PHONY: $(1) $(1)_only clean_$(1) clean_$(1)_only info_$(1) infoprelude_$(1) infofinale_$(1) infopreludecommon_$(1)
+.PHONY: $(1) $(1)_only clean_$(1) clean_$(1)_only info_$(1) infoprelude_$(1) infofinale_$(1) infopreludecommon_$(1) listname_$(1)
 
 $(2): $(1)
 $(3): clean_$(1)
@@ -66,6 +105,11 @@ infoprelude_$(1): infopreludecommon_$(1)
 	@${TOOL_ECHO} "SRC_$(1) = [$${COLOR_INFO}$$(SRC_$(1))$${COLOR_0}]"
 
 info_$(1): infoprelude_$(1) infofinale_$(1)
+
+listname_$(1):
+	@${TOOL_ECHO} "$(1)"
+
+listnames: listname_$(1)
 endef
 
 #---------------------------------
@@ -105,9 +149,9 @@ infopreludestaticcommon_$(1):
 
 infofinalestaticcommon_$(1):
 	@${TOOL_ECHO}
-	@${TOOL_ECHO} "Defines these rules: [$${COLOR_INFO}$(1) $(1)_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1) clean_$(1)_only$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
-	@${TOOL_ECHO} "Depends on these rules: [$${COLOR_INFO}$(4)$${COLOR_0}]"
-	@${TOOL_ECHO} "Is part of these rules: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
+	@${TOOL_ECHO} "Defines these targets: [$${COLOR_INFO}$(1) $(1)_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1) clean_$(1)_only$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
+	@${TOOL_ECHO} "Depends on these libs: [$${COLOR_INFO}$(4)$${COLOR_0}]"
+	@${TOOL_ECHO} "Is part of these targets: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
 
 
 $${DEPDIR_$(1)}:
@@ -209,9 +253,9 @@ infopreludeshared_$(1):
 	@${TOOL_ECHO} "SO_LDFLAGS_$(1) = [$${COLOR_INFO}$$(SO_LDFLAGS_$(1))$${COLOR_0}]"
 
 infofinaleshared_$(1):
-	@${TOOL_ECHO} "The shared part efines these rules: [$${COLOR_INFO}$(1)_so $(1)_so_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1)_so clean_$(1)_so_only$${COLOR_0}]"
-	@${TOOL_ECHO} "The shared part depends on these rules: [$${COLOR_INFO}$(4)$${COLOR_0}]"
-	@${TOOL_ECHO} "The shared part is part of these rules: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
+	@${TOOL_ECHO} "The shared part defines these targets: [$${COLOR_INFO}$(1)_so $(1)_so_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1)_so clean_$(1)_so_only$${COLOR_0}]"
+	@${TOOL_ECHO} "The shared part depends on these libs: [$${COLOR_INFO}$(4)$${COLOR_0}]"
+	@${TOOL_ECHO} "The shared part is part of these targets: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
 
 infoprelude_$(1): infopreludeshared_$(1)
 infofinale_$(1): infofinaleshared_$(1)
