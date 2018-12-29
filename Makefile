@@ -51,10 +51,11 @@ include BUILD/VS.mk
 SRCDIR_jjbase := $(realpath .)
 SOURCE_jjbase := string.cpp stringLiterals.cpp stream.cpp cmdLine.cpp configurationStorage.cpp
 CXXFLAGS_jjbase := ${COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjbase}/..)
+SO_CXXFLAGS_jjbase := ${SO_COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjbase}/..)
 VSNAME_jjbase := jjBase
 VSTYPE_jjbase := lib
 VSGUID_jjbase := 9D3B6614-DCEB-419C-A035-BE06BF4D7BEF
-$(eval $(call define_static_library,jjbase,libs,clean))
+$(eval $(call define_static_and_shared_library,jjbase,libs,clean))
 VSINCDIRS_jjbase := ..
 VSDEFINES_jjbase := \
 	a=x86|WIN32 \
@@ -118,7 +119,7 @@ $(eval $(call define_generate_vsproj,jjtest))
 SRCDIR_jjbase-tests := $(realpath tests)
 SOURCE_jjbase-tests := string_tests.cpp flagSet_tests.cpp options_tests.cpp cmdLine_tests.cpp cmdLineOptions_tests.cpp configuration_tests.cpp
 CXXFLAGS_jjbase-tests := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
-LIBS_jjbase-tests := ${RESULT_jjtest} ${RESULT_jjbase}
+LIBS_jjbase-tests := ${RESULT_jjtest} ${SO_RESULT_jjbase}
 VSNAME_jjbase-tests := jjbase.Tests
 VSTYPE_jjbase-tests := capp
 VSGUID_jjbase-tests := 1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38
@@ -131,7 +132,7 @@ VSDEFINES_jjbase-tests := \
 	m=release|NDEBUG \
 	_CONSOLE
 VSHEADER_jjbase-tests := $(shell cd "${SRCDIR_jjbase-tests}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
-$(eval $(call define_program,jjbase-tests,tests,clean_tests,jjbase jjtest))
+$(eval $(call define_program,jjbase-tests,tests,clean_tests,jjbase_so jjtest))
 $(eval $(call define_generate_vsproj,jjbase-tests))
 
 ########################################
