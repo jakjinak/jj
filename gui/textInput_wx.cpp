@@ -58,7 +58,7 @@ template<> struct COGET<textInput_t> { typedef wxTextCtrl TYPE; };
 textInput_t::textInput_t(contentHolder_t& owner, options_t setup)
     : parent_t(owner), native_t(*this)
 {
-    wrTextInput* tmp = new wrTextInput(*this, GET<wxWindow>::from(&owner), get_id(), setup.Text, wxPoint(setup.Position.Left, setup.Position.Top), wxSize(setup.Size.Width, setup.Size.Height), tif2wxtcs(setup)|ha2wxtcs(setup));
+    wrTextInput* tmp = new wrTextInput(*this, GET<wxWindow>::from(&owner), get_id(), s2wxs<string_t>::cvt(setup.Text), wxPoint(setup.Position.Left, setup.Position.Top), wxSize(setup.Size.Width, setup.Size.Height), tif2wxtcs(setup)|ha2wxtcs(setup));
     set_native_pointer(static_cast<wxTextCtrl*>(tmp));
 
     AUX::setup_first_last_callbacks(OnTextChange,
@@ -86,12 +86,12 @@ string_t textInput_t::text() const
 
 void textInput_t::text(const string_t& v)
 {
-    GET<wxTextCtrl>::from(this)->SetValue(v);
+    GET<wxTextCtrl>::from(this)->SetValue(s2wxs<string_t>::cvt(v));
 }
 
 void textInput_t::changeText(const string_t& v)
 {
-    GET<wxTextCtrl>::from(this)->ChangeValue(v);
+    GET<wxTextCtrl>::from(this)->ChangeValue(s2wxs<string_t>::cvt(v));
 }
 
 } // namespace gui

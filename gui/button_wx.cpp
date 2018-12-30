@@ -60,15 +60,15 @@ template<> struct COGET<button_t> { typedef wxButton TYPE; };
 button_t::button_t(contentHolder_t& owner, options_t setup)
     : parent_t(owner), native_t(*this)
 {
-    wrButton* tmp = new wrButton(*this, GET<wxWindow>::from(&owner), 
-        get_id(), setup.Text, 
-        wxPoint(setup.Position.Left, setup.Position.Top), 
-        wxSize(setup.Size.Width, setup.Size.Height), 
+    wrButton* tmp = new wrButton(*this, GET<wxWindow>::from(&owner),
+        get_id(), s2wxs<string_t>::cvt(setup.Text),
+        wxPoint(setup.Position.Left, setup.Position.Top),
+        wxSize(setup.Size.Width, setup.Size.Height),
         bf2wxbs(setup)|ha2wxbs(setup)|va2wxbs(setup)
     );
     set_native_pointer(static_cast<wxButton*>(tmp));
 
-    AUX::setup_first_last_callbacks(OnClick, 
+    AUX::setup_first_last_callbacks(OnClick,
         [this, tmp] { GET<wxButton>::from(this)->Bind(wxEVT_BUTTON, &wrButton::evtButton, tmp, this->get_id()); },
         [this, tmp] { GET<wxButton>::from(this)->Unbind(wxEVT_BUTTON, &wrButton::evtButton, tmp, this->get_id()); }
     );
@@ -93,7 +93,7 @@ string_t button_t::text() const
 
 void button_t::text(const string_t& v)
 {
-    GET<wxButton>::from(this)->SetLabel(v);
+    GET<wxButton>::from(this)->SetLabel(s2wxs<string_t>::cvt(v));
 }
 
 } // namespace gui

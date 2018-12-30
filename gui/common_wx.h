@@ -13,8 +13,11 @@ inline screen_point_t pt2p(wxPoint pt) { return screen_point_t(pt.x, pt.y); }
 inline screen_point_t siz2p(wxSize siz) { return screen_point_t(siz.x, siz.y); }
 
 template<typename S> struct wxs2s;
-template<> struct wxs2s<std::string> { inline static std::string cvt(const wxString& s) { return s.ToStdString(); } };
+template<> struct wxs2s<std::string> { inline static std::string cvt(const wxString& s) { return std::string(s.ToUTF8()); } };
 template<> struct wxs2s<std::wstring> { inline static std::wstring cvt(const wxString& s) { return s.ToStdWstring(); } };
+template<typename S> struct s2wxs;
+template<> struct s2wxs<std::string> { inline static wxString cvt(const std::string& s) { return wxString::FromUTF8(s.data(), s.length()); } };
+template<> struct s2wxs<std::wstring> { inline static wxString cvt(const std::wstring& s) { return s; } };
 
 namespace AUX
 {

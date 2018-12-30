@@ -115,7 +115,7 @@ string_t menuItem_t::text() const
 
 void menuItem_t::text(const string_t& v)
 {
-    get_menu_item(owner_, get_id()).SetItemLabel(v);
+    get_menu_item(owner_, get_id()).SetItemLabel(s2wxs<string_t>::cvt(v));
 }
 
 menu_t::menu_t(idGenerator_t& idsrc, menuBar_t&)
@@ -135,7 +135,7 @@ menu_t::menu_t(idGenerator_t& idsrc)
 menu_t::menu_t(idGenerator_t& idsrc, const string_t& title)
     : idsrc_(idsrc), type_(MENU)
 {
-    wrMenu* tmp = new wrMenu(*this, title);
+    wrMenu* tmp = new wrMenu(*this, s2wxs<string_t>::cvt(title));
     set_native_pointer(static_cast<wxMenu*>(tmp));
 }
 
@@ -154,7 +154,7 @@ std::weak_ptr<menuItem_t> menu_t::append(menuItem_t::options_t setup)
     if (type_ == menu_t::BAR) // TODO this (in theory) is also allowed (via wxMenuBar::Append(0, "txt"); try and implement
         throw std::invalid_argument("no regular items in menu bar");
     wxMenu* m = GET<wxMenu>::from(this);
-    wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id(), setup.Text, jj::str::Empty, k2wxk(setup.Value));
+    wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id(), s2wxs<string_t>::cvt(setup.Text), s2wxs<string_t>::cvt(jj::str::Empty), k2wxk(setup.Value));
     m->Append(tmp);
     if (!setup.Accelerator.empty())
     {
@@ -171,7 +171,7 @@ std::weak_ptr<menuItem_t> menu_t::append(menuItem_t::separator_t)
     if (type_ == menu_t::BAR)
         throw std::invalid_argument("no separators in menu bar");
     wxMenu* m = GET<wxMenu>::from(this);
-    wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id()/*wxID_SEPARATOR*/, jj::str::Empty, jj::str::Empty, wxITEM_SEPARATOR);
+    wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id()/*wxID_SEPARATOR*/, s2wxs<string_t>::cvt(jj::str::Empty), s2wxs<string_t>::cvt(jj::str::Empty), wxITEM_SEPARATOR);
     m->Append(tmp);
     item_t x(new menuItem_t(*this, tmp->GetId()));
     items_.push_back(x);
@@ -183,7 +183,7 @@ std::weak_ptr<menuItem_t> menu_t::append(menu_t* sub, menuItem_t::submenuOptions
     if (type_ == menu_t::BAR)
     {
         wxMenuBar* m = reinterpret_cast<wxMenuBar*>(native_pointer());
-        m->Append(GET<wxMenu>::from(sub), setup.Text);
+        m->Append(GET<wxMenu>::from(sub), s2wxs<string_t>::cvt(setup.Text));
         item_t x(new menuItem_t(*this, int(m->GetMenuCount() - 1)));
         items_.push_back(x);
         return x;
@@ -191,7 +191,7 @@ std::weak_ptr<menuItem_t> menu_t::append(menu_t* sub, menuItem_t::submenuOptions
     else
     {
         wxMenu* m = GET<wxMenu>::from(this);
-        wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id(), setup.Text, jj::str::Empty, wxITEM_NORMAL, GET<wxMenu>::from(sub));
+        wxMenuItem* tmp = new wxMenuItem(m, idsrc_.get_an_id(), s2wxs<string_t>::cvt(setup.Text), s2wxs<string_t>::cvt(jj::str::Empty), wxITEM_NORMAL, GET<wxMenu>::from(sub));
         m->Append(tmp);
         item_t x(new menuItem_t(*this, tmp->GetId()));
         items_.push_back(x);

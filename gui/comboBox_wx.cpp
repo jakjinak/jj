@@ -48,10 +48,10 @@ comboBox_t::comboBox_t(contentHolder_t& owner, options_t setup, const std::initi
 {
     wxArrayString strs;
     for (auto& s : items)
-        strs.Add(s);
+        strs.Add(s2wxs<string_t>::cvt(s));
 
     wrComboBox* tmp = new wrComboBox(*this, GET<wxWindow>::from(&owner),
-        get_id(), setup.Text,
+        get_id(), s2wxs<string_t>::cvt(setup.Text),
         wxPoint(setup.Position.Left, setup.Position.Top),
         wxSize(setup.Size.Width, setup.Size.Height),
         strs,
@@ -113,27 +113,27 @@ string_t comboBox_t::text() const
 
 void comboBox_t::text(const string_t& v)
 {
-    GET<wxComboBox>::from(this)->SetValue(v);
+    GET<wxComboBox>::from(this)->SetValue(s2wxs<string_t>::cvt(v));
 }
 
 void comboBox_t::changeText(const string_t& v)
 {
-    GET<wxComboBox>::from(this)->ChangeValue(v);
+    GET<wxComboBox>::from(this)->ChangeValue(s2wxs<string_t>::cvt(v));
 }
 
 void comboBox_t::append(const string_t& item)
 {
-    GET<wxComboBox>::from(this)->AppendString(item);
+    GET<wxComboBox>::from(this)->AppendString(s2wxs<string_t>::cvt(item));
 }
 
 void comboBox_t::insert(const string_t& item, size_t pos)
 {
-    GET<wxComboBox>::from(this)->Insert(item, pos);
+    GET<wxComboBox>::from(this)->Insert(s2wxs<string_t>::cvt(item), pos);
 }
 
 void comboBox_t::change(const string_t& item, size_t pos)
 {
-    GET<wxComboBox>::from(this)->SetString(pos, item);
+    GET<wxComboBox>::from(this)->SetString(pos, s2wxs<string_t>::cvt(item));
 }
 
 void comboBox_t::erase(size_t pos)

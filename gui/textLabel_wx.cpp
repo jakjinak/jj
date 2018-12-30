@@ -48,7 +48,7 @@ textLabel_t::textLabel_t(contentHolder_t& owner, options_t setup)
     : parent_t(owner), native_t(*this)
 {
     wrTextLabel* tmp = new wrTextLabel(*this, GET<wxWindow>::from(&owner),
-        get_id(), setup.Text,
+        get_id(), s2wxs<string_t>::cvt(setup.Text),
         wxPoint(setup.Position.Left, setup.Position.Top),
         wxSize(setup.Size.Width, setup.Size.Height),
         tlf2wxsts(setup) | ha2wxsts(setup)
@@ -75,7 +75,7 @@ string_t textLabel_t::text() const
 
 void textLabel_t::text(const string_t& v)
 {
-    GET<wxStaticText>::from(this)->SetLabel(v);
+    GET<wxStaticText>::from(this)->SetLabel(s2wxs<string_t>::cvt(v));
 }
 
 } // namespace gui

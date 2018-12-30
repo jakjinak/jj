@@ -63,7 +63,7 @@ string_t topLevelWindow_t::title() const
 
 void topLevelWindow_t::title(const string_t& v)
 {
-    GET<wxTopLevelWindow>::from(this)->SetTitle(v);
+    GET<wxTopLevelWindow>::from(this)->SetTitle(s2wxs<string_t>::cvt(v));
 }
 
 bool topLevelWindow_t::isShown() const
@@ -278,7 +278,7 @@ void statusBar_t::set(const fields_t& fields)
     i = 0;
     for (auto& f : fields)
     {
-        sb->SetStatusText(f.text_, i);
+        sb->SetStatusText(s2wxs<string_t>::cvt(f.text_), i);
         ++i;
     }
 }
@@ -308,12 +308,12 @@ string_t statusBar_t::text(size_t i)
 
 void statusBar_t::text(size_t i, const string_t& value)
 {
-    GET<wxStatusBar>::from(this)->SetStatusText(value, int(i));
+    GET<wxStatusBar>::from(this)->SetStatusText(s2wxs<string_t>::cvt(value), int(i));
 }
 
 void statusBar_t::push(size_t i, const string_t& value)
 {
-    GET<wxStatusBar>::from(this)->PushStatusText(value, int(i));
+    GET<wxStatusBar>::from(this)->PushStatusText(s2wxs<string_t>::cvt(value), int(i));
 }
 
 void statusBar_t::pop(size_t i)
@@ -400,7 +400,7 @@ frame_t::frame_t(application_t& app, options_t setup)
     , menuBar_(nullptr), statusBar_(nullptr)
     , onCreateMenuBar([this] { return new menuBar_t(*this); }), onCreateStatusBar([this] { return new statusBar_t(*this); })
 {
-    wrFrame* tmp = new wrFrame(*this, nullptr, wxID_ANY, setup.Text, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
+    wrFrame* tmp = new wrFrame(*this, nullptr, wxID_ANY, s2wxs<string_t>::cvt(setup.Text), wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
     set_native_pointer(static_cast<wxFrame*>(tmp));
 }
 
@@ -409,7 +409,7 @@ frame_t::frame_t(application_t& app, topLevelWindow_t& owner, options_t setup)
     , menuBar_(nullptr), statusBar_(nullptr)
     , onCreateMenuBar([this] { return new menuBar_t(*this); }), onCreateStatusBar([this] { return new statusBar_t(*this); })
 {
-    wrFrame* tmp = new wrFrame(*this, GET<wxWindow>::from(&owner), wxID_ANY, setup.Text, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
+    wrFrame* tmp = new wrFrame(*this, GET<wxWindow>::from(&owner), wxID_ANY, s2wxs<string_t>::cvt(setup.Text), wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
     set_native_pointer(static_cast<wxFrame*>(tmp));
 }
 
@@ -497,14 +497,14 @@ dialog_t::dialog_t(topLevelWindow_t& owner, derived_t)
 dialog_t::dialog_t(topLevelWindow_t& owner, options_t setup)
     : parent_t(owner.app(), &owner)
 {
-    wrDialog* tmp = new wrDialog(*this, GET<wxTopLevelWindow>::from(&owner), wxID_ANY, setup.Text, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), df2wxds(setup));
+    wrDialog* tmp = new wrDialog(*this, GET<wxTopLevelWindow>::from(&owner), wxID_ANY, s2wxs<string_t>::cvt(setup.Text), wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), df2wxds(setup));
     set_native_pointer(static_cast<wxDialog*>(tmp));
 }
 
 dialog_t::dialog_t(application_t& app, options_t setup)
     : parent_t(app, nullptr)
 {
-    wrDialog* tmp = new wrDialog(*this, nullptr, wxID_ANY, setup.Text, wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), df2wxds(setup));
+    wrDialog* tmp = new wrDialog(*this, nullptr, wxID_ANY, s2wxs<string_t>::cvt(setup.Text), wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), df2wxds(setup));
     set_native_pointer(static_cast<wxDialog*>(tmp));
 }
 
@@ -603,7 +603,7 @@ long d2wxmbs(const simple_t::default1_t& v)
 simple_t::simple_t(topLevelWindow_t& parent, const string_t& message, const string_t& title, options_t setup, std::initializer_list<stock::item_t> buttons)
     : parent_t(parent, DERIVED)
 {
-    wrMessageDialog* tmp = new wrMessageDialog(*this, GET<wxTopLevelWindow>::from(&parent), message, title, i2wxmbs(setup) | b2wxmbs(buttons) | d2wxmbs(setup), wxPoint(setup.Position.Column, setup.Position.Row));
+    wrMessageDialog* tmp = new wrMessageDialog(*this, GET<wxTopLevelWindow>::from(&parent), s2wxs<string_t>::cvt(message), s2wxs<string_t>::cvt(title), i2wxmbs(setup) | b2wxmbs(buttons) | d2wxmbs(setup), wxPoint(setup.Position.Column, setup.Position.Row));
     set_native_pointer(static_cast<wxMessageDialog*>(tmp));
 }
 
@@ -648,8 +648,8 @@ input_t::input_t(topLevelWindow_t& parent, const string_t& message, options_t se
         isPsw_ = true;
         wrPasswordEntryDialog* tmp = new wrPasswordEntryDialog(
             *this, GET<wxTopLevelWindow>::from(&parent),
-            message, (setup.Title.empty() ? wxGetPasswordFromUserPromptStr : wxString(setup.Title)),
-            setup.Text, wxTextEntryDialogStyle,
+            s2wxs<string_t>::cvt(message), (setup.Title.empty() ? wxGetPasswordFromUserPromptStr : s2wxs<string_t>::cvt(setup.Title)),
+            s2wxs<string_t>::cvt(setup.Text), wxTextEntryDialogStyle,
             wxPoint(setup.Position.Column, setup.Position.Row)
         );
         set_native_pointer(static_cast<wxPasswordEntryDialog*>(tmp));
@@ -659,8 +659,8 @@ input_t::input_t(topLevelWindow_t& parent, const string_t& message, options_t se
         isPsw_ = false;
         wrTextEntryDialog* tmp = new wrTextEntryDialog(
             *this, GET<wxTopLevelWindow>::from(&parent),
-            message, (setup.Title.empty() ? wxGetTextFromUserPromptStr : wxString(setup.Title)),
-            setup.Text, wxTextEntryDialogStyle,
+            s2wxs<string_t>::cvt(message), (setup.Title.empty() ? wxGetTextFromUserPromptStr : s2wxs<string_t>::cvt(setup.Title)),
+            s2wxs<string_t>::cvt(setup.Text), wxTextEntryDialogStyle,
             wxPoint(setup.Position.Column, setup.Position.Row)
         );
         set_native_pointer(static_cast<wxTextEntryDialog*>(tmp));
@@ -738,9 +738,9 @@ openFile_t::openFile_t(topLevelWindow_t& parent, options_t setup)
 {
     wrFileDialog<openFile_t>* tmp = new wrFileDialog<openFile_t>(
         *this, GET<wxTopLevelWindow>::from(&parent),
-        setup.Title.empty() ? wxFileSelectorPromptStr : wxString(setup.Title),
-        setup.Directory, setup.File,
-        setup.Wildcard.empty() ? wxFileSelectorDefaultWildcardStr : wxString(setup.Wildcard),
+        setup.Title.empty() ? wxFileSelectorPromptStr : s2wxs<string_t>::cvt(setup.Title),
+        s2wxs<string_t>::cvt(setup.Directory), s2wxs<string_t>::cvt(setup.File),
+        setup.Wildcard.empty() ? wxFileSelectorDefaultWildcardStr : s2wxs<string_t>::cvt(setup.Wildcard),
         wxFD_OPEN | off2wxfds(setup),
         wxPoint(setup.Position.Column, setup.Position.Row),
         wxSize(setup.Size.Width, setup.Size.Height)
@@ -780,9 +780,9 @@ saveFile_t::saveFile_t(topLevelWindow_t& parent, options_t setup)
 {
     wrFileDialog<saveFile_t>* tmp = new wrFileDialog<saveFile_t>(
         *this, GET<wxTopLevelWindow>::from(&parent),
-        setup.Title.empty() ? wxFileSelectorPromptStr : wxString(setup.Title),
-        setup.Directory, setup.File,
-        setup.Wildcard.empty() ? wxFileSelectorDefaultWildcardStr : wxString(setup.Wildcard),
+        setup.Title.empty() ? wxFileSelectorPromptStr : s2wxs<string_t>::cvt(setup.Title),
+        s2wxs<string_t>::cvt(setup.Directory), s2wxs<string_t>::cvt(setup.File),
+        setup.Wildcard.empty() ? wxFileSelectorDefaultWildcardStr : s2wxs<string_t>::cvt(setup.Wildcard),
         wxFD_SAVE | sff2wxfds(setup),
         wxPoint(setup.Position.Column, setup.Position.Row),
         wxSize(setup.Size.Width, setup.Size.Height)
@@ -812,8 +812,8 @@ selectDir_t::selectDir_t(topLevelWindow_t& parent, options_t setup)
 {
     wrDirDialog* tmp = new wrDirDialog(
         *this, GET<wxTopLevelWindow>::from(&parent),
-        setup.Title.empty() ? wxDirSelectorPromptStr : wxString(setup.Title),
-        setup.Directory, sdf2wxdds(setup),
+        setup.Title.empty() ? wxDirSelectorPromptStr : s2wxs<string_t>::cvt(setup.Title),
+        s2wxs<string_t>::cvt(setup.Directory), sdf2wxdds(setup),
         wxPoint(setup.Position.Column, setup.Position.Row),
         wxSize(setup.Size.Width, setup.Size.Height)
         );

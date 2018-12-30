@@ -4,6 +4,7 @@
 #include "wx/wx.h"
 #include "wx/cmdline.h"
 
+#include "jj/gui/common_wx.h"
 #include "jj/gui/application.h"
 #include "jj/stream.h"
 
@@ -57,7 +58,7 @@ class theApp : public wxApp
 {
     virtual void OnInitCmdLine(wxCmdLineParser& parser)
     {
-        parser.SetCmdLine(jj::str::EmptyString);
+        parser.SetCmdLine(s2wxs<std::string>::cvt(jj::str::EmptyString));
     }
     virtual bool OnCmdLineParsed(wxCmdLineParser& parser)
     {
@@ -91,7 +92,7 @@ class theApp : public wxApp
         // TODO: add jj::exception
         catch (const std::exception& ex)
         {
-            end = showError(ex.what());
+            end = showError(s2wxs<std::string>::cvt(ex.what()));
         }
         catch (const wxString& ex)
         {
@@ -99,15 +100,15 @@ class theApp : public wxApp
         }
         catch (const std::string& ex)
         {
-            end = showError(ex);
+            end = showError(s2wxs<std::string>::cvt(ex));
         }
         catch (const std::wstring& ex)
         {
-            end = showError(ex);
+            end = showError(s2wxs<std::wstring>::cvt(ex));
         }
         catch (const char* ex)
         {
-            end = showError(ex);
+            end = showError(s2wxs<std::string>::cvt(ex));
         }
         catch (...)
         {
