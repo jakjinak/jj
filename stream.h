@@ -39,6 +39,10 @@ namespace AUX
 template<typename T>
 class SStreamWrap
 {
+    typedef typename T::char_type char_type;
+    typedef typename T::traits_type traits_type;
+    typedef typename T::allocator_type alloc_type;
+    typedef std::basic_string<char_type, traits_type, alloc_type> string_type;
     T stream_;
 public:
     template<typename V>
@@ -47,7 +51,7 @@ public:
         stream_ << v;
         return *this;
     }
-    string_t str() const
+    string_type str() const
     {
         return stream_.str();
     }
@@ -56,5 +60,6 @@ public:
 } // namespace jj
 
 #define jjS(text) (jj::AUX::SStreamWrap<jj::sstreamt_t>() << text).str()
+#define jjS2(type,text) (jj::AUX::SStreamWrap<type>() << text).str()
 
 #endif // JJ_STREAM_H
