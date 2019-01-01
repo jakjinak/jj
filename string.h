@@ -355,6 +355,31 @@ inline size_t find(const std::wstring& str, wchar_t what, size_t pos = 0) { retu
 inline size_t find(const std::wstring& str, const wchar_t* what, size_t pos = 0) { if (what==nullptr) return 0u; return str.find(what, pos); }
 /*! Returns position of first occurrence of what within str since position pos or npos if not found. */
 inline size_t find(const std::wstring& str, const std::wstring& what, size_t pos = 0) { return str.find(what, pos); }
+
+//=====================================
+
+/*! A functor wrapping the case sensitive string comparison. */
+template<typename CHAR>
+struct lessPred
+{
+    template<typename T1, typename T2>
+    bool operator()(T1& a, T2& b) const
+    {
+        return jj::str::less(a, b);
+    }
+};
+
+/*! A functor wrapping the case insensitive string comparison. */
+template<typename CHAR>
+struct lessiPred
+{
+    template<typename T1, typename T2>
+    bool operator()(T1& a, T2& b) const
+    {
+        return jj::str::lessi(a, b);
+    }
+};
+
 } // namespace str
 
 } // namespace jj
