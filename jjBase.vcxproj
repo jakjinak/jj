@@ -320,6 +320,10 @@
     <ClInclude Include="geometry.h" />
     <ClInclude Include="idGenerator.h" />
     <ClInclude Include="options.h" />
+    <ClInclude Include="props.h" />
+    <ClInclude Include="propsTextDeserializer.h" />
+    <ClInclude Include="propsTextSerializer.h" />
+    <ClInclude Include="source.h" />
     <ClInclude Include="stream.h" />
     <ClInclude Include="string.h" />
     <ClInclude Include="stringLiterals.h" />

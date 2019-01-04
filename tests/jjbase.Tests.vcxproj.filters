@@ -35,6 +35,12 @@
     <ClCompile Include="options_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="props_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="string_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

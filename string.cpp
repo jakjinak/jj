@@ -59,22 +59,22 @@ namespace strcvt
 
 std::string to_string(const wchar_t* str)
 {
-    throw not_implemented_t();
+    throw exception::not_implemented();
 }
 
 std::string to_string(const std::wstring& str)
 {
-    throw not_implemented_t();
+    throw exception::not_implemented();
 }
 
 std::wstring to_wstring(const char* str)
 {
-    throw not_implemented_t();
+    throw exception::not_implemented();
 }
 
 std::wstring to_wstring(const std::string& str)
 {
-    throw not_implemented_t();
+    throw exception::not_implemented();
 }
 
 } // namespace strcvt
