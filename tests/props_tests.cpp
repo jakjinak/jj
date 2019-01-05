@@ -29,25 +29,25 @@ jj::props::textDeserializer_t<S, P>& operator>>(jj::props::textDeserializer_t<S,
     ch_t ch;
     int tmp;
     if (!src.get(ch) || ch != jjT('{'))
-        throw std::exception("Expected {");
+        throw jj::exception::base("Expected {");
     src.stream() >> tmp;
     if (tmp < 0 || tmp>255)
-        throw std::exception("Out of range");
-    v.R = unsigned char(tmp);
+        throw jj::exception::base("Out of range");
+    v.R = static_cast<unsigned char>(tmp);
     if (!src.get(ch) || ch != jjT(','))
-        throw std::exception("Expected ,");
+        throw jj::exception::base("Expected ,");
     src.stream() >> tmp;
     if (tmp < 0 || tmp>255)
-        throw std::exception("Out of range");
-    v.G = unsigned char(tmp);
+        throw jj::exception::base("Out of range");
+    v.G = static_cast<unsigned char>(tmp);
     if (!src.get(ch) || ch != jjT(','))
-        throw std::exception("Expected ,");
+        throw jj::exception::base("Expected ,");
     src.stream() >> tmp;
     if (tmp < 0 || tmp>255)
-        throw std::exception("Out of range");
-    v.B = unsigned char(tmp);
+        throw jj::exception::base("Out of range");
+    v.B = static_cast<unsigned char>(tmp);
     if (!src.get(ch) || ch != jjT('}'))
-        throw std::exception("Expected }");
+        throw jj::exception::base("Expected }");
     return s;
 }
 

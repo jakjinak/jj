@@ -249,14 +249,14 @@ jj::props::textDeserializer_t<S, P>& operator>>(jj::props::textDeserializer_t<S,
     static_assert(std::is_same<char_type, CH>::value, "Must be of same character type!");
     char_type ch;
     if (!str.get(ch) || ch != jj::str::literals_t<char_type>::QUOTE)
-        throw std::exception("Expected a '\"'.");
+        throw jj::exception::base("Expected a '\"'.");
     v.clear();
     bool escape = false;
     bool done = false;
     while (str.get(ch))
     {
         if (ch == jj::str::literals_t<char_type>::NL)
-            throw std::exception("Unexpected newline, a '\"' was expected.");
+            throw jj::exception::base("Unexpected newline, a '\"' was expected.");
         if (escape)
         {
             if (ch == jj::str::literals_t<char_type>::BSLASH || ch == jj::str::literals_t<char_type>::QUOTE)
@@ -283,7 +283,7 @@ jj::props::textDeserializer_t<S, P>& operator>>(jj::props::textDeserializer_t<S,
             v += ch;
     }
     if (!done)
-        throw std::exception("Expected a '\"'.");
+        throw jj::exception::base("Expected a '\"'.");
     return s;
 }
 
@@ -332,7 +332,7 @@ inline void readContainer(jj::props::textDeserializer_t<S, P>& s, C& c)
             c.push_back(x);
         }
         else
-            throw std::exception("Syntax error. Expected ',' or newline.");
+            throw jj::exception::base("Syntax error. Expected ',' or newline.");
     }
 }
 

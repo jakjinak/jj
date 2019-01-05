@@ -158,10 +158,10 @@ public:
     Once true is returned this method shall not be called any more! */
     bool next(key_type& nextKey)
     {
-        key_type::const_iterator end = in_.end();
+        typename key_type::const_iterator end = in_.end();
         if (pos_ == end)
             return true;
-        key_type::const_iterator start = pos_;
+        typename key_type::const_iterator start = pos_;
         while (pos_ != end && *pos_ != SEP)
             ++pos_;
         nextKey = key_type(start, pos_);
@@ -210,7 +210,7 @@ public:
     nullptr if no such key exists. */
     const value_type* find(key_type key) const
     {
-        holder_type::const_iterator it = props_.find(key);
+        typename holder_type::const_iterator it = props_.find(key);
         if (it == props_.end())
             return nullptr;
         return &(it->second.get());
@@ -219,7 +219,7 @@ public:
     nullptr if no such key exists. */
     value_type* find(key_type key)
     {
-        holder_type::iterator it = props_.find(key);
+        typename holder_type::iterator it = props_.find(key);
         if (it == props_.end())
             return nullptr;
         return &(it->second.get());
@@ -228,7 +228,7 @@ public:
     Throws keyNotFound if no such key exists. */
     const value_type& get(key_type key) const
     {
-        holder_type::const_iterator it = props_.find(key);
+        typename holder_type::const_iterator it = props_.find(key);
         if (it == props_.end())
             throw exception::keyNotFound(key);
         return it->second.get();
@@ -237,7 +237,7 @@ public:
     Throws keyNotFound if no such key exists. */
     value_type& get(key_type key)
     {
-        holder_type::iterator it = props_.find(key);
+        typename holder_type::iterator it = props_.find(key);
         if (it == props_.end())
             throw exception::keyNotFound(key);
         return it->second.get();
@@ -247,7 +247,7 @@ public:
     Throws keyNotFound if no such key exists. */
     void set(key_type key, const T& v)
     {
-        holder_type::iterator it = props_.find(key);
+        typename holder_type::iterator it = props_.find(key);
         if (it == props_.end())
             throw exception::keyNotFound(key);
         it->second.get() = v;
@@ -348,7 +348,7 @@ public:
     }
     /*! Calls action for key in each type in the typelist. */
     template<typename ACTION>
-    void apply(ACTION& a, key_type key) const
+    void apply(ACTION& a, typename SETUP::key_type key) const
     {
         const prop_type& ph = *this;
         const T* p = ph.find(key);
@@ -357,7 +357,7 @@ public:
     }
     /*! Calls action for key in each type in the typelist. */
     template<typename ACTION>
-    void apply(ACTION& a, key_type key)
+    void apply(ACTION& a, typename SETUP::key_type key)
     {
         prop_type& ph = *this;
         T* p = ph.find(key);
@@ -384,7 +384,7 @@ protected:
     Throws duplicateKey if key already exists in the container (duplicates not allowed). */
     void addNested(key_type key, value_type& prop)
     {
-        auto ret = props_.insert(typename holder_type::value_type(key, prop));
+        auto ret = props_.insert(typename holder_type::value_type(key, wrap_type(prop)));
         if (!ret.second)
             throw exception::duplicateKey(key);
     }
@@ -407,7 +407,7 @@ public:
     returns nullptr if no such key exists. */
     const value_type* findNested(key_type key) const
     {
-        holder_type::const_iterator fnd = props_.find(key);
+        typename holder_type::const_iterator fnd = props_.find(key);
         if (fnd == props_.end())
             return nullptr;
         return &(fnd->second.get());
@@ -416,7 +416,7 @@ public:
     returns nullptr if no such key exists. */
     value_type* findNested(key_type key)
     {
-        holder_type::iterator fnd = props_.find(key);
+        typename holder_type::iterator fnd = props_.find(key);
         if (fnd == props_.end())
             return nullptr;
         return &(fnd->second.get());
@@ -425,7 +425,7 @@ public:
     Throws keyNotFound if no such key exists. */
     const value_type& getNested(key_type key) const
     {
-        holder_type::const_iterator fnd = props_.find(key);
+        typename holder_type::const_iterator fnd = props_.find(key);
         if (fnd == props_.end())
             throw exception::keyNotFound(key);
         return fnd->second.get();
@@ -434,7 +434,7 @@ public:
     Throws keyNotFound if no such key exists. */
     value_type& getNested(key_type key)
     {
-        holder_type::iterator fnd = props_.find(key);
+        typename holder_type::iterator fnd = props_.find(key);
         if (fnd == props_.end())
             throw exception::keyNotFound(key);
         return fnd->second.get();
@@ -539,7 +539,7 @@ public:
     template<typename T>
     const T* find(typename setup_type::key_type key) const
     {
-        const holder_t<setup_type, T>& tmp = *this;
+        const aux::holder_t<setup_type, T>& tmp = *this;
         return tmp.find(key);
     }
     /*! Searches the container of given type T (one of those in props) for key and returns the associated value
@@ -547,7 +547,7 @@ public:
     template<typename T>
     T* find(typename setup_type::key_type key)
     {
-        holder_t<setup_type, T>& tmp = *this;
+        aux::holder_t<setup_type, T>& tmp = *this;
         return tmp.find(key);
     }
     /*! Searches the container of given type T (one of those in props) for key and returns the associated value.
@@ -555,7 +555,7 @@ public:
     template<typename T>
     const T& get(typename setup_type::key_type key) const
     {
-        const holder_t<setup_type, T>& tmp = *this;
+        const aux::holder_t<setup_type, T>& tmp = *this;
         return tmp.get(key);
     }
     /*! Searches the container of given type T (one of those in props) for key and returns the associated value.
@@ -563,7 +563,7 @@ public:
     template<typename T>
     T& get(typename setup_type::key_type key)
     {
-        holder_t<setup_type, T>& tmp = *this;
+        aux::holder_t<setup_type, T>& tmp = *this;
         return tmp.get(key);
     }
 
@@ -571,7 +571,7 @@ public:
     template<typename T>
     void set(typename setup_type::key_type key, const T& v)
     {
-        holder_t<setup_type, T>& tmp = *this;
+        aux::holder_t<setup_type, T>& tmp = *this;
         return tmp.set(key, v);
     }
 
@@ -658,7 +658,8 @@ public:
     typename aux::constnessHandler_t<PROPS, T>::TYPE& get(const source_key_type& path)
     {
         source_key_type finalKey{};
-        return descend(path, finalKey).get<T>(conv_.convert(finalKey));
+        PROPS& p = descend(path, finalKey);
+        return p.get<T>(conv_.convert(finalKey));
     }
 
     /*! Combines the descend() and PROPS::set<T>. Updates value at path or throws keyNotFound
@@ -667,7 +668,8 @@ public:
     void set(const source_key_type& path, const T& v)
     {
         source_key_type finalKey{};
-        descend(path, finalKey).set<T>(conv_.convert(finalKey), v);
+        PROPS& p = descend(path, finalKey);
+        p.set<T>(conv_.convert(finalKey), v);
     }
 
     /*! Combines the descend() and PROPS::apply. Applies action on value by path or throws keyNotFound
@@ -676,7 +678,8 @@ public:
     void apply(ACTION& a, const source_key_type& path)
     {
         source_key_type finalKey{};
-        descend(path, finalKey).apply(a, conv_.convert(finalKey));
+        PROPS& p = descend(path, finalKey);
+        p.apply(a, conv_.convert(finalKey));
     }
 
 };

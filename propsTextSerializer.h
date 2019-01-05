@@ -157,7 +157,7 @@ template<typename S, typename T>
 jj::props::textSerializer_t<S>& operator<<(jj::props::textSerializer_t<S>& s, const std::list<T>& v)
 {
     typedef typename jj::props::textSerializer_t<S>::stream_type stream_type;
-    typedef stream_type::char_type char_type;
+    typedef typename stream_type::char_type char_type;
     stream_type& sr = s.stream();
     bool first = true;
     for (const T& x : v)
