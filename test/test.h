@@ -4,6 +4,7 @@
 #include "jj/string.h"
 #include "jj/stream.h"
 #include "jj/exception.h"
+#include "jj/macros.h"
 #include <map>
 #include <list>
 #include <memory>
