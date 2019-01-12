@@ -141,7 +141,7 @@ public:
     small_t offsetHours() const { return (offsec_ < 0 ? (offsec_ / 3600) * -1 : (offsec_ / 3600)); }
     /*! Returns the minutes part of offset(), always positive - check offsetDirection(). */
     small_t offsetMinutes() const { return (offsec_ < 0 ? ((offsec_ % 3600) / 60) * -1 : ((offsec_ % 3600) / 60)); }
-    
+
     /*! Returns the number of nanoseconds since epoch (=since 19700101T000000+0000). */
     ticks_t ticks() const { return ticks_; }
 };
@@ -237,31 +237,31 @@ moment_t uptime() { return moment_t(CLOCK::now()); }
 template<typename CH, typename TR>
 std::basic_ostream<CH, TR>& operator<<(std::basic_ostream<CH, TR>& s, const jj::time::stamp_t& v)
 {
-    s << std::setfill(jjT('0')) << std::setw(4) << v.year();
-    s << std::setfill(jjT('0')) << std::setw(2) << v.month();
-    s << std::setfill(jjT('0')) << std::setw(2) << v.day();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(4) << v.year();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.month();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.day();
     s << jj::str::literals_t<CH>::T;
-    s << std::setfill(jjT('0')) << std::setw(2) << v.hour();
-    s << std::setfill(jjT('0')) << std::setw(2) << v.minute();
-    s << std::setfill(jjT('0')) << std::setw(2) << v.second();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.hour();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.minute();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.second();
     s << jj::str::literals_t<CH>::DOT;
-    s << std::setfill(jjT('0')) << std::setw(2) << v.nanosecond();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.nanosecond();
     s << (v.offsetDirection() < 0 ? jj::str::literals_t<CH>::MINUS : jj::str::literals_t<CH>::PLUS);
-    s << std::setfill(jjT('0')) << std::setw(2) << v.offsetHours();
-    s << std::setfill(jjT('0')) << std::setw(2) << v.offsetMinutes();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.offsetHours();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.offsetMinutes();
     return s;
 }
 
 template<typename CH, typename TR>
 std::basic_ostream<CH, TR>& operator<<(std::basic_ostream<CH, TR>& s, const jj::time::moment_t& v)
 {
-    s << std::setfill(jjT('0')) << std::setw(2) << v.days();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.days();
     s << jj::str::literals_t<CH>::T;
-    s << std::setfill(jjT('0')) << std::setw(2) << v.hours();
-    s << std::setfill(jjT('0')) << std::setw(2) << v.minutes();
-    s << std::setfill(jjT('0')) << std::setw(2) << v.seconds();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.hours();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.minutes();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.seconds();
     s << jj::str::literals_t<CH>::DOT;
-    s << std::setfill(jjT('0')) << std::setw(2) << v.nanoseconds();
+    s << std::setfill(jj::str::literals_t<CH>::d0) << std::setw(2) << v.nanoseconds();
     return s;
 }
 
