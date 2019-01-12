@@ -7,6 +7,7 @@ WXDIR ?= $(abspath .bin/3rdparty/wxWidgets/${BUILD_OS}.${BUILD_ARCH}_static)
 else
 WXDIR ?= $(abspath .bin/3rdparty/wxWidgets/${BUILD_OS}.${BUILD_ARCH})
 endif
+WXDIR_VS ?= D:\test\wxWidgets
 
 ifeq (${WXSTATIC},1)
 WXDEFINE := -D_FILE_OFFSET_BITS=64 -D__WXGTK__
@@ -95,15 +96,15 @@ VSTYPE_jjgui := lib
 VSGUID_jjgui := 0F2CE363-F079-4F3D-A745-F1E6212EEFC7
 VSREFS_jjgui := jjbase
 VSINCDIRS_jjgui := ..\.. \
-	D:\test\wxWidgets\include \
-	m=debug,r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib\mswud \
-	m=release,r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib\mswu \
-	m=debug,r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll\mswud \
-	m=release,r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll\mswu \
-	m=debug,r=static,a=x86|D:\test\wxWidgets\lib\vc_lib\mswud \
-	m=release,r=static,a=x86|D:\test\wxWidgets\lib\vc_lib\mswu \
-	m=debug,r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll\mswud \
-	m=release,r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll\mswu
+	${WXDIR_VS}\include \
+	m=debug,r=static,a=x64|${WXDIR_VS}\lib\vc_x64_lib\mswud \
+	m=release,r=static,a=x64|${WXDIR_VS}\lib\vc_x64_lib\mswu \
+	m=debug,r=dll,a=x64|${WXDIR_VS}\lib\vc_x64_dll\mswud \
+	m=release,r=dll,a=x64|${WXDIR_VS}\lib\vc_x64_dll\mswu \
+	m=debug,r=static,a=x86|${WXDIR_VS}\lib\vc_lib\mswud \
+	m=release,r=static,a=x86|${WXDIR_VS}\lib\vc_lib\mswu \
+	m=debug,r=dll,a=x86|${WXDIR_VS}\lib\vc_dll\mswud \
+	m=release,r=dll,a=x86|${WXDIR_VS}\lib\vc_dll\mswu
 VSDEFINES_jjgui := \
 	a=x86|WIN32 \
 	m=debug|_DEBUG \
@@ -199,19 +200,19 @@ VSLIBS_TestApp := \
 	m=release|wxbase30u.lib;wxmsw30u_core.lib;wxmsw30u_adv.lib;wxpng.lib;wxzlib.lib \
 	comctl32.lib;Rpcrt4.lib
 VSLIBDIRS_TestApp := \
-	r=static,a=x64|D:\test\wxWidgets\lib\vc_x64_lib \
-	r=dll,a=x64|D:\test\wxWidgets\lib\vc_x64_dll \
-	r=static,a=x86|D:\test\wxWidgets\lib\vc_lib \
-	r=dll,a=x86|D:\test\wxWidgets\lib\vc_dll
+	r=static,a=x64|${WXDIR_VS}\lib\vc_x64_lib \
+	r=dll,a=x64|${WXDIR_VS}\lib\vc_x64_dll \
+	r=static,a=x86|${WXDIR_VS}\lib\vc_lib \
+	r=dll,a=x86|${WXDIR_VS}\lib\vc_dll
 $(eval $(call define_program,TestApp,uitests,clean_tests,jjbase jjgui))
 $(eval $(call define_generate_vsproj,TestApp))
 
 ########################################
 # test solutions
-VSSLN_GUID1_jjTest := 5D226A8D-49CF-4B24-89CB-FD8DBA82C1E5
-VSSLN_GUID2_jjTest := 8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942
-VSSLN_PROJS_jjTest := TestApp jjbase jjgui jjtest jjbase-tests jjtest-tests
-VSSLN_FOLDERS_jjTest := Tests
-VSSLN_FOLDERDEFS_NAME_jjTest_Tests := Tests
-VSSLN_FOLDERDEFS_GUID_jjTest_Tests := 586B014B-D960-4C75-AEB6-F1129F25082E
-$(eval $(call define_generate_vssln,jjTest,tests))
+VSSLN_GUID1_jj := 5D226A8D-49CF-4B24-89CB-FD8DBA82C1E5
+VSSLN_GUID2_jj := 8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942
+VSSLN_PROJS_jj := TestApp jjbase jjgui jjtest jjbase-tests jjtest-tests
+VSSLN_FOLDERS_jj := Tests
+VSSLN_FOLDERDEFS_NAME_jj_Tests := Tests
+VSSLN_FOLDERDEFS_GUID_jj_Tests := 586B014B-D960-4C75-AEB6-F1129F25082E
+$(eval $(call define_generate_vssln,jj,.))

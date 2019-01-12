@@ -2,17 +2,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjTestApp", "jjTestApp.vcxproj", "{84C36B8F-8BC6-47FF-9027-F8706D3FA72D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjTestApp", "tests\jjTestApp.vcxproj", "{84C36B8F-8BC6-47FF-9027-F8706D3FA72D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjBase", "..\jjBase.vcxproj", "{9D3B6614-DCEB-419C-A035-BE06BF4D7BEF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjBase", "jjBase.vcxproj", "{9D3B6614-DCEB-419C-A035-BE06BF4D7BEF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjGUI", "..\gui\jjGUI.vcxproj", "{0F2CE363-F079-4F3D-A745-F1E6212EEFC7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjGUI", "gui\jjGUI.vcxproj", "{0F2CE363-F079-4F3D-A745-F1E6212EEFC7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjtest", "..\test\jjtest.vcxproj", "{AFD50C25-67B4-4BA2-B68B-0AB431A322B5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjtest", "test\jjtest.vcxproj", "{AFD50C25-67B4-4BA2-B68B-0AB431A322B5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjbase.Tests", "jjbase.Tests.vcxproj", "{1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjbase.Tests", "tests\jjbase.Tests.vcxproj", "{1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjtest.Tests", "test\jjtest.Tests.vcxproj", "{07D954B6-05DD-4B85-9BFA-0473B5591768}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjtest.Tests", "tests\test\jjtest.Tests.vcxproj", "{07D954B6-05DD-4B85-9BFA-0473B5591768}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{586B014B-D960-4C75-AEB6-F1129F25082E}"
 EndProject
