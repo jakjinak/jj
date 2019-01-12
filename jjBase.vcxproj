@@ -319,6 +319,8 @@
     <ClInclude Include="functionBag.h" />
     <ClInclude Include="geometry.h" />
     <ClInclude Include="idGenerator.h" />
+    <ClInclude Include="log.h" />
+    <ClInclude Include="macros.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="props.h" />
     <ClInclude Include="propsTextDeserializer.h" />
@@ -327,10 +329,12 @@
     <ClInclude Include="stream.h" />
     <ClInclude Include="string.h" />
     <ClInclude Include="stringLiterals.h" />
+    <ClInclude Include="time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cmdLine.cpp" />
     <ClCompile Include="configurationStorage.cpp" />
+    <ClCompile Include="log.cpp" />
     <ClCompile Include="stream.cpp" />
     <ClCompile Include="string.cpp" />
     <ClCompile Include="stringLiterals.cpp" />

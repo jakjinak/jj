@@ -332,10 +332,12 @@
     <ClCompile Include="cmdLine_tests.cpp" />
     <ClCompile Include="configuration_tests.cpp" />
     <ClCompile Include="flagSet_tests.cpp" />
+    <ClCompile Include="log_tests.cpp" />
     <ClCompile Include="options_tests.cpp" />
     <ClCompile Include="props_tests.cpp" />
     <ClCompile Include="source_tests.cpp" />
     <ClCompile Include="string_tests.cpp" />
+    <ClCompile Include="time_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\test\jjtest.vcxproj">

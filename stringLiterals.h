@@ -26,8 +26,11 @@ struct literals_t<char>
     static const char LSB = '[';
     static const char RSB = ']';
     static const char UNDERSCORE = '_';
+    static const char PLUS = '+';
     static const char MINUS = '-';
+    static const char DOT = '.';
     static const char COMMA = ',';
+    static const char T = 'T';
     static const char f = 'f';
     static const char n = 'n';
     static const char t = 't';
@@ -54,8 +57,11 @@ struct literals_t<wchar_t>
     static const wchar_t LSB = L'[';
     static const wchar_t RSB = L']';
     static const wchar_t UNDERSCORE = L'_';
+    static const wchar_t PLUS = L'+';
     static const wchar_t MINUS = L'-';
+    static const wchar_t DOT = L'.';
     static const wchar_t COMMA = L',';
+    static const wchar_t T = L'T';
     static const wchar_t f = L'f';
     static const wchar_t n = L'n';
     static const wchar_t t = L't';
