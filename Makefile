@@ -69,7 +69,7 @@ infovariables: infoextravariables
 ########################################
 # jjbase
 SRCDIR_jjbase := $(realpath .)
-SOURCE_jjbase := string.cpp stringLiterals.cpp stream.cpp cmdLine.cpp configurationStorage.cpp
+SOURCE_jjbase := string.cpp stringLiterals.cpp stream.cpp log.cpp cmdLine.cpp configurationStorage.cpp
 CXXFLAGS_jjbase := ${COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjbase}/..)
 SO_CXXFLAGS_jjbase := ${SO_COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjbase}/..)
 VSNAME_jjbase := jjBase
@@ -137,7 +137,7 @@ $(eval $(call define_generate_vsproj,jjtest))
 ########################################
 # jjbase-tests
 SRCDIR_jjbase-tests := $(realpath tests)
-SOURCE_jjbase-tests := string_tests.cpp flagSet_tests.cpp options_tests.cpp cmdLine_tests.cpp cmdLineOptions_tests.cpp configuration_tests.cpp props_tests.cpp source_tests.cpp
+SOURCE_jjbase-tests := string_tests.cpp flagSet_tests.cpp options_tests.cpp cmdLine_tests.cpp cmdLineOptions_tests.cpp configuration_tests.cpp props_tests.cpp source_tests.cpp time_tests.cpp log_tests.cpp
 CXXFLAGS_jjbase-tests := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
 LIBS_jjbase-tests := ${RESULT_jjtest} ${SO_RESULT_jjbase}
 VSNAME_jjbase-tests := jjbase.Tests

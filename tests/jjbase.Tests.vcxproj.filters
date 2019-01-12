@@ -32,6 +32,9 @@
     <ClCompile Include="flagSet_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="log_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="options_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -45,9 +48,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="time_tests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="log_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
