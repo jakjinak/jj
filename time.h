@@ -4,7 +4,6 @@
 #include "jj/defines.h"
 #include "jj/stringLiterals.h"
 #include <chrono>
-#include <cstdint>
 #include <type_traits>
 #include <time.h>
 #include <iosfwd>
@@ -56,7 +55,7 @@ public:
         typedef typename D::rep rep_t;
         typedef typename D::period per_t;
         static_assert(per_t::den > 0, "Weird clock.");
-        static const std::intmax_t ns = 1000000000i64;
+        static const std::intmax_t ns = 1000000000l;
         typedef std::ratio<ns, per_t::den> ns_t;
         ticks_ = t.time_since_epoch().count() * per_t::num * ns_t::num / ns_t::den;
         rep_t ts = ticks_ / ns;
@@ -179,7 +178,7 @@ public:
         typedef typename D::rep rep_t;
         typedef typename D::period per_t;
         static_assert(per_t::den > 0, "Weird clock.");
-        static const std::intmax_t ns = 1000000000i64;
+        static const std::intmax_t ns = 1000000000l;
         typedef std::ratio<ns, per_t::den> ns_t;
         ticks_ = t.time_since_epoch().count() * per_t::num * ns_t::num / ns_t::den;
         rep_t ts = ticks_ / ns;
