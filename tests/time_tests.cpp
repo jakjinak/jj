@@ -181,7 +181,7 @@ JJ_TEST_CASE(moment_current_hr)
 JJ_TEST_CLASS_END(timeRealTests_t, stamp_current_systime, stamp_current_systime_utc, stamp_current_steady, stamp_current_hr, \
     moment_current_steady, moment_current_systime, moment_current_hr)
 
-template<long long NUM = 1l, long long DENOM = 1000000000l, bool STEADY = false>
+template<long long NUM = 1ll, long long DENOM = 1000000000ll, bool STEADY = false>
 struct fake_clock
 {
     using rep = long long;
@@ -215,7 +215,7 @@ JJ_TEST_CASE_VARIANTS(momentZero, (long long ticks), (0), (1), (123456789), (999
 
 JJ_TEST_CASE(moment_resolution_1000th)
 {
-    typedef fake_clock<1l, 1000l> clock;
+    typedef fake_clock<1ll, 1000ll> clock;
     clock::Ticks = 987;
     jj::time::moment_t t = jj::time::moment_t(clock::now());
     JJ_TEST(t.isValid());
@@ -229,7 +229,7 @@ JJ_TEST_CASE(moment_resolution_1000th)
 
 JJ_TEST_CASE(moment_resolution_10Mth)
 {
-    typedef fake_clock<1l, 10000000l> clock;
+    typedef fake_clock<1ll, 10000000ll> clock;
     clock::Ticks = 9876543;
     jj::time::moment_t t = jj::time::moment_t(clock::now());
     JJ_TEST(t.isValid());
@@ -243,11 +243,11 @@ JJ_TEST_CASE(moment_resolution_10Mth)
 
 JJ_TEST_CASE(moment_resolution_100sec)
 {
-    typedef fake_clock<100l, 1l> clock;
+    typedef fake_clock<100ll, 1ll> clock;
     clock::Ticks = 1;
     jj::time::moment_t t = jj::time::moment_t(clock::now());
     JJ_TEST(t.isValid());
-    JJ_TEST(t.ticks() == 100000000000l, jjOOO(t.ticks(),==,100000000000l));
+    JJ_TEST(t.ticks() == 100000000000ll, jjOOO(t.ticks(),==,100000000000ll));
     JJ_TEST(t.days() == 0, jjOOO(t.days(),==,0));
     JJ_TEST(t.hours() == 0, jjOOO(t.hours(),==,0));
     JJ_TEST(t.minutes() == 1, jjOOO(t.minutes(),==,1));
@@ -272,7 +272,7 @@ JJ_TEST_CASE_VARIANTS(stampZero, (long long ticks), (0), (1), (123456789), (9999
 
 JJ_TEST_CASE(stamp_resolution_1000th)
 {
-    typedef fake_clock<1l, 1000l> clock;
+    typedef fake_clock<1ll, 1000ll> clock;
     clock::Ticks = 987;
     jj::time::stamp_t t = jj::time::stamp_t(clock::now(), jj::time::stamp_t::UTC);
     JJ_TEST(t.isValid());
@@ -288,7 +288,7 @@ JJ_TEST_CASE(stamp_resolution_1000th)
 
 JJ_TEST_CASE(stamp_resolution_10Mth)
 {
-    typedef fake_clock<1l, 10000000l> clock;
+    typedef fake_clock<1ll, 10000000ll> clock;
     clock::Ticks = 9876543;
     jj::time::stamp_t t = jj::time::stamp_t(clock::now(), jj::time::stamp_t::UTC);
     JJ_TEST(t.isValid());
@@ -304,11 +304,11 @@ JJ_TEST_CASE(stamp_resolution_10Mth)
 
 JJ_TEST_CASE(stamp_resolution_100sec)
 {
-    typedef fake_clock<100l, 1l> clock;
+    typedef fake_clock<100ll, 1ll> clock;
     clock::Ticks = 1;
     jj::time::stamp_t t = jj::time::stamp_t(clock::now(), jj::time::stamp_t::UTC);
     JJ_TEST(t.isValid());
-    JJ_TEST(t.ticks() == 100000000000l, jjOOO(t.ticks(),==,100000000000l));
+    JJ_TEST(t.ticks() == 100000000000ll, jjOOO(t.ticks(),==,100000000000ll));
     JJ_TEST(t.year() == 1970, jjOOO(t.year(),==,1970));
     JJ_TEST(t.month() == 1, jjOOO(t.month(),==,1));
     JJ_TEST(t.day() == 1, jjOOO(t.day(),==,1));
@@ -319,21 +319,21 @@ JJ_TEST_CASE(stamp_resolution_100sec)
 }
 
 JJ_TEST_CASE_VARIANTS(stamp_dates, (long long ticks, int Y, int M, int D, int h, int m, int s, int ns), \
-    (0l, 1970, 1, 1, 0, 0, 0, 0), \
-    (86399l, 1970, 1, 1, 23, 59, 59, 0), \
-    (946684799l, 1999, 12, 31, 23, 59, 59, 0), \
-    (946684800l, 2000, 1, 1, 0, 0, 0, 0), \
-    (2222601663l, 2040, 6, 6, 13, 21, 3, 0), \
-    (1077991563l, 2004, 2, 28, 18, 6, 3, 0), \
-    (1078077963l, 2004, 2, 29, 18, 6, 3, 0), \
-    (4107553260l, 2100, 3, 1, 3, 1, 0, 0), \
-    (4139078463l, 2101, 3, 1, 0, 1, 3, 0))
+    (0ll, 1970, 1, 1, 0, 0, 0, 0), \
+    (86399ll, 1970, 1, 1, 23, 59, 59, 0), \
+    (946684799ll, 1999, 12, 31, 23, 59, 59, 0), \
+    (946684800ll, 2000, 1, 1, 0, 0, 0, 0), \
+    (2222601663ll, 2040, 6, 6, 13, 21, 3, 0), \
+    (1077991563ll, 2004, 2, 28, 18, 6, 3, 0), \
+    (1078077963ll, 2004, 2, 29, 18, 6, 3, 0), \
+    (4107553260ll, 2100, 3, 1, 3, 1, 0, 0), \
+    (4139078463ll, 2101, 3, 1, 0, 1, 3, 0))
 {
-    typedef fake_clock<1l, 1l> clock;
+    typedef fake_clock<1ll, 1ll> clock;
     clock::Ticks = ticks;
     jj::time::stamp_t t = jj::time::stamp_t(clock::now(), jj::time::stamp_t::UTC);
     JJ_TEST(t.isValid());
-    JJ_TEST(t.ticks() == ticks * 1000000000l, jjOOO(t.ticks(),==,ticks*1000000000l));
+    JJ_TEST(t.ticks() == ticks * 1000000000ll, jjOOO(t.ticks(),==,ticks*1000000000ll));
     JJ_TEST(t.year() == Y, jjOOO(t.year(),==,Y));
     JJ_TEST(t.month() == M, jjOOO(t.month(),==,M));
     JJ_TEST(t.day() == D, jjOOO(t.day(),==,D));
@@ -344,17 +344,17 @@ JJ_TEST_CASE_VARIANTS(stamp_dates, (long long ticks, int Y, int M, int D, int h,
 }
 
 JJ_TEST_CASE_VARIANTS(stamp_dates_negative, (long long ticks, int Y, int M, int D, int h, int m, int s, int ns), \
-    (-2180177267l, 1900, 11, 30, 11, 12, 13, 0), \
-    (-2208988801l, 1899, 12, 31, 23, 59, 59, 0))
+    (-2180177267ll, 1900, 11, 30, 11, 12, 13, 0), \
+    (-2208988801ll, 1899, 12, 31, 23, 59, 59, 0))
 {
-    typedef fake_clock<1l, 1l> clock;
+    typedef fake_clock<1ll, 1ll> clock;
     clock::Ticks = ticks;
     jj::time::stamp_t t = jj::time::stamp_t(clock::now(), jj::time::stamp_t::UTC);
 #ifdef JJ_OS_WINDOWS
     JJ_TEST(!t.isValid());
 #else
     JJ_TEST(t.isValid());
-    JJ_TEST(t.ticks() == ticks * 1000000000l, jjOOO(t.ticks(),==,ticks*1000000000l));
+    JJ_TEST(t.ticks() == ticks * 1000000000ll, jjOOO(t.ticks(),==,ticks*1000000000ll));
     JJ_TEST(t.year() == Y, jjOOO(t.year(),==,Y));
     JJ_TEST(t.month() == M, jjOOO(t.month(),==,M));
     JJ_TEST(t.day() == D, jjOOO(t.day(),==,D));
