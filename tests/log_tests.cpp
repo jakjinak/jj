@@ -231,4 +231,67 @@ JJ_TEST_CASE(recursion)
     jj::log::logger_t::instance().replaceTargets(olog);
 }
 
-JJ_TEST_CLASS_END(logTests_t, fields, levels, message1, message2, message3, recursion)
+JJ_TEST_CASE(multiple_targets)
+{
+    std::shared_ptr<testTargetCnt> tgt1, tgt2, tgt3;
+    std::shared_ptr<jj::log::logTarget_base_t> olog = jj::log::logger_t::instance().replaceTargets(tgt1 = std::make_shared<testTargetCnt>());
+    jj::log::logger_t::instance().registerTarget(tgt2 = std::make_shared<testTargetCnt>());
+    jj::log::logger_t::instance().registerTarget(tgt3 = std::make_shared<testTargetCnt>());
+
+    jjLI(jjT("X Y Z"));
+    jjLE(jjT("E E"));
+    for (auto t : { tgt1, tgt2, tgt3 })
+    {
+        jj::string_t line;
+        size_t lcnt = 0;
+        while (std::getline(t->s, line))
+        {
+            ++lcnt;
+            if (lcnt == 1)
+            {
+                JJ_TEST(line.find(jjT("X Y Z")) != jj::string_t::npos);
+                JJ_TEST(line.find(jj::log::logger_t::NAME_INFO) != jj::string_t::npos);
+            }
+            else if (lcnt == 2)
+            {
+                JJ_TEST(line.find(jjT("E E")) != jj::string_t::npos);
+                JJ_TEST(line.find(jj::log::logger_t::NAME_ERROR) != jj::string_t::npos);
+            }
+        }
+        JJ_TEST(lcnt == 2);
+    }
+    jj::log::logger_t::instance().replaceTargets(olog);
+}
+
+JJ_TEST_CASE(targets_switch)
+{
+    std::shared_ptr<testTargetCb> tgt1, tgt2, tgt3, tgt4;
+    size_t c1 = 0, c2 = 0, c3 = 0, c4 = 0;
+    std::shared_ptr<jj::log::logTarget_base_t> olog = jj::log::logger_t::instance().replaceTargets(tgt1 = std::make_shared<testTargetCb>([&](const jj::log::message_t& log) { ++c1; }));
+    jjLI(1);
+    JJ_TEST(c1 == 1);
+    JJ_TEST(c2 == 0);
+    JJ_TEST(c3 == 0);
+    JJ_TEST(c4 == 0);
+    jj::log::logger_t::instance().replaceTargets(tgt2 = std::make_shared<testTargetCb>([&](const jj::log::message_t& log) { ++c2; }));
+    jjLI(2);
+    JJ_TEST(c1 == 1);
+    JJ_TEST(c2 == 1);
+    JJ_TEST(c3 == 0);
+    JJ_TEST(c4 == 0);
+    jj::log::logger_t::instance().registerTarget(tgt3 = std::make_shared<testTargetCb>([&](const jj::log::message_t& log) { ++c3; }));
+    jjLI(3);
+    JJ_TEST(c1 == 1);
+    JJ_TEST(c2 == 2);
+    JJ_TEST(c3 == 1);
+    JJ_TEST(c4 == 0);
+    jj::log::logger_t::instance().replaceTargets(tgt4 = std::make_shared<testTargetCb>([&](const jj::log::message_t& log) { ++c4; }));
+    jjLI(4);
+    JJ_TEST(c1 == 1);
+    JJ_TEST(c2 == 2);
+    JJ_TEST(c3 == 1);
+    JJ_TEST(c4 == 1);
+    jj::log::logger_t::instance().replaceTargets(olog);
+}
+
+JJ_TEST_CLASS_END(logTests_t, fields, levels, message1, message2, message3, recursion, multiple_targets, targets_switch)
