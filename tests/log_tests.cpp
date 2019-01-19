@@ -334,7 +334,7 @@ void method(const T& v)
 
 namespace logC
 {
-JJ_DEFINE_LOG_COMPONENT3(compC,"COMPOT",JJ_LOGLEVEL_WARNING)
+JJ_DEFINE_LOG_COMPONENT(compC,"COMPOT",JJ_LOGLEVEL_WARNING)
 template<typename T>
 void method(const T& v)
 {

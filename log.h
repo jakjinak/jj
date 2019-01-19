@@ -5,6 +5,7 @@
 #include "jj/string.h"
 #include "jj/stream.h"
 #include "jj/singleton.h"
+#include "jj/macros.h"
 #include <sstream>
 #include <climits>
 #include <list>
@@ -174,8 +175,6 @@ public:
 } // namespace log
 } // namespace jj
 
-// TODO JJ_DECLARE_LOG_COMPONENT and JJ_DEFINE_LOG_COMPONENT must be variadic
-
 /*! Defines the name under which the "local" component is to be found.
 Note that the main component is in the root namespace. */
 #define JJ_LOG_COMPONENT jjTheLogComponent
@@ -192,7 +191,7 @@ extern jj::log::component_t& jjTheLogComponent;
 a singleton type representing the actual component, defaults to id), dname (a display name that
 can be used by the log target to display info about component) and initll (is the initial log limit,
 which defaults to JJ_LOGLEVEL_INFO).*/
-#define JJ_DECLARE_LOG_COMPONENT(id) JJ_DECLARE_LOG_COMPONENT1(id)
+#define JJ_DECLARE_LOG_COMPONENT(...) JJ_VARG_N(JJ_DECLARE_LOG_COMPONENT,__VA_ARGS__)
 
 /*! Use this to reference a component declared by JJ_DECLARE_LOG_COMPONENT.
 Note: If you are referencing in global namespace, it might be necessary to redefine the
@@ -210,7 +209,7 @@ JJ_LOG_COMPONENT to a different variable name. */
 #define JJ_DEFINE_LOG_COMPONENT1(id) JJ_DEFINE_LOG_COMPONENT2(id,#id)
 /*! Use this to both declare a component and define it as a local name - combines
 the JJ_DECLARE_LOG_COMPONENT and JJ_REFERENCE_LOG_COMPONENT macros. */
-#define JJ_DEFINE_LOG_COMPONENT(id) JJ_DEFINE_LOG_COMPONENT1(id)
+#define JJ_DEFINE_LOG_COMPONENT(...) JJ_VARG_N(JJ_DEFINE_LOG_COMPONENT,__VA_ARGS__)
 
 namespace jj
 {
