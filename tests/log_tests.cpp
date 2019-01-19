@@ -295,3 +295,171 @@ JJ_TEST_CASE(targets_switch)
 }
 
 JJ_TEST_CLASS_END(logTests_t, fields, levels, message1, message2, message3, recursion, multiple_targets, targets_switch)
+
+template<typename T>
+void logRoot(const T& v)
+{
+    jjLE(v);
+    jjLW(v);
+    jjLI(v);
+    jjLV(v);
+}
+
+namespace logA
+{
+JJ_DECLARE_LOG_COMPONENT(compA);
+JJ_REFERENCE_LOG_COMPONENT(compA)
+template<typename T>
+void method(const T& v)
+{
+    jjLE(v);
+    jjLW(v);
+    jjLI(v);
+    jjLV(v);
+}
+}
+
+namespace logB
+{
+JJ_DEFINE_LOG_COMPONENT(compB)
+template<typename T>
+void method(const T& v)
+{
+    jjLE(v);
+    jjLW(v);
+    jjLI(v);
+    jjLV(v);
+}
+}
+
+namespace logC
+{
+JJ_DEFINE_LOG_COMPONENT3(compC,"COMPOT",JJ_LOGLEVEL_WARNING)
+template<typename T>
+void method(const T& v)
+{
+    jjLE(v);
+    jjLW(v);
+    jjLI(v);
+    jjLV(v);
+}
+}
+
+namespace logA
+{
+template<typename T>
+void method2(const T& v)
+{
+    jjLE(v);
+    jjLW(v);
+    jjLI(v);
+    jjLV(v);
+}
+}
+
+void resetCounts(size_t& v1, size_t& v2, size_t& v3, size_t& v4)
+{
+    v1 = 0;
+    v2 = 0;
+    v3 = 0;
+    v4 = 0;
+}
+
+JJ_TEST_CLASS(logComponentTests_t)
+
+JJ_TEST_CASE(components_and_levels)
+{
+    jj::string_t cmain(jjT("<main>")), cA(jjT("compA")), cB(jjT("compB")), cC(jjT("COMPOT"));
+    jj::log::level_t lmain(JJ_LOGLEVEL_INFO), lA(JJ_LOGLEVEL_INFO), lB(JJ_LOGLEVEL_INFO), lC(JJ_LOGLEVEL_INFO);
+    size_t Cmain, CA, CB, CC;
+    auto fn = [&](const jj::log::message_t& log) {
+        if (log.Message == jjT("333"))
+        {
+            JJ_TEST(log.Component.name() == cmain);
+            JJ_TEST(log.Level >= lmain);
+            ++Cmain;
+        }
+        else if (log.Message == jjT("444"))
+        {
+            JJ_TEST(log.Component.name() == cA);
+            JJ_TEST(log.Level >= lA);
+            ++CA;
+        }
+        else if (log.Message == jjT("555"))
+        {
+            JJ_TEST(log.Component.name() == cB);
+            JJ_TEST(log.Level >= lB);
+            ++CB;
+        }
+        else if (log.Message == jjT("666"))
+        {
+            JJ_TEST(log.Component.name() == cC);
+            JJ_TEST(log.Level >= lC);
+            ++CC;
+        }
+        else if (log.Message == jjT("777"))
+        {
+            JJ_TEST(log.Component.name() == cmain);
+            JJ_TEST(log.Level >= lmain);
+            ++Cmain;
+        }
+        else if (log.Message == jjT("888"))
+        {
+            JJ_TEST(log.Component.name() == cA);
+            JJ_TEST(log.Level >= lA);
+            ++CA;
+        }
+    };
+    std::shared_ptr<jj::log::logTarget_base_t> olog = jj::log::logger_t::instance().replaceTargets(std::make_shared<testTargetCb>(fn));
+    jj::log::logger_t::instance().setLevel(JJ_LOGLEVEL_INFO);
+
+    resetCounts(Cmain, CA, CB, CC);
+    logRoot(333);
+    JJ_TEST(Cmain == 3);
+    JJ_TEST(CA == 0);
+    JJ_TEST(CB == 0);
+    JJ_TEST(CC == 0);
+
+    resetCounts(Cmain, CA, CB, CC);
+    logA::method(444);
+    JJ_TEST(Cmain == 0);
+    JJ_TEST(CA == 3);
+    JJ_TEST(CB == 0);
+    JJ_TEST(CC == 0);
+
+    resetCounts(Cmain, CA, CB, CC);
+    logB::method(555);
+    JJ_TEST(Cmain == 0);
+    JJ_TEST(CA == 0);
+    JJ_TEST(CB == 3);
+    JJ_TEST(CC == 0);
+
+    resetCounts(Cmain, CA, CB, CC);
+    logC::method(666);
+    JJ_TEST(Cmain == 0);
+    JJ_TEST(CA == 0);
+    JJ_TEST(CB == 0);
+    JJ_TEST(CC == 2);
+
+    resetCounts(Cmain, CA, CB, CC);
+    jjLE(777);
+    jjLW(777);
+    jjLI(777);
+    jjLV(777);
+    JJ_TEST(Cmain == 3);
+    JJ_TEST(CA == 0);
+    JJ_TEST(CB == 0);
+    JJ_TEST(CC == 0);
+
+    resetCounts(Cmain, CA, CB, CC);
+    logA::method2(888);
+    JJ_TEST(Cmain == 0);
+    JJ_TEST(CA == 3);
+    JJ_TEST(CB == 0);
+    JJ_TEST(CC == 0);
+    jj::log::logger_t::instance().replaceTargets(olog);
+}
+
+// TODO add dedicated (multifile component tests)
+
+JJ_TEST_CLASS_END(logComponentTests_t, components_and_levels)

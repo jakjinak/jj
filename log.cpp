@@ -3,6 +3,9 @@
 #include "jj/time.h"
 #include <iostream>
 
+JJ_DECLARE_LOG_COMPONENT2(jjMainLog, "<main>");
+jj::log::component_t& jjTheLogComponent = jjMainLogComponent_t::instance();
+
 namespace jj
 {
 namespace log

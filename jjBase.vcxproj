@@ -325,6 +325,7 @@
     <ClInclude Include="props.h" />
     <ClInclude Include="propsTextDeserializer.h" />
     <ClInclude Include="propsTextSerializer.h" />
+    <ClInclude Include="singleton.h" />
     <ClInclude Include="source.h" />
     <ClInclude Include="stream.h" />
     <ClInclude Include="string.h" />

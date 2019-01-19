@@ -4,6 +4,7 @@
 #include "jj/defines.h"
 #include "jj/string.h"
 #include "jj/stream.h"
+#include "jj/singleton.h"
 #include <sstream>
 #include <climits>
 #include <list>
@@ -40,8 +41,23 @@ The hard limit defined by JJ_LOGLIMIT_HARD macro defines the log level
 under which the logging statements are removed from code, if it's set to JJ_LOGLEVEL_OFF then all
 the logging calls and classes are removed at compile time. Redefine the JJ_LOGLIMIT_HARD to adjust.
 The soft limit defines the behavior at runtime, it's controlled by the jj::log::logger_t::setLevel()
-method. It sets the log level under which the logger calls are discarded at runtime. Retrive the
+method. It sets the log level under which the logger calls are discarded at runtime. Retrieve the
 current value by jj::log::logger_t::enabled() method.
+Note that logger_t methods mentioned above only operate on the main log component. It is possible
+to define custom component and adjust their "soft" log limits individually.
+
+The logging components
+The usage of components is not mandatory and by default all logging statements use the main component
+which is defined in root namespace. The component is available under a variable which is defined
+in the JJ_LOG_COMPONENT macro, in special situations you might need to redefine it, see below.
+To define a custom component you can use three macros - JJ_DECLARE_LOG_COMPONENT is used to declare the
+singleton used with a component (this would be used in a header if same component needs to be shared
+among multiple source files), JJ_REFERENCE_LOG_COMPONENT which creates a reference named by JJ_LOG_COMPONENT
+in the "local" scope (in an anonymous namespace) and JJ_DEFINE_LOG_COMPONENT which combines the other
+two macros.
+Components are meant to be defined/referenced within a namespace, should you need to make a custom
+component in the root namespace you need to redefine the JJ_LOG_COMPONENT to a different variable name
+otherwise you would receive "ambiguous" compiler errors.
 
 The logging statements
 Macros jjLF, jjLE, jjLA, jjLW, jjLI, jjLV, jjLD are pre-defined, all taking a message as parameter.
@@ -117,14 +133,92 @@ namespace log
 // forward declaration
 class logger_t;
 
-/*! This method has to be defined in a program that uses logging.
-Usually this will set the log targets and enabled log level. */
-extern void initialize(logger_t&);
-
+// common log types
 typedef unsigned int level_t; //!< the type used for log level
 typedef const jj::char_t* levelName_t; //!< the type used for log level name
 typedef std::chrono::system_clock clock_t; //!< the clock type used for "now"
 typedef typename clock_t::time_point timestamp_t; //!< a "now" type
+
+/*! Provides a way how to group logs within a binary.
+Also allows to set "soft" log level limit per component.
+If components are not used the logger contains a default
+central component and its limit is used. */
+class component_t
+{
+    const jj::char_t* id_; //!< the "id" of the component
+    const jj::char_t* name_; //!< the "user friendly name" of the component
+    level_t level_; //!< log level for the particular component
+public:
+    /*! Ctor */
+    component_t(const jj::char_t* id, const jj::char_t* displayName) : id_(id), name_(displayName), level_(0) { setLevel(JJ_LOGLEVEL_INFO); }
+
+    /*! Returns the id of the component. */
+    const jj::char_t* id() const { return id_; }
+    /*! Returns the user-friendly name of the component. */
+    const jj::char_t* name() const { return name_; }
+
+    /*! Returns whether a given log level is currently enabled (above the "soft" limit). */
+    bool enabled(level_t level) const { return level >= level_; }
+    /*! Returns the currently set "soft" level limit for log messages in this component. */
+    level_t limit() const { return level_; }
+    /*! Changes the currently set "soft" log level limit.
+    Note that it will be adjusted if it would go below the "hard" limit. */
+    void setLevel(level_t level)
+    {
+        if (level < JJ_LOGLIMIT_HARD)
+            level_ = JJ_LOGLIMIT_HARD;
+        else
+            level_ = level;
+    }
+};
+} // namespace log
+} // namespace jj
+
+// TODO JJ_DECLARE_LOG_COMPONENT and JJ_DEFINE_LOG_COMPONENT must be variadic
+
+/*! Defines the name under which the "local" component is to be found.
+Note that the main component is in the root namespace. */
+#define JJ_LOG_COMPONENT jjTheLogComponent
+extern jj::log::component_t& jjTheLogComponent;
+
+#define JJ_DECLARE_LOG_COMPONENT3(id,dname,initll) \
+    struct id##Component_t : public jj::singleton_t<id##Component_t>, public jj::log::component_t \
+    { \
+        id##Component_t() : jj::singleton_t<id##Component_t>(), jj::log::component_t(jjT(#id), jjT(dname)) { setLevel(initll); } \
+    }
+#define JJ_DECLARE_LOG_COMPONENT2(id,dname) JJ_DECLARE_LOG_COMPONENT3(id,dname,JJ_LOGLEVEL_INFO)
+#define JJ_DECLARE_LOG_COMPONENT1(id) JJ_DECLARE_LOG_COMPONENT2(id,#id)
+/*! Use this to declare a custom component. This takes up to three parameters - id (used to define
+a singleton type representing the actual component, defaults to id), dname (a display name that
+can be used by the log target to display info about component) and initll (is the initial log limit,
+which defaults to JJ_LOGLEVEL_INFO).*/
+#define JJ_DECLARE_LOG_COMPONENT(id) JJ_DECLARE_LOG_COMPONENT1(id)
+
+/*! Use this to reference a component declared by JJ_DECLARE_LOG_COMPONENT.
+Note: If you are referencing in global namespace, it might be necessary to redefine the
+JJ_LOG_COMPONENT to a different variable name. */
+#define JJ_REFERENCE_LOG_COMPONENT(id) \
+    namespace /*<anonymous>*/ \
+    { \
+        jj::log::component_t& JJ_LOG_COMPONENT = id##Component_t::instance(); \
+    }
+
+#define JJ_DEFINE_LOG_COMPONENT3(id,dname,initll) \
+    JJ_DECLARE_LOG_COMPONENT3(id,dname,initll); \
+    JJ_REFERENCE_LOG_COMPONENT(id)
+#define JJ_DEFINE_LOG_COMPONENT2(id,dname) JJ_DEFINE_LOG_COMPONENT3(id,dname,JJ_LOGLEVEL_INFO)
+#define JJ_DEFINE_LOG_COMPONENT1(id) JJ_DEFINE_LOG_COMPONENT2(id,#id)
+/*! Use this to both declare a component and define it as a local name - combines
+the JJ_DECLARE_LOG_COMPONENT and JJ_REFERENCE_LOG_COMPONENT macros. */
+#define JJ_DEFINE_LOG_COMPONENT(id) JJ_DEFINE_LOG_COMPONENT1(id)
+
+namespace jj
+{
+namespace log
+{
+/*! This method has to be defined in a program that uses logging.
+Usually this will set the log targets and enabled log level. */
+extern void initialize(logger_t&);
 
 /*! Any log statement creates an object of this type. */
 struct message_t
@@ -136,10 +230,11 @@ struct message_t
     const char* Function; //!< the function in which the log occurred
     const char* File; //!< the file name of the source file in which the log occurred
     int Line; //!< the source file line on which the log occurred
+    component_t& Component;
 
     /*! Ctor */
-    message_t(timestamp_t time, level_t level, levelName_t levelName, jj::string_t msg, const char* func, const char* file, int line)
-        : Time(time), Level(level), LevelName(levelName), Message(msg), Function(func), File(file), Line(line)
+    message_t(timestamp_t time, level_t level, levelName_t levelName, jj::string_t msg, const char* func, const char* file, int line, component_t& component)
+        : Time(time), Level(level), LevelName(levelName), Message(msg), Function(func), File(file), Line(line), Component(component)
     {
     }
 };
@@ -203,27 +298,22 @@ public:
     static const levelName_t NAME_DEBUG;
 
 private:
-    level_t main_; //!< currently set "soft" log level
-
     /*! Ctor - invokes the initializer method, see JJ_LOGGER_INITIALIZER. */
-    logger_t() : main_(0) { setLevel(JJ_LOGLEVEL_INFO); initialize(*this); }
+    logger_t() { initialize(*this); }
 
 public:
-    /*! Returns whether a given log level is currently enabled (above the "soft" limit). */
-    bool enabled(level_t level) const { return level >= main_; }
-    /*! Changes the currently set "soft" log level limit.
-    Note that it will be adjusted if it would go below the "hard" limit. */
-    void setLevel(level_t level)
-    {
-        if (level < JJ_LOGLIMIT_HARD)
-            main_ = JJ_LOGLIMIT_HARD;
-        else
-            main_ = level;
-    }
     /*! Performs a log ignoring the log level checks. Do not use this directly, use the log statement
     macros instead. You might use this directly in a special case, like printing the program version,
     or environment info that might be required at the beginning of the log regardless of soft limit. */
     void log(const message_t& msg) { for (auto& t : tgts_) { if (t) t->log(msg); } }
+
+    /*! Returns whether a given log level is currently enabled (above the "soft" limit) in the main component. */
+    bool enabled(level_t level) const { return ::jjTheLogComponent.enabled(level); }
+    /*! Returns the currently set "soft" level limit for log messages in the main component. */
+    level_t limit() const { return ::jjTheLogComponent.limit(); }
+    /*! Changes the currently set "soft" log level limit of the main component.
+    Note that it will be adjusted if it would go below the "hard" limit. */
+    void setLevel(level_t level) { ::jjTheLogComponent.setLevel(level); }
 
     /*! Adds an addtional log target to the current ones.
     Note that the targets will be called in the order as they have been registered. */
@@ -247,13 +337,14 @@ check, converts from streamed values to a string and constructs a message_t of i
 Use this one should you want to define custom log levels and their statement macros.
 Evaluates to true or false based on whether the log level was enabled or not. */
 #define JJ__LOGGER(level,levelname,msg) \
-    (jj::log::logger_t::instance().enabled(level) ? \
+    (JJ_LOG_COMPONENT.enabled(level) ? \
         jj::log::logger_t::instance().log(jj::log::message_t( \
             jj::log::clock_t::now(), \
             level, levelname, \
             ((JJ_LOG_STREAM_PROVIDER << msg).str()), \
             JJ_FUNC, \
-            __FILE__, __LINE__\
+            __FILE__, __LINE__, \
+            JJ_LOG_COMPONENT \
         )), true : \
         false)
 
