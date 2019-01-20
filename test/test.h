@@ -484,8 +484,8 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 
 
 #define JJ___TEST_CLASS_CALL(name, no, args) \
-    static void jjM2(JJ_TEST_CLASS_VARIANT_,no)(jj::test::statistics_t& stats, const jj::test::AUX::filter_refs_t& filters){ name inst args; JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().run(inst, stats, filters); } \
-    static int jjM2(JJ_TEST_CLASS_REGISTRAR_,no)() { jj::test::db_t::instance().register_testclass(&name::jjM2(JJ_TEST_CLASS_VARIANT_,no), jjT(#name), jjT(#args)); return no; }
+    static void jjM(JJ_TEST_CLASS_VARIANT_,no)(jj::test::statistics_t& stats, const jj::test::AUX::filter_refs_t& filters){ name inst args; JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().run(inst, stats, filters); } \
+    static int jjM(JJ_TEST_CLASS_REGISTRAR_,no)() { jj::test::db_t::instance().register_testclass(&name::jjM(JJ_TEST_CLASS_VARIANT_,no), jjT(#name), jjT(#args)); return no; }
 #define JJ___TEST_CLASS_CALLS1(name, p1) JJ___TEST_CLASS_CALL(name, 1, p1)
 #define JJ___TEST_CLASS_CALLS2(name, p1, p2) JJ___TEST_CLASS_CALL(name, 1, p1) JJ___TEST_CLASS_CALL(name, 2, p2)
 #define JJ___TEST_CLASS_CALLS3(name, p1, p2, p3) JJ___TEST_CLASS_CALL(name, 1, p1) JJ___TEST_CLASS_CALL(name, 2, p2) JJ___TEST_CLASS_CALL(name, 3, p3)
@@ -513,7 +513,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 #define JJ___TEST_CLASS_CALLS25(name, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25) JJ___TEST_CLASS_CALL(name, 1, p1) JJ___TEST_CLASS_CALL(name, 2, p2) JJ___TEST_CLASS_CALL(name, 3, p3) JJ___TEST_CLASS_CALL(name, 4, p4) JJ___TEST_CLASS_CALL(name, 5, p5) JJ___TEST_CLASS_CALL(name, 6, p6) JJ___TEST_CLASS_CALL(name, 7, p7) JJ___TEST_CLASS_CALL(name, 8, p8) JJ___TEST_CLASS_CALL(name, 9, p9) JJ___TEST_CLASS_CALL(name, 10, p10) JJ___TEST_CLASS_CALL(name, 11, p11) JJ___TEST_CLASS_CALL(name, 12, p12) JJ___TEST_CLASS_CALL(name, 13, p13) JJ___TEST_CLASS_CALL(name, 14, p14) JJ___TEST_CLASS_CALL(name, 15, p15) JJ___TEST_CLASS_CALL(name, 16, p16) JJ___TEST_CLASS_CALL(name, 17, p17) JJ___TEST_CLASS_CALL(name, 18, p18) JJ___TEST_CLASS_CALL(name, 19, p19) JJ___TEST_CLASS_CALL(name, 20, p20) JJ___TEST_CLASS_CALL(name, 21, p21) JJ___TEST_CLASS_CALL(name, 22, p22) JJ___TEST_CLASS_CALL(name, 23, p23) JJ___TEST_CLASS_CALL(name, 24, p24) JJ___TEST_CLASS_CALL(name, 25, p25)
 #define JJ___TEST_CLASS_CALLS(name, ...) JJ_VARG_N1(JJ___TEST_CLASS_CALLS, name, __VA_ARGS__)
 
-#define JJ___TEST_CLASS_REG(no) jjM2(JJ_TEST_CLASS_REGISTRAR_,no)();
+#define JJ___TEST_CLASS_REG(no) jjM(JJ_TEST_CLASS_REGISTRAR_,no)();
 #define JJ___TEST_CLASS_REGS1(dummy, p1) JJ___TEST_CLASS_REG(1)
 #define JJ___TEST_CLASS_REGS2(dummy, p1, p2) JJ___TEST_CLASS_REG(1) JJ___TEST_CLASS_REG(2)
 #define JJ___TEST_CLASS_REGS3(dummy, p1, p2, p3) JJ___TEST_CLASS_REG(1) JJ___TEST_CLASS_REG(2) JJ___TEST_CLASS_REG(3)
@@ -542,7 +542,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 #define JJ___TEST_CLASS_REGS(dummy, ...) JJ_VARG_N1(JJ___TEST_CLASS_REGS, dummy, __VA_ARGS__)
 // note: the dummy parameter above is not required except for MSVC which cannot have empty macro argument list ie, MACRO()
 
-#define JJ___TEST_CASE_DEF(classname, testname) classname::jjM2(registrar_,testname)();
+#define JJ___TEST_CASE_DEF(classname, testname) classname::jjM(registrar_,testname)();
 #define JJ___TEST_CASE_DEFS1(classname, p1) JJ___TEST_CASE_DEF(classname, p1)
 #define JJ___TEST_CASE_DEFS2(classname, p1, p2) JJ___TEST_CASE_DEF(classname, p1) JJ___TEST_CASE_DEF(classname, p2)
 #define JJ___TEST_CASE_DEFS3(classname, p1, p2, p3) JJ___TEST_CASE_DEF(classname, p1) JJ___TEST_CASE_DEF(classname, p2) JJ___TEST_CASE_DEF(classname, p3)
@@ -571,7 +571,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 #define JJ___TEST_CASE_DEFS(classname, ...) JJ_VARG_N1(JJ___TEST_CASE_DEFS, classname, __VA_ARGS__)
 
 #define JJ___TEST_CASE_CALL(name, no, args) \
-    static void jjM3(runner,no,name)(JJ_THIS_TESTCLASS& inst, jj::test::statistics_t& stats) { inst.JJ_TEST_CASE_Statistics.reset(); (inst.*&JJ_THIS_TESTCLASS::name) args; stats = inst.JJ_TEST_CASE_Statistics; }
+    static void jjM(runner,no,name)(JJ_THIS_TESTCLASS& inst, jj::test::statistics_t& stats) { inst.JJ_TEST_CASE_Statistics.reset(); (inst.*&JJ_THIS_TESTCLASS::name) args; stats = inst.JJ_TEST_CASE_Statistics; }
 #define JJ___TEST_CASE_CALLS1(name, p1) JJ___TEST_CASE_CALL(name, 1, p1)
 #define JJ___TEST_CASE_CALLS2(name, p1, p2) JJ___TEST_CASE_CALL(name, 1, p1) JJ___TEST_CASE_CALL(name, 2, p2)
 #define JJ___TEST_CASE_CALLS3(name, p1, p2, p3) JJ___TEST_CASE_CALL(name, 1, p1) JJ___TEST_CASE_CALL(name, 2, p2) JJ___TEST_CASE_CALL(name, 3, p3)
@@ -600,7 +600,7 @@ void testclass_base_T<T>::JJ_TESTCASE_holder_t::run(parent_t& testclass, statist
 #define JJ___TEST_CASE_CALLS(name, ...) JJ_VARG_N1(JJ___TEST_CASE_CALLS, name, __VA_ARGS__)
 
 #define JJ___TEST_CASE_REG(name, no, args) \
-    JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().register_testcase(&JJ_THIS_TESTCLASS::jjM3(runner,no,name), jjT(#name), jjT(#args));
+    JJ_THIS_TESTCLASS::JJ_TESTCASE_holder_t::instance().register_testcase(&JJ_THIS_TESTCLASS::jjM(runner,no,name), jjT(#name), jjT(#args));
 #define JJ___TEST_CASE_REGS1(name, p1) JJ___TEST_CASE_REG(name, 1, p1)
 #define JJ___TEST_CASE_REGS2(name, p1, p2) JJ___TEST_CASE_REG(name, 1, p1) JJ___TEST_CASE_REG(name, 2, p2)
 #define JJ___TEST_CASE_REGS3(name, p1, p2, p3) JJ___TEST_CASE_REG(name, 1, p1) JJ___TEST_CASE_REG(name, 2, p2) JJ___TEST_CASE_REG(name, 3, p3)

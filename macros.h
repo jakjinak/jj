@@ -18,22 +18,24 @@
 /*! Expands to the number of arguments given to the macro */
 #define JJ_COUNT(...) \
     JJ__COUNT1(__VA_ARGS__, 25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
-    
+
 #if defined(JJ_COMPILER_MSVC)
 #define JJ__VARG_N2(prefix, n, ...) JJ__PP_ENFORCE1(prefix ## n (__VA_ARGS__))
 #define JJ__VARG_N12(prefix, n, p1, ...) JJ__PP_ENFORCE1(prefix ## n (p1, __VA_ARGS__))
-#else
+#else // defined(JJ_COMPILER_MSVC)
 #define JJ__VARG_N2(prefix, n, ...) prefix ## n (__VA_ARGS__)
 #define JJ__VARG_N12(prefix, n, p1, ...) prefix ## n (p1, __VA_ARGS__)
-#endif
+#endif // defined(JJ_COMPILER_MSVC)
 #define JJ__VARG_N1(prefix, n, ...) JJ__VARG_N2(prefix, n, __VA_ARGS__)
 #define JJ__VARG_N11(prefix, n, p1, ...) JJ__VARG_N12(prefix, n, p1, __VA_ARGS__)
 
 /*! Expands to prefixN(args) where prefix is given by first argument, N is the number of
 remaining arguments and args are the remaining arguments. */
 #define JJ_VARG_N(prefix, ...) JJ__VARG_N1(prefix, JJ_COUNT(__VA_ARGS__), __VA_ARGS__)
+/*! Same as JJ_VARG_N except that it passes p1 to the final macro along with the variadic parameters. */
 #define JJ_VARG_N1(prefix, p1, ...) JJ__VARG_N11(prefix, JJ_COUNT(__VA_ARGS__), p1, __VA_ARGS__)
 
+/*! Merges given arguments into one symbol. */
 #define jjM1(p1) p1
 /*! Merges given arguments into one symbol. */
 #define jjM2(p1,p2) p1##p2
@@ -42,7 +44,7 @@ remaining arguments and args are the remaining arguments. */
 /*! Merges given arguments into one symbol. */
 #define jjM4(p1,p2,p3,p4) p1##p2##p3##p4
 /*! Merges given arguments into one symbol. */
-#define jjM(...) JJ_VARG_N(__VA_ARGS__, jjM4, jjM3, jjM2, jjM1)
+#define jjM(...) JJ_VARG_N(jjM, __VA_ARGS__)
 
 /*! Takes two arguments (unary operator and a operand) and converts these to a stream of the arguments followed by the value of the arguments. */
 #define jjOO(op, o1) jjT(#op) jjT(#o1) jjT(" / ") jjT(#op) jjT("[") << o1 << jjT("]")
