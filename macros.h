@@ -1,8 +1,7 @@
 #ifndef JJ_MACROS_H
 #define JJ_MACROS_H
 
-// TODO use some visual studio flag instead of JJ_OS_WINDOWS
-#if defined(JJ_OS_WINDOWS)
+#if defined(JJ_COMPILER_MSVC)
 #define JJ__PP_ENFORCE3(d,enforced) enforced
 #define JJ__PP_ENFORCE2(a,b) JJ__PP_ENFORCE3(~, a ## b)
 #define JJ__PP_ENFORCE1(a) JJ__PP_ENFORCE2(a,)
@@ -18,7 +17,7 @@
 #define JJ_COUNT(...) \
     JJ__COUNT1(__VA_ARGS__, 25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
     
-#if defined(JJ_OS_WINDOWS)
+#if defined(JJ_COMPILER_MSVC)
 #define JJ__VARG_N2(prefix, n, ...) JJ__PP_ENFORCE1(prefix ## n (__VA_ARGS__))
 #else
 #define JJ__VARG_N2(prefix, n, ...) prefix ## n (__VA_ARGS__)
