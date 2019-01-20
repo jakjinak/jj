@@ -245,7 +245,7 @@ struct cmdLineOptionsCommon_t
             JJ_TEST(fnd->second.Count == count[i], jjT("encountered ") << fnd->second.Count << jjT(" times; expected ") << count[i] << jjT(" times"));
             if (fnd->second.IsVariable)
             {
-                JJ_TEST_MSG(args.Options.find(infos.names[i]) == args.Options.end(), jjT("Variable option is not stored in option list."));
+                JJ_TEST(args.Options.find(infos.names[i]) == args.Options.end(), jjT("Variable option is not stored in option list."));
                 continue;
             }
             const jj::cmdLine::arguments_t::option_t& o = checkOption(args, defs, infos.names[i], fnd->second.Type);
@@ -285,7 +285,7 @@ struct cmdLineOptionsCommon_t
         for (auto& v : vars)
         {
             jj::cmdLine::arguments_t::varmap_t::const_iterator fnd = args.Variables.find(v.first);
-            JJ_ENSURE_MSG(fnd != args.Variables.end(), jjT("Variable ") << v.first << jjT(" is defined"));
+            JJ_ENSURE(fnd != args.Variables.end(), jjT("Variable ") << v.first << jjT(" is defined"));
             JJ_TEST(v.second == fnd->second.Value);
 
             // check correct definition associated
@@ -302,7 +302,7 @@ struct cmdLineOptionsCommon_t
                     break;
                 }
             }
-            JJ_TEST_MSG(fnd->second.Var == def, jjT("Variable has ") << (def == nullptr ? jjT("correctly no") : jjT("correct non-NULL")) << jjT(" definition associated."));
+            JJ_TEST(fnd->second.Var == def, jjT("Variable has ") << (def == nullptr ? jjT("correctly no") : jjT("correct non-NULL")) << jjT(" definition associated."));
         }
     }
 

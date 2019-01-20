@@ -335,7 +335,7 @@ JJ_TEST_CASE(traverse_goesinorder)
         auto ei = expected.begin();
         for (; ai != v.nodes.end() && ei != expected.end(); ++ai, ++ei)
         {
-            JJ_TEST_MSG(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
+            JJ_TEST(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
         }
     }
 
@@ -353,7 +353,7 @@ JJ_TEST_CASE(traverse_goesinorder)
         auto ei = expected.begin();
         for (; ai != v.nodes.end() && ei != expected.end(); ++ai, ++ei)
         {
-            JJ_TEST_MSG(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
+            JJ_TEST(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
         }
     }
 }
@@ -380,7 +380,7 @@ JJ_TEST_CASE(apply_listsalltypes)
     auto ei = expected.begin();
     for (; ai != a.types.end() && ei != expected.end(); ++ai, ++ei)
     {
-        JJ_TEST_MSG(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
+        JJ_TEST(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
     }
 }
 
@@ -406,7 +406,7 @@ JJ_TEST_CASE(applyc_listsalltypes)
     auto ei = expected.begin();
     for (; ai != a.types.end() && ei != expected.end(); ++ai, ++ei)
     {
-        JJ_TEST_MSG(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
+        JJ_TEST(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
     }
 }
 
@@ -433,7 +433,7 @@ JJ_TEST_CASE(applykey_listexistingkeys)
     auto ei = expected.begin();
     for (; ai != a.encounter.end() && ei != expected.end(); ++ai, ++ei)
     {
-        JJ_TEST_MSG(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
+        JJ_TEST(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
     }
 }
 
@@ -460,7 +460,7 @@ JJ_TEST_CASE(applykeyc_listexistingkeys)
     auto ei = expected.begin();
     for (; ai != a.encounter.end() && ei != expected.end(); ++ai, ++ei)
     {
-        JJ_TEST_MSG(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
+        JJ_TEST(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
     }
 }
 
@@ -571,7 +571,7 @@ JJ_TEST_CASE(path_apply)
     auto ei = expected.begin();
     for (; ai != a.encounter.end() && ei != expected.end(); ++ai, ++ei)
     {
-        JJ_TEST_MSG(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
+        JJ_TEST(*ai == *ei, jjT('"') << *ai << jjT("\" == \"") << *ei << jjT('"'));
     }
 }
 

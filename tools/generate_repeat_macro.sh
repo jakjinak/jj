@@ -94,7 +94,7 @@ ENDOFBLOCK
   i=1
   while [[ $i -lt $clsv ]]
   do
-    echo -n "#define JJ___TEST_CLASS_${i}CALLS(name"
+    echo -n "#define JJ___TEST_CLASS_CALLS${i}(name"
     j=1
     while [[ $j -le $i ]]
     do
@@ -111,20 +111,13 @@ ENDOFBLOCK
     echo
     i=$((i+1))
   done
-  echo -n "#define JJ___TEST_CLASS_CALLS(name, ...) JJ___PP_VSCRAP(JJ_PP_SELECTOR$s(__VA_ARGS__"
-  j=$((clsv-1))
-  while [[ $j -gt 0 ]]
-  do
-    echo -n ", JJ___TEST_CLASS_${j}CALLS"
-    j=$((j-1))
-  done
-  echo ')(name, __VA_ARGS__))'
+  echo "#define JJ___TEST_CLASS_CALLS(name, ...) JJ_VARG_N1(JJ___TEST_CLASS_CALLS, name, __VA_ARGS__)"
   echo
   echo '#define JJ___TEST_CLASS_REG(no) jjM2(JJ_TEST_CLASS_REGISTRAR_,no)();'
   i=1
   while [[ $i -lt $clsv ]]
   do
-    echo -n "#define JJ___TEST_CLASS_${i}REGS(dummy, p1"
+    echo -n "#define JJ___TEST_CLASS_REGS${i}(dummy, p1"
     j=2
     while [[ $j -le $i ]]
     do
@@ -141,14 +134,7 @@ ENDOFBLOCK
     i=$((i+1))
     echo
   done
-  echo -n "#define JJ___TEST_CLASS_REGS(dummy, ...) JJ___PP_VSCRAP(JJ_PP_SELECTOR$s(__VA_ARGS__"
-  i=$((clsv-1))
-  while [[ $i -gt 0 ]]
-  do
-    echo -n ", JJ___TEST_CLASS_${i}REGS"
-    i=$((i-1))
-  done
-  echo ")(dummy, __VA_ARGS__))"
+  echo "#define JJ___TEST_CLASS_REGS(dummy, ...) JJ_VARG_N1(JJ___TEST_CLASS_REGS, dummy, __VA_ARGS__)"
   echo '// note: the dummy parameter above is not required except for MSVC which cannot have empty macro argument list ie, MACRO()'
   echo
   echo '#define JJ___TEST_CASE_DEF(classname, testname) classname::jjM2(registrar_,testname)();'
@@ -156,7 +142,7 @@ ENDOFBLOCK
   s=$((casv-1))
   while [[ $i -lt $casv ]]
   do
-    echo -n "#define JJ___TEST_CASE_${i}DEFS(classname"
+    echo -n "#define JJ___TEST_CASE_DEFS${i}(classname"
     j=1
     while [[ $j -le $i ]]
     do
@@ -174,13 +160,7 @@ ENDOFBLOCK
     i=$((i+1))
   done
   i=$((casv-1))
-  echo -n "#define JJ___TEST_CASE_DEFS(classname, ...) JJ___PP_VSCRAP(JJ_PP_SELECTOR$s(__VA_ARGS__"
-  while [[ $i -gt 0 ]]
-  do
-    echo -n ", JJ___TEST_CASE_${i}DEFS"
-    i=$((i-1))
-  done
-  echo ")(classname, __VA_ARGS__))"
+  echo "#define JJ___TEST_CASE_DEFS(classname, ...) JJ_VARG_N1(JJ___TEST_CASE_DEFS, classname, __VA_ARGS__)"
   echo
   cat << 'ENDOFBLOCK'
 #define JJ___TEST_CASE_CALL(name, no, args) \
@@ -189,7 +169,7 @@ ENDOFBLOCK
   i=1
   while [[ $i -lt $casv ]]
   do
-    echo -n "#define JJ___TEST_CASE_${i}CALLS(name"
+    echo -n "#define JJ___TEST_CASE_CALLS${i}(name"
     j=1
     while [[ $j -le $i ]]
     do
@@ -207,13 +187,7 @@ ENDOFBLOCK
     i=$((i+1))
   done
   j=$((casv-1))
-  echo -n "#define JJ___TEST_CASE_CALLS(name, ...) JJ___PP_VSCRAP(JJ_PP_SELECTOR$s(__VA_ARGS__"
-  while [[ $j -gt 0 ]]
-  do
-    echo -n ", JJ___TEST_CASE_${j}CALLS"
-    j=$((j-1))
-  done
-  echo ')(name, __VA_ARGS__))'
+  echo "#define JJ___TEST_CASE_CALLS(name, ...) JJ_VARG_N1(JJ___TEST_CASE_CALLS, name, __VA_ARGS__)"
   echo
   cat << 'ENDOFBLOCK'
 #define JJ___TEST_CASE_REG(name, no, args) \
@@ -223,7 +197,7 @@ ENDOFBLOCK
   s=$(($casincls-1))
   while [[ $i -lt $casincls ]]
   do
-    echo -n "#define JJ___TEST_CASE_${i}REGS(name"
+    echo -n "#define JJ___TEST_CASE_REGS${i}(name"
     j=1
     while [[ $j -le $i ]]
     do
@@ -241,13 +215,7 @@ ENDOFBLOCK
     i=$((i+1))
   done
   i=$((casincls-1))
-  echo -n "#define JJ___TEST_CASE_REGS(name, ...) JJ___PP_VSCRAP(JJ_PP_SELECTOR$s(__VA_ARGS__"
-  while [[ $i -gt 0 ]]
-  do
-    echo -n ", JJ___TEST_CASE_${i}REGS"
-    i=$((i-1))
-  done
-  echo ')(name, __VA_ARGS__))'
+  echo "#define JJ___TEST_CASE_REGS(name, ...) JJ_VARG_N1(JJ___TEST_CASE_REGS, name, __VA_ARGS__)"
 }
 
 # main program starts here
