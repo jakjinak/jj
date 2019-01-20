@@ -22,11 +22,11 @@ VSSLN_TMPINPUT_$(1) ?= ${TMPDIR}/vssln_$(1).input
 VSSLN_RESULT_$(1) ?= $(realpath $(2))/$(1).sln
 
 vssln_$(1): | ${TMPDIR}
-	$$(call showhint,$${COLOR_SUPPORT}=== Creating generator input file $${COLOR_HL}$${VSSLN_TMPINPUT_$(1)}$${COLOR_0})
+	$$(call showlabel,$${COLOR_SUPPORT}=== Creating generator input file $${COLOR_HL}$${VSSLN_TMPINPUT_$(1)}$${COLOR_0})
 	$(COMMAND_HIDE_PREFIX){ $(foreach proj,${VSSLN_PROJS_$(1)},echo project=$${VSGUID_$(proj)} ; echo path='$${SRCDIR_$(proj)}/$${VSNAME_$(proj)}.vcxproj' ; echo folder='$${VSFOLDER_$(proj)}' ;) } > "$${VSSLN_TMPINPUT_$(1)}"
 	$(COMMAND_HIDE_PREFIX)echo 'folders' >> $${VSSLN_TMPINPUT_$(1)}
 	$(COMMAND_HIDE_PREFIX){ $(foreach fold,${VSSLN_FOLDERS_$(1)},echo '$${VSSLN_FOLDERDEFS_NAME_$(1)_$(fold)}|$${VSSLN_FOLDERDEFS_GUID_$(1)_$(fold)}' ;) } >> "$${VSSLN_TMPINPUT_$(1)}"
-	$$(call showhint,$${COLOR_SUPPORT}=== Generating solution file $${COLOR_HL}$${VSSLN_RESULT_$(1)}$${COLOR_0})
+	$$(call showlabel,$${COLOR_SUPPORT}=== Generating solution file $${COLOR_HL}$${VSSLN_RESULT_$(1)}$${COLOR_0})
 	$(COMMAND_HIDE_PREFIX)tools/generate_vc.pl sln $${VSSLN_GUID1_$(1)} "$(realpath $(2))/$(1).sln" $${VSSLN_GUID2_$(1)} < "$${VSSLN_TMPINPUT_$(1)}" > "$${VSSLN_RESULT_$(1)}"
 	$(COMMAND_HIDE_PREFIX)${TOOL_RM} $${VSSLN_TMPINPUT_$(1)}
 
@@ -63,7 +63,7 @@ VSFLT_TMPINPUT_$(1) ?= ${TMPDIR}/vsprjf_$(1).input
 VSFLT_RESULT_$(1) ?= $$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj.filters
 
 vsproj_$(1): | ${TMPDIR}
-	$$(call showhint,$${COLOR_SUPPORT}=== Creating generator input file $${COLOR_HL}$${VSPRJ_TMPINPUT_$(1)}$${COLOR_0})
+	$$(call showlabel,$${COLOR_SUPPORT}=== Creating generator input file $${COLOR_HL}$${VSPRJ_TMPINPUT_$(1)}$${COLOR_0})
 	$(COMMAND_HIDE_PREFIX){ echo 'includedirs:' ; $(foreach var,${VSINCDIRS_$(1)},echo '${var}' ;) } > "$${VSPRJ_TMPINPUT_$(1)}"
 	$(COMMAND_HIDE_PREFIX){ echo 'defines:' ; $(foreach var,${VSDEFINES_$(1)},echo '${var}' ;) } >> "$${VSPRJ_TMPINPUT_$(1)}"
 	$(COMMAND_HIDE_PREFIX){ echo 'libraries:' ; $(foreach var,${VSLIBS_$(1)},echo '${var}' ;) } >> "$${VSPRJ_TMPINPUT_$(1)}"
@@ -71,12 +71,12 @@ vsproj_$(1): | ${TMPDIR}
 	$(COMMAND_HIDE_PREFIX){ echo 'sources:' ; for sf in $${SOURCE_$(1)} ; do echo "$$$$sf" ; done ; } >> "$${VSPRJ_TMPINPUT_$(1)}"
 	$(COMMAND_HIDE_PREFIX){ echo 'includes:' ; for sf in $${VSHEADER_$(1)} ; do echo "$$$$sf" ; done ; } >> "$${VSPRJ_TMPINPUT_$(1)}"
 	$(COMMAND_HIDE_PREFIX){ echo 'references:' ; $(foreach proj,${VSREFS_$(1)},echo $${VSGUID_$(proj)} '$${SRCDIR_$(proj)}/$${VSNAME_$(proj)}.vcxproj' ;) } >> "$${VSPRJ_TMPINPUT_$(1)}"
-	$$(call showhint,$${COLOR_SUPPORT}=== Generating project file $${COLOR_HL}$${VSPRJ_RESULT_$(1)}$${COLOR_0})
+	$$(call showlabel,$${COLOR_SUPPORT}=== Generating project file $${COLOR_HL}$${VSPRJ_RESULT_$(1)}$${COLOR_0})
 	$(COMMAND_HIDE_PREFIX)tools/generate_vc.pl vcproj $${VSGUID_$(1)} "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj" $${VSTYPE_$(1)} < "$${VSPRJ_TMPINPUT_$(1)}" > "$${VSPRJ_RESULT_$(1)}"
-	$$(call showhint,$${COLOR_SUPPORT}=== Creating generator input file $${COLOR_HL}$${VSFLT_TMPINPUT_$(1)}$${COLOR_0})
+	$$(call showlabel,$${COLOR_SUPPORT}=== Creating generator input file $${COLOR_HL}$${VSFLT_TMPINPUT_$(1)}$${COLOR_0})
 	$(COMMAND_HIDE_PREFIX){ echo 'sources:' ; for sf in $${SOURCE_$(1)} ; do echo "$$$$sf" ; done ; } >> "$${VSFLT_TMPINPUT_$(1)}"
 	$(COMMAND_HIDE_PREFIX){ echo 'includes:' ; for sf in $${VSHEADER_$(1)} ; do echo "$$$$sf" ; done ; } >> "$${VSFLT_TMPINPUT_$(1)}"
-	$$(call showhint,$${COLOR_SUPPORT}=== Generating filters file $${COLOR_HL}$${VSFLT_RESULT_$(1)}$${COLOR_0})
+	$$(call showlabel,$${COLOR_SUPPORT}=== Generating filters file $${COLOR_HL}$${VSFLT_RESULT_$(1)}$${COLOR_0})
 	$(COMMAND_HIDE_PREFIX)tools/generate_vc.pl vcfilter $${VSGUID_$(1)} "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj.filters" < "$${VSFLT_TMPINPUT_$(1)}" > "$${VSFLT_RESULT_$(1)}"
 	$(COMMAND_HIDE_PREFIX)${TOOL_RM} "$${VSPRJ_TMPINPUT_$(1)}" "$${VSFLT_TMPINPUT_$(1)}"
 

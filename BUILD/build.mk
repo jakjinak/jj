@@ -6,7 +6,7 @@ $(error Please define ROOTDIR first.)
 endif
 
 include BUILD/tools.mk
-include BUILD/style.mk
+include BUILD/verbosity.mk
 
 BINDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATION}
 LIBDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATION}
@@ -65,10 +65,10 @@ infovariablescommon:
 	@${TOOL_ECHO} "${COLOR_HL}MACHINE_OS${COLOR_0} ... actual system name, usually linux (assumed to be autodetected) [${COLOR_HL}${MACHINE_OS}${COLOR_0}]"
 	@${TOOL_ECHO} ""
 	@${TOOL_ECHO} "Output related variables:"
-	@${TOOL_ECHO} "${COLOR_HL}SHOW_HINTS${COLOR_0} ... Show extra output describing what is going on, enabled if set to 1 [${COLOR_HL}${SHOW_HINTS}${COLOR_0}]"
-	@${TOOL_ECHO} "${COLOR_HL}COLOR_HINTS${COLOR_0} ... Print hints in color, enabled if set to 1 [${COLOR_HL}${COLOR_HINTS}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_labels${COLOR_0} ... Show extra output describing what is going on, enabled if set to 1 [${COLOR_HL}${VERBOSITY_labels}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_colors${COLOR_0} ... Print hints in color, enabled if set to 1 [${COLOR_HL}${VERBOSITY_colors}${COLOR_0}]"
 	@${TOOL_ECHO} "         Note: also tweaks the info target output"
-	@${TOOL_ECHO} "${COLOR_HL}HIDE_COMMANDS${COLOR_0} ... Forces to not echo the commands executed if enabled by setting to 1 [${COLOR_HL}${HIDE_COMMANDS}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_commands${COLOR_0} ... Forces to not echo the commands executed if enabled by setting to 1 [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
 	@${TOOL_ECHO} ""
 
 infovariables: infovariablescommon
@@ -78,11 +78,11 @@ info: infobody infotargets infovariables
 help: info
 
 wipeout:
-	$(call showhint,${COLOR_CLEAN}=== Wiping all for ${COLOR_HL}${WIPEDIRS}${COLOR_0})
+	$(call showlabel,${COLOR_CLEAN}=== Wiping all for ${COLOR_HL}${WIPEDIRS}${COLOR_0})
 	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${WIPEDIRS}
 
 ${TMPDIR}:
-	$(call showhint,"${COLOR_SUPPORT}=== Creating directory ${COLOR_HL}${TMPDIR}${COLOR_0}")
+	$(call showlabel,"${COLOR_SUPPORT}=== Creating directory ${COLOR_HL}${TMPDIR}${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} ${TMPDIR}
 
 #--------------------------
@@ -137,7 +137,7 @@ $${RESULT_$(1)}: $(addsuffix },$(addprefix $${RESULT_,$(4)))
 clean_$(1): clean_$(1)_only $(addprefix clean_,$(4))
 
 clean_$(1)_only:
-	$$(call showhint,"$${COLOR_CLEAN}=== Clean all for $${COLOR_HL}$(1)$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_CLEAN}=== Clean all for $${COLOR_HL}$(1)$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_RM} $${RESULT_$(1)} $${OBJ_$(1)} $${DEP_$(1)}
 
 infopreludestaticcommon_$(1):
@@ -155,17 +155,17 @@ infofinalestaticcommon_$(1):
 
 
 $${DEPDIR_$(1)}:
-	$$(call showhint,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${DEPDIR_$(1)}$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${DEPDIR_$(1)}$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} $${DEPDIR_$(1)}
 
 $${OBJDIR_$(1)}:
-	$$(call showhint,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${OBJDIR_$(1)}$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${OBJDIR_$(1)}$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} $${OBJDIR_$(1)}
 
 $${DEPDIR_$(1)}/%.d : ;
 
 $${OBJDIR_$(1)}/%.o : $${SRCDIR_$(1)}/%.cpp | $${OBJDIR_$(1)} $${DEPDIR_$(1)}
-	$$(call showhint,"$${COLOR_COMPILE}=== Compiling $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_COMPILE}=== Compiling $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${CXXFLAGS_$(1)} -MMD -MT $$@ -MF $${DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
 endef
 
@@ -189,10 +189,10 @@ infofinale_$(1): infofinalestaticcommon_$(1)
 .PHONY: infopreludestatic_$(1)
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
-	$$(call showhint,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_AR} cr $${ARFLAGS_$(1)} $${RESULT_$(1)} $${OBJ_$(1)}
 $(1)_only: $${OBJ_$(1)}
-	$$(call showhint,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_AR} cr $${ARFLAGS_$(1)} $${RESULT_$(1)} $${OBJ_$(1)}
 endef
 
@@ -227,21 +227,21 @@ $(1)_so: $${SO_RESULT_$(1)}
 clean_$(1)_so: clean_$(1)_so_only $(addprefix clean_,$(4))
 
 clean_$(1)_so_only:
-	$$(call showhint,"$${COLOR_CLEAN}=== Clean all for $${COLOR_HL}$(1)_so$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_CLEAN}=== Clean all for $${COLOR_HL}$(1)_so$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_RM} $${SO_RESULT_$(1)} $${SO_OBJ_$(1)} $${SO_DEP_$(1)}
 
 $${SO_DEPDIR_$(1)}:
-	$$(call showhint,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${SO_DEPDIR_$(1)}$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${SO_DEPDIR_$(1)}$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} $${SO_DEPDIR_$(1)}
 
 $${SO_OBJDIR_$(1)}:
-	$$(call showhint,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${SO_OBJDIR_$(1)}$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${SO_OBJDIR_$(1)}$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} $${SO_OBJDIR_$(1)}
 
 $${SO_DEPDIR_$(1)}/%.d : ;
 
 $${SO_OBJDIR_$(1)}/%.o : $${SO_SRCDIR_$(1)}/%.cpp | $${SO_OBJDIR_$(1)} $${SO_DEPDIR_$(1)}
-	$$(call showhint,"$${COLOR_COMPILE}=== Compiling $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_COMPILE}=== Compiling $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${SO_CXXFLAGS_$(1)} -MMD -MT $$@ -MF $${SO_DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
 
 infopreludeshared_$(1):
@@ -263,11 +263,11 @@ infofinale_$(1): infofinaleshared_$(1)
 .PHONY: infopreludeshared_$(1) infofinaleshared_$(1)
 
 $${SO_RESULT_$(1)}: $${SO_OBJ_$(1)} $(addsuffix },$(addprefix $${RESULT_,$(4)))
-	$$(call showhint,"$${COLOR_STATLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_STATLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
 
 $(1)_so_only: $${SO_OBJ_$(1)}
-	$$(call showhint,"$${COLOR_STATLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_STATLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
 endef
 
@@ -362,10 +362,10 @@ infofinale_$(1): infofinalestaticcommon_$(1)
 .PHONY: infopreludeprogram_$(1)
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
-	$$(call showhint, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
+	$$(call showlabel, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
 
 $(1)_only: $${OBJ_$(1)}
-	$$(call showhint, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
+	$$(call showlabel, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
 endef

@@ -1,15 +1,19 @@
+VERBOSITY_labels ?= 1
+VERBOSITY_colors ?= 1
+VERBOSITY_commands ?= 1
 
-#$(call showhint,"hint")
-ifeq ($(SHOW_HINTS),1)
-define showhint
+
+#$(call showlabel,"label")
+ifeq ($(VERBOSITY_labels),1)
+define showlabel
 	@${TOOL_ECHO} $(1)
 endef
 else
-define showhint
+define showlabel
 endef
 endif
 
-ifeq ($(COLOR_HINTS),1)
+ifeq ($(VERBOSITY_colors),1)
 COLOR_HL ?= \\e[1m
 COLOR_0 ?= \\e[0m
 COLOR_SUPPORT ?= \\e[34m
@@ -29,7 +33,7 @@ COLOR_CLEAN :=
 COLOR_INFO :=
 endif
 
-ifeq ($(HIDE_COMMANDS),1)
+ifeq ($(VERBOSITY_commands),1)
 COMMAND_HIDE_PREFIX := @
 else
 COMMAND_HIDE_PREFIX :=
