@@ -34,7 +34,7 @@ COLOR_INFO :=
 endif
 
 ifeq ($(VERBOSITY_commands),1)
-COMMAND_HIDE_PREFIX := @
-else
 COMMAND_HIDE_PREFIX :=
+else
+COMMAND_HIDE_PREFIX := @
 endif
