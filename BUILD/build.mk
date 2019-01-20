@@ -8,10 +8,10 @@ endif
 include BUILD/tools.mk
 include BUILD/verbosity.mk
 
-BINDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATION}
-LIBDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATION}
-OBJDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATION}
-TMPDIR ?= ${ROOTDIR}/.bin/${BUILDCONFIGURATION}/tmp
+BINDIR ?= ${ROOTDIR}/.bin/${BUILD_CONFIGURATION}
+LIBDIR ?= ${ROOTDIR}/.bin/${BUILD_CONFIGURATION}
+OBJDIR ?= ${ROOTDIR}/.bin/${BUILD_CONFIGURATION}
+TMPDIR ?= ${ROOTDIR}/.bin/${BUILD_CONFIGURATION}/tmp
 
 WIPEDIRS := "${BINDIR}"
 ifneq ("${LIBDIR}","${BINDIR}")
@@ -23,7 +23,7 @@ endif
 
 ############################################################
 # include specific defines
-include BUILD/specific/${SELECTED_OS}.${SELECTED_ARCH}.mk
+include BUILD/specific/${BUILD_PLATFORM}.mk
 include BUILD/specific/${BUILD_MODE}.mk
 
 COMMON_CXXFLAGS ?= ${PLATFORMSPECIFIC_CXXFLAGS} ${MODESPECIFIC_CXXFLAGS} ${CUSTOM_CXXFLAGS}
