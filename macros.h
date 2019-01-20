@@ -24,7 +24,7 @@
 #define JJ__VARG_N12(prefix, n, p1, ...) JJ__PP_ENFORCE1(prefix ## n (p1, __VA_ARGS__))
 #else
 #define JJ__VARG_N2(prefix, n, ...) prefix ## n (__VA_ARGS__)
-#define JJ__VARG_N2(prefix, n, p1, ...) prefix ## n (p1, __VA_ARGS__)
+#define JJ__VARG_N12(prefix, n, p1, ...) prefix ## n (p1, __VA_ARGS__)
 #endif
 #define JJ__VARG_N1(prefix, n, ...) JJ__VARG_N2(prefix, n, __VA_ARGS__)
 #define JJ__VARG_N11(prefix, n, p1, ...) JJ__VARG_N12(prefix, n, p1, __VA_ARGS__)
