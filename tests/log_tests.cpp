@@ -294,15 +294,214 @@ JJ_TEST_CASE(targets_switch)
     jj::log::logger_t::instance().replaceTargets(olog);
 }
 
-JJ_TEST_CLASS_END(logTests_t, fields, levels, message1, message2, message3, recursion, multiple_targets, targets_switch)
+int scopeline1,scopeline2;
+
+void scopemethod1(bool ret, bool msg)
+{
+    scopeline1 = __LINE__; jjLscope(jjT("A") << 5 << jjT("Z"));
+    if (msg)
+    {
+        if (ret)
+            return scopeline2 = __LINE__, jjLLmsg(jjT("KLM") << 111);
+    }
+    else
+    {
+        if (ret)
+            return scopeline2 = __LINE__, jjLLvoid;
+    }
+}
+
+int scopemethod2(bool val, bool msg)
+{
+    scopeline1 = __LINE__; jjLscope(jjT(""));
+    if (msg)
+    {
+        if (val)
+            return scopeline2 = __LINE__, jjLLval(555, jjT("XYZ" << 444));
+        else
+        {
+            int a = 666;
+            return scopeline2 = __LINE__, jjLL(a, jjT("XYZ") << 333);
+        }
+    }
+    else
+    {
+        if (val)
+            return scopeline2 = __LINE__, jjLLval(555);
+        else
+        {
+            int a = 666;
+            return scopeline2 = __LINE__, jjLL(a);
+        }
+    }
+}
+
+struct testEx : public std::exception
+{
+    testEx(const char* msg) : msg_(msg) {}
+    const char* what() const override { return msg_.c_str(); }
+private:
+    std::string msg_;
+};
+
+void scopemethod3(bool val, bool msg)
+{
+    scopeline1 = __LINE__; jjLscope(jjT("T"));
+    if (msg)
+    {
+        if (val)
+            scopeline2 = __LINE__, throw jjLXval(testEx("EXCE"), jjT("some") << jjT("thing"));
+        else
+            scopeline2 = __LINE__, throw jjLX(testEx("EXCE"), jjT("some") << jjT("thing"));
+    }
+    else
+    {
+        if (val)
+            scopeline2 = __LINE__, throw jjLXval(testEx("EX"));
+        else
+            scopeline2 = __LINE__, throw jjLX(testEx("EX"));
+    }
+}
+
+JJ_TEST_CASE(scope_default)
+{
+    int cnt = 0;
+    auto fn = [&](const jj::log::message_t& log) {
+        JJ_TEST(log.Level == JJ_LOGLEVEL_SCOPE);
+        if (cnt == 0)
+        {
+            JJ_TEST(jj::str::equal(log.LevelName, jj::log::logger_t::NAME_ENTER));
+            JJ_TEST(log.Message == jjT("A5Z"));
+            JJ_TEST(log.Line == scopeline1);
+        }
+        else if (cnt == 1)
+        {
+            JJ_TEST(jj::str::equal(log.LevelName, jj::log::logger_t::NAME_LEAVE));
+            JJ_TEST(log.Message == jjT("<end-of-scope>"));
+            JJ_TEST(log.Line == -1);
+        }
+        ++cnt;
+    };
+    std::shared_ptr<jj::log::logTarget_base_t> olog = jj::log::logger_t::instance().replaceTargets(std::make_shared<testTargetCb>(fn));
+    jj::log::logger_t::instance().setLevel(JJ_LOGLEVEL_SCOPE);
+    scopemethod1(false, false);
+    JJ_TEST(cnt == 2);
+    jj::log::logger_t::instance().replaceTargets(olog);
+}
+
+JJ_TEST_CASE(scope_return)
+{
+    int cnt = 0;
+    auto fn = [&](const jj::log::message_t& log) {
+        JJ_TEST(log.Level == JJ_LOGLEVEL_SCOPE);
+        if (cnt % 2 == 0)
+        {
+            JJ_TEST(jj::str::equal(log.LevelName, jj::log::logger_t::NAME_ENTER));
+            JJ_TEST(log.Message == jjT(""));
+            JJ_TEST(log.Line == scopeline1);
+        }
+        else if (cnt == 1 || cnt == 5)
+        {
+            JJ_TEST(jj::str::equal(log.LevelName, jj::log::logger_t::NAME_LEAVE));
+            JJ_TEST(log.Message == (cnt == 1 ? jjT("555") : jjT("XYZ444; 555")));
+            JJ_TEST(log.Line == scopeline2);
+        }
+        else if (cnt == 3 || cnt == 7)
+        {
+            JJ_TEST(jj::str::equal(log.LevelName, jj::log::logger_t::NAME_LEAVE));
+            JJ_TEST(log.Message == (cnt == 3 ? jjT("") : jjT("XYZ333")));
+            JJ_TEST(log.Line == scopeline2);
+        }
+        ++cnt;
+    };
+    std::shared_ptr<jj::log::logTarget_base_t> olog = jj::log::logger_t::instance().replaceTargets(std::make_shared<testTargetCb>(fn));
+    jj::log::logger_t::instance().setLevel(JJ_LOGLEVEL_SCOPE);
+    int result = scopemethod2(true, false);
+    JJ_TEST(result == 555);
+    result = scopemethod2(false, false);
+    JJ_TEST(result == 666);
+    result = scopemethod2(true, true);
+    JJ_TEST(result == 555);
+    result = scopemethod2(false, true);
+    JJ_TEST(result == 666);
+    JJ_TEST(cnt == 8);
+    jj::log::logger_t::instance().replaceTargets(olog);
+}
+
+JJ_TEST_CASE(scope_returnvoid)
+{
+    int cnt = 0;
+    auto fn = [&](const jj::log::message_t& log) {
+        JJ_TEST(log.Level == JJ_LOGLEVEL_SCOPE);
+        if (cnt == 0 || cnt == 2)
+        {
+            JJ_TEST(jj::str::equal(log.LevelName, jj::log::logger_t::NAME_ENTER));
+            JJ_TEST(log.Message == jjT("A5Z"));
+            JJ_TEST(log.Line == scopeline1);
+        }
+        else if (cnt == 1 || cnt == 3)
+        {
+            JJ_TEST(jj::str::equal(log.LevelName, jj::log::logger_t::NAME_LEAVE));
+            JJ_TEST(log.Message == (cnt == 1 ? jjT("") : jjT("KLM111")));
+            JJ_TEST(log.Line == scopeline2);
+        }
+        ++cnt;
+    };
+    std::shared_ptr<jj::log::logTarget_base_t> olog = jj::log::logger_t::instance().replaceTargets(std::make_shared<testTargetCb>(fn));
+    jj::log::logger_t::instance().setLevel(JJ_LOGLEVEL_SCOPE);
+    scopemethod1(true, false);
+    scopemethod1(true, true);
+    JJ_TEST(cnt == 4);
+    jj::log::logger_t::instance().replaceTargets(olog);
+}
+
+JJ_TEST_CASE(scope_throw)
+{
+    int cnt = 0;
+    auto fn = [&](const jj::log::message_t& log) {
+        JJ_TEST(log.Level == JJ_LOGLEVEL_SCOPE);
+        if (cnt % 2 == 0)
+        {
+            JJ_TEST(jj::str::equal(log.LevelName, jj::log::logger_t::NAME_ENTER));
+            JJ_TEST(log.Message == jjT("T"));
+            JJ_TEST(log.Line == scopeline1);
+        }
+        else if (cnt == 1 || cnt == 3)
+        {
+            JJ_TEST(jj::str::equal(log.LevelName, jj::log::logger_t::NAME_LEAVE));
+            JJ_TEST(log.Message == (cnt == 1 ? jjT("exception was thrown") : jjT("something")));
+            JJ_TEST(log.Line == scopeline2);
+        }
+        else if (cnt == 5 || cnt == 7)
+        {
+            JJ_TEST(jj::str::equal(log.LevelName, jj::log::logger_t::NAME_LEAVE));
+            JJ_TEST(log.Message == (cnt == 5 ? jjT("exception was thrown; EX") : jjT("something; EXCE")));
+            JJ_TEST(log.Line == scopeline2);
+        }
+        ++cnt;
+    };
+    std::shared_ptr<jj::log::logTarget_base_t> olog = jj::log::logger_t::instance().replaceTargets(std::make_shared<testTargetCb>(fn));
+    jj::log::logger_t::instance().setLevel(JJ_LOGLEVEL_SCOPE);
+    try { scopemethod3(false, false); } catch (...) {}
+    try { scopemethod3(false, true); } catch (...) {}
+    try { scopemethod3(true, false); } catch (...) {}
+    try { scopemethod3(true, true); } catch (...) {}
+    JJ_TEST(cnt == 8);
+    jj::log::logger_t::instance().replaceTargets(olog);
+}
+
+JJ_TEST_CLASS_END(logTests_t, fields, levels, message1, message2, message3, recursion, multiple_targets, targets_switch, \
+    scope_default, scope_return, scope_returnvoid, scope_throw)
 
 template<typename T>
 void logRoot(const T& v)
 {
+    jjLscope(v);
     jjLE(v);
     jjLW(v);
     jjLI(v);
     jjLV(v);
+    return jjLLmsg(v);
 }
 
 namespace logA
@@ -312,10 +511,12 @@ JJ_REFERENCE_LOG_COMPONENT(compA)
 template<typename T>
 void method(const T& v)
 {
+    jjLscope(v);
     jjLE(v);
     jjLW(v);
     jjLI(v);
     jjLV(v);
+    return jjLLmsg(v);
 }
 }
 
@@ -325,10 +526,12 @@ JJ_DEFINE_LOG_COMPONENT(compB)
 template<typename T>
 void method(const T& v)
 {
+    jjLscope(v);
     jjLE(v);
     jjLW(v);
     jjLI(v);
     jjLV(v);
+    return jjLLmsg(v);
 }
 }
 
@@ -338,10 +541,12 @@ JJ_DEFINE_LOG_COMPONENT(compC,"COMPOT",JJ_LOGLEVEL_WARNING)
 template<typename T>
 void method(const T& v)
 {
+    jjLscope(v);
     jjLE(v);
     jjLW(v);
     jjLI(v);
     jjLV(v);
+    return jjLLmsg(v);
 }
 }
 
@@ -350,10 +555,12 @@ namespace logA
 template<typename T>
 void method2(const T& v)
 {
+    jjLscope(v);
     jjLE(v);
     jjLW(v);
     jjLI(v);
     jjLV(v);
+    return jjLLmsg(v);
 }
 }
 
@@ -367,10 +574,10 @@ void resetCounts(size_t& v1, size_t& v2, size_t& v3, size_t& v4)
 
 JJ_TEST_CLASS(logComponentTests_t)
 
-JJ_TEST_CASE(components_and_levels)
+JJ_TEST_CASE_VARIANTS(components_and_levels, (jj::log::level_t limitRoot, jj::log::level_t limitB), (JJ_LOGLEVEL_INFO, JJ_LOGLEVEL_INFO), (JJ_LOGLEVEL_SCOPE, JJ_LOGLEVEL_SCOPE))
 {
     jj::string_t cmain(jjT("<main>")), cA(jjT("compA")), cB(jjT("compB")), cC(jjT("COMPOT"));
-    jj::log::level_t lmain(JJ_LOGLEVEL_INFO), lA(JJ_LOGLEVEL_INFO), lB(JJ_LOGLEVEL_INFO), lC(JJ_LOGLEVEL_INFO);
+    jj::log::level_t lmain(limitRoot), lA(JJ_LOGLEVEL_INFO), lB(limitB), lC(JJ_LOGLEVEL_INFO);
     size_t Cmain, CA, CB, CC;
     auto fn = [&](const jj::log::message_t& log) {
         if (log.Message == jjT("333"))
@@ -411,11 +618,12 @@ JJ_TEST_CASE(components_and_levels)
         }
     };
     std::shared_ptr<jj::log::logTarget_base_t> olog = jj::log::logger_t::instance().replaceTargets(std::make_shared<testTargetCb>(fn));
-    jj::log::logger_t::instance().setLevel(JJ_LOGLEVEL_INFO);
+    jj::log::logger_t::instance().setLevel(limitRoot);
+    logB::compBComponent_t::instance().setLevel(limitB);
 
     resetCounts(Cmain, CA, CB, CC);
     logRoot(333);
-    JJ_TEST(Cmain == 3);
+    JJ_TEST(Cmain == 3 + (lmain <= JJ_LOGLEVEL_VERBOSE ? 1 : 0) + (lmain <= JJ_LOGLEVEL_SCOPE ? 2 : 0));
     JJ_TEST(CA == 0);
     JJ_TEST(CB == 0);
     JJ_TEST(CC == 0);
@@ -431,7 +639,7 @@ JJ_TEST_CASE(components_and_levels)
     logB::method(555);
     JJ_TEST(Cmain == 0);
     JJ_TEST(CA == 0);
-    JJ_TEST(CB == 3);
+    JJ_TEST(CB == 3 + (lB <= JJ_LOGLEVEL_VERBOSE ? 1 : 0) + (lB <= JJ_LOGLEVEL_SCOPE ? 2 : 0));
     JJ_TEST(CC == 0);
 
     resetCounts(Cmain, CA, CB, CC);
@@ -446,7 +654,7 @@ JJ_TEST_CASE(components_and_levels)
     jjLW(777);
     jjLI(777);
     jjLV(777);
-    JJ_TEST(Cmain == 3);
+    JJ_TEST(Cmain == 3 + (lmain <= JJ_LOGLEVEL_VERBOSE ? 1 : 0));
     JJ_TEST(CA == 0);
     JJ_TEST(CB == 0);
     JJ_TEST(CC == 0);

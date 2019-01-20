@@ -327,25 +327,27 @@ public:
         return fst;
     }
 };
-
 } // namespace log
 } // namespace jj
 
-/*! A helper macro to define the internals of the individual log statement macros, does the "soft" limit
+/*! A helper macro to define the internals of the individual log statement macros. It does the "soft" limit
 check, converts from streamed values to a string and constructs a message_t of it, finally calls the logger.
 Use this one should you want to define custom log levels and their statement macros.
 Evaluates to true or false based on whether the log level was enabled or not. */
-#define JJ__LOGGER(level,levelname,msg) \
-    (JJ_LOG_COMPONENT.enabled(level) ? \
+#define JJ__LOGGER2(level,levelname,func,file,line,comp,msg) \
+    (comp.enabled(level) ? \
         jj::log::logger_t::instance().log(jj::log::message_t( \
             jj::log::clock_t::now(), \
             level, levelname, \
-            ((JJ_LOG_STREAM_PROVIDER << msg).str()), \
-            JJ_FUNC, \
-            __FILE__, __LINE__, \
-            JJ_LOG_COMPONENT \
+            msg, \
+            func, \
+            file, line, \
+            comp \
         )), true : \
         false)
+/*! A helper macro to define the internals of the individual log statement macros. It injects the "local" values into the log. 
+The actual pipeline is done in JJ__LOGGER2. */
+#define JJ__LOGGER(level,levelname,msg) JJ__LOGGER2(level,levelname,JJ_FUNC,__FILE__, __LINE__,JJ_LOG_COMPONENT,((JJ_LOG_STREAM_PROVIDER << msg).str()))
 
 /*! A helper macro that allows defining the logger initializer method that has to be defined in every program
 that uses this logger.
@@ -365,6 +367,230 @@ in the second parameter which is the actual body of the initializer method. */
 #define JJ_LOGGER_DEFAULTINIT
 
 #endif // JJ_LOGLIMIT_HARD < JJ_LOGLEVEL_OFF
+
+namespace jj
+{
+namespace log
+{
+
+// Convertors used in jjLX and jjLXval
+inline const jj::string_t exception2msg(const std::exception& e) { return jj::strcvt::to_string_t(e.what()); }
+inline const jj::string_t exception2msg(const std::string& s) { return jj::strcvt::to_string_t(s); }
+inline const jj::string_t exception2msg(const std::wstring& s) { return jj::strcvt::to_string_t(s); }
+inline const jj::string_t exception2msg(const char* s) { return jj::strcvt::to_string_t(s); }
+inline const jj::string_t exception2msg(const wchar_t* s) { return jj::strcvt::to_string_t(s); }
+
+} // namespace log
+} // namespace jj
+
+#if JJ_LOGLIMIT_HARD <= JJ_LOGLEVEL_SCOPE
+
+namespace jj
+{
+namespace log
+{
+
+/*! The class used to log ENTER/LEAVE. It is used in jjLscope, which logs the ENTER in ctor and if nothing else is done it 
+automatically logs LEAVE in dtor. However, with any of jjLL, jjLLval, jjLLvoid, jjLLmsg, jjLX and jjLXval it is possible
+to log the LEAVE of scope explicitly with a specific message and/or even the value returned/thrown. */
+class scopeLogger_t
+{
+    const char* func_; //!< function in which the log occurred
+    const char* file_; //!< file name of the source file in which the log occurred
+    component_t& comp_; //!< component in which the log occurred
+
+    bool left_; //!< determines whether the LEAVE log was already logged
+
+    /*! Helper to perform the LEAVE log in various situations. Logs with values from ctor, line given here and the message is created
+    from the value v only if logValue is true otherwise message is empty. */
+    template<typename T>
+    void internalLeaveLog(int line, bool logValue, const T& v)
+    {
+        left_ = true;
+        if (logValue)
+        {
+            JJ__LOGGER2(JJ_LOGLEVEL_SCOPE, jj::log::logger_t::NAME_LEAVE, func_, file_, line, comp_, ((JJ_LOG_STREAM_PROVIDER << v).str()));
+        }
+        else
+        {
+            JJ__LOGGER2(JJ_LOGLEVEL_SCOPE, jj::log::logger_t::NAME_LEAVE, func_, file_, line, comp_, jjT(""));
+        }
+    }
+
+    /*! Helper to perform the LEAVE log in various situations. Logs with values from ctor, line given here and the message is created
+    from msg and the value v (if logValue is true) otherwise it's just msg. */
+    template<typename T>
+    void internalLeaveLog(int line, bool logValue, const jj::char_t* msg, const T& v)
+    {
+        left_ = true;
+        if (logValue)
+        {
+            JJ__LOGGER2(JJ_LOGLEVEL_SCOPE, jj::log::logger_t::NAME_LEAVE, func_, file_, line, comp_, ((JJ_LOG_STREAM_PROVIDER << msg << jjT("; ") << v).str()));
+        }
+        else
+        {
+            JJ__LOGGER2(JJ_LOGLEVEL_SCOPE, jj::log::logger_t::NAME_LEAVE, func_, file_, line, comp_, msg);
+        }
+    }
+
+public:
+    /*! Ctor - Logs ENTER (if above the set "soft" log limit) and stores the values soa that they can be used in the the LEAVE log. */
+    scopeLogger_t(const char* function, const char* file, int line, component_t& component, const jj::string_t& message)
+        : func_(function), file_(file), comp_(component), left_(false)
+    {
+        JJ__LOGGER2(JJ_LOGLEVEL_SCOPE, jj::log::logger_t::NAME_ENTER, func_, file_, line, comp_, message);
+    }
+    /*! Dtor - Logs LEAVE (if above the set "soft" log limit) unless it has already been logged by the methods of the class. */
+    ~scopeLogger_t()
+    {
+        if (left_)
+            return;
+        JJ__LOGGER2(JJ_LOGLEVEL_SCOPE, jj::log::logger_t::NAME_LEAVE, func_, file_, -1, comp_, jjT("<end-of-scope>"));
+    }
+
+    /*! Used to log LEAVE with values from ctor, the given line and message as value v if logValue is true, empty otherwise. */
+    template<typename T>
+    const T& leaveLog(int line, bool logValue, const T& v)
+    {
+        internalLeaveLog(line, logValue, v);
+        return v;
+    }
+    /*! Used to log LEAVE with values from ctor, the given line and message as combination of msg and v if logValue is true, msg only otherwise. */
+    template<typename T>
+    const T& leaveLog(int line, bool logValue, const T& v, const jj::string_t& msg)
+    {
+        if (msg.empty())
+            leaveLog(line, logValue, v);
+        else
+            internalLeaveLog(line, logValue, msg.c_str(), v);
+        return v;
+    }
+    /*! Used to log LEAVE with values from ctor, the given line and message as value v if logValue is true, empty otherwise. */
+    template<typename T>
+    T& leaveLog(int line, bool logValue, T& v)
+    {
+        internalLeaveLog(line, logValue, v);
+        return v;
+    }
+    /*! Used to log LEAVE with values from ctor, the given line and message as combination of msg and v if logValue is true, msg only otherwise. */
+    template<typename T>
+    T& leaveLog(int line, bool logValue, T& v, const jj::string_t& msg)
+    {
+        if (msg.empty())
+            leaveLog(line, logValue, v);
+        else
+            internalLeaveLog(line, logValue, msg.c_str(), v);
+        return v;
+    }
+
+    /*! Used to log LEAVE with values from ctor, the given line and empty message. */
+    void leaveLog(int line)
+    {
+        internalLeaveLog(line, false, 0);
+    }
+    /*! Used to log LEAVE with values from ctor, the given line and message msg. */
+    void leaveLog(int line, const jj::string_t& msg)
+    {
+        if (msg.empty())
+            leaveLog(line);
+        else
+            internalLeaveLog(line, false, msg.c_str(), 0);
+    }
+
+    /*! Used to log LEAVE with values from ctor, the given line and message as given exception ex message, empty otherwise. */
+    template<typename T>
+    const T& leaveExLog(int line, bool logValue, const T& ex)
+    {
+        internalLeaveLog(line, logValue, jjT("exception was thrown"), exception2msg(ex));
+        return ex;
+    }
+    /*! Used to log LEAVE with values from ctor, the given line and message as combination of msg and exception ex message if logValue is true, msg only otherwise. */
+    template<typename T>
+    const T& leaveExLog(int line, bool logValue, const T& ex, const jj::string_t& msg)
+    {
+        if (msg.empty())
+            leaveExLog(line, logValue, ex);
+        else
+            internalLeaveLog(line, logValue, msg.c_str(), exception2msg(ex));
+        return ex;
+    }
+    /*! Used to log LEAVE with values from ctor, the given line and message as given exception ex message, empty otherwise. */
+    template<typename T>
+    T& leaveExLog(int line, bool logValue, T& ex)
+    {
+        internalLeaveLog(line, logValue, jjT("exception was thrown"), exception2msg(ex));
+        return ex;
+    }
+    /*! Used to log LEAVE with values from ctor, the given line and message as combination of msg and exception ex message if logValue is true, msg only otherwise. */
+    template<typename T>
+    T& leaveExLog(int line, bool logValue, T& ex, const jj::string_t& msg)
+    {
+        if (msg.empty())
+            leaveExLog(line, logValue, ex);
+        else
+            internalLeaveLog(line, logValue, msg.c_str(), exception2msg(ex));
+        return ex;
+    }
+};
+
+} // namespace log
+} // namespace jj
+
+/*! Defines the name that is used for the scope logger's instance local variable. */
+#define JJ_LOG_SCOPE theLogScope
+
+/*! Defines the instance of the scope logger in the current block - should be the first statement in a function if that uses scope logging. */
+#define jjLscope(msg) jj::log::scopeLogger_t JJ_LOG_SCOPE(JJ_FUNC, __FILE__, __LINE__, JJ_LOG_COMPONENT, ((JJ_LOG_STREAM_PROVIDER << msg).str()))
+
+/*! Helper used in jjLL - this one takes only a value that will be returned as parameter. */
+#define JJ__LL1(v) JJ_LOG_SCOPE.leaveLog(__LINE__, false, v)
+/*! Helper used in jjLL - this one takes a value that will be returned and a extra log message as parameters. */
+#define JJ__LL2(v,msg) JJ_LOG_SCOPE.leaveLog(__LINE__, false, v, ((JJ_LOG_STREAM_PROVIDER << msg).str()))
+/*! Use this in a return statement and wrap a return value with this. It takes up to 2 parameters. The first one
+(mandatory) is the value that should be returned, the second (optional) is an extra message that can be logged. */
+#define jjLL(...) JJ_VARG_N(JJ__LL, __VA_ARGS__)
+
+/*! Helper used in jjLLval - this one takes only a value that will be returned as parameter. */
+#define JJ__LLval1(v) JJ_LOG_SCOPE.leaveLog(__LINE__, true, v)
+/*! Helper used in jjLLval - this one takes a value that will be returned and a extra log message as parameters. */
+#define JJ__LLval2(v,msg) JJ_LOG_SCOPE.leaveLog(__LINE__, true, v, ((JJ_LOG_STREAM_PROVIDER << msg).str()))
+/*! Use this in a return statement and wrap a return value with this. It takes up to 2 parameters. The first one
+(mandatory) is the value that should be returned (and logged), the second (optional) is an extra message that can
+be logged with the value. */
+#define jjLLval(...) JJ_VARG_N(JJ__LLval, __VA_ARGS__)
+
+/*! Use this when returning from a function returning void. It will explicitly cause the LEAVE log. */
+#define jjLLvoid JJ_LOG_SCOPE.leaveLog(__LINE__)
+/*! Use this when returning from a function returning void. It will explicitly cause the LEAVE log using the msg parameter as message. */
+#define jjLLmsg(msg) JJ_LOG_SCOPE.leaveLog(__LINE__, ((JJ_LOG_STREAM_PROVIDER << msg).str()))
+
+/*! Helper used in jjLX - this one takes only a value that will be returned as parameter. */
+#define JJ__LX1(e) JJ_LOG_SCOPE.leaveExLog(__LINE__, false, e)
+/*! Helper used in jjLX - this one takes a value that will be returned and a extra log message as parameters. */
+#define JJ__LX2(e,msg) JJ_LOG_SCOPE.leaveExLog(__LINE__, false, e, ((JJ_LOG_STREAM_PROVIDER << msg).str()))
+/*! Use this in a throw statement (that'll leave the scope of the function) and wrap the exception with this.
+It takes up to 2 parameters. The first one (mandatory) is the exception to be thrown, the second (optional) is an extra message
+that can be logged. */
+#define jjLX(...) JJ_VARG_N(JJ__LX, __VA_ARGS__)
+
+/*! Helper used in jjLXval - this one takes only a value that will be returned as parameter. */
+#define JJ__LXval1(e) JJ_LOG_SCOPE.leaveExLog(__LINE__, true, e)
+/*! Helper used in jjLXval - this one takes a value that will be returned and a extra log message as parameters. */
+#define JJ__LXval2(e,msg) JJ_LOG_SCOPE.leaveExLog(__LINE__, true, e, ((JJ_LOG_STREAM_PROVIDER << msg).str()))
+/*! Use this in a throw statement (that'll leave the scope of the function) and wrap the exception with this.
+It takes up to 2 parameters. The first one (mandatory) is the exception to be thrown (and logged), the second (optional)
+is an extra message that can be logged with the exception. */
+#define jjLXval(...) JJ_VARG_N(JJ__LXval, __VA_ARGS__)
+
+#else // JJ_LOGLIMIT_HARD <= JJ_LOGLEVEL_SCOPE
+
+#define jjLscope(msg)
+#define jjLL(v,...) v
+#define jjLLval(v,...) v
+#define jjLLvoid
+#define jjLLmsg(msg)
+
+#endif // JJ_LOGLIMIT_HARD <= JJ_LOGLEVEL_SCOPE
 
 #if (JJ_LOGLIMIT_HARD <= JJ_LOGLEVEL_FATAL)
 /*! Log statement macro that logs a [FATAL] error of JJ_LOGLEVEL_FATAL level. */
