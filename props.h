@@ -659,7 +659,7 @@ public:
     {
         source_key_type finalKey{};
         PROPS& p = descend(path, finalKey);
-        return p.get<T>(conv_.convert(finalKey));
+        return p.template get<T>(conv_.convert(finalKey));
     }
 
     /*! Combines the descend() and PROPS::set<T>. Updates value at path or throws keyNotFound
@@ -669,7 +669,7 @@ public:
     {
         source_key_type finalKey{};
         PROPS& p = descend(path, finalKey);
-        p.set<T>(conv_.convert(finalKey), v);
+        p.template set<T>(conv_.convert(finalKey), v);
     }
 
     /*! Combines the descend() and PROPS::apply. Applies action on value by path or throws keyNotFound
