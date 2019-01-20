@@ -26,13 +26,16 @@
 #if defined(_WIN32)
 #define JJ_OS_WINDOWS
 #define JJ_USE_WSTRING
+#elif defined(__CYGWIN__)
+#define JJ_OS_CYGWIN
+#define JJ_USE_STRING
 #else
 #define JJ_OS_UNIX_LINUX
 #define JJ_OS_LINUX
 #define JJ_USE_STRING
 #endif
 
-#if defined(_WIN32) || ( __GNUC__ > 5 ) || (__GNUC__ == 5 && (__GNUC_MINOR__ > 1 ) )
+#if defined(JJ_COMPILER_MSVC) || ( __GNUC__ > 5 ) || (__GNUC__ == 5 && (__GNUC_MINOR__ > 1 ) )
 // this is only supported on windows (vs2017) or with g++ newer than 5.1
 #define JJ_USE_CODECVT
 #else

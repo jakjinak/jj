@@ -4,11 +4,11 @@
 #include <cctype>
 #include <cwctype>
 
-#if defined(JJ_OS_WINDOWS)
+#if defined(JJ_COMPILER_MSVC)
 #include <string.h> // _strnicmp, _wcsnicmp
 #else
 #include <strings.h> // strncasecmp, wcsncasecmp
-#endif // defined(JJ_OS_WINDOWS)
+#endif // defined(JJ_COMPILER_MSVC)
 
 #if defined(JJ_USE_CODECVT)
 #include <locale>
@@ -231,13 +231,13 @@ int cmpi(char a, char b)
 int cmpi(const char* a, const char* b, size_t pos, size_t len)
 {
     strprecheck(a, b, pos);
-#if defined(JJ_OS_WINDOWS)
+#if defined(JJ_COMPILER_MSVC)
     if (len == std::string::npos)
         return sgn(_strcmpi(a, b));
     return sgn(_strnicmp(a, b, len));
 #else
     return sgn(strncasecmp(a, b, len));
-#endif // defined(JJ_OS_WINDOWS)
+#endif // defined(JJ_COMPILER_MSVC)
 }
 int cmpi(wchar_t a, wchar_t b)
 {
@@ -253,13 +253,13 @@ int cmpi(wchar_t a, wchar_t b)
 int cmpi(const wchar_t* a, const wchar_t* b, size_t pos, size_t len)
 {
     strprecheck(a, b, pos);
-#if defined(JJ_OS_WINDOWS)
+#if defined(JJ_COMPILER_MSVC)
     if (len == std::wstring::npos)
         return sgn(_wcsicmp(a, b));
     return sgn(_wcsnicmp(a, b, len));
 #else
     return sgn(wcsncasecmp(a, b, len));
-#endif // defined(JJ_OS_WINDOWS)
+#endif // defined(JJ_COMPILER_MSVC)
 }
 
 bool equali(char a, char b)

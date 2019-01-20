@@ -60,6 +60,9 @@ case "$1" in
       [Ll][Ii][Nn][Uu][Xx])
         echo linux
         ;;
+      [Cc][Yy][Gg][Ww][Ii][Nn]*)
+        echo cygwin
+        ;;
       *)
         echo "`uname -s`"
         ;;
