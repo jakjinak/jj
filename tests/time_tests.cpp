@@ -22,7 +22,10 @@ struct stampchecker
         else // UPTIME
         {
 #ifdef JJ_OS_WINDOWS
-            t = (GetTickCount64() / 1000) + 1;
+            LARGE_INTEGER cnt, frq;
+            QueryPerformanceCounter(&cnt);
+            QueryPerformanceFrequency(&frq);
+            t = cnt.QuadPart / frq.QuadPart;
 #else
             timespec ts;
             clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -117,7 +120,10 @@ struct momentchecker
         else // UPTIME
         {
 #ifdef JJ_OS_WINDOWS
-            t = (GetTickCount64() / 1000) + 1;
+            LARGE_INTEGER cnt, frq;
+            QueryPerformanceCounter(&cnt);
+            QueryPerformanceFrequency(&frq);
+            t = cnt.QuadPart / frq.QuadPart;
 #else
             timespec ts;
             clock_gettime(CLOCK_MONOTONIC, &ts);
