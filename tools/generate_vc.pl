@@ -404,8 +404,8 @@ sub vcproj
   { for my $a (sort keys %parchs)
     { print indent(1)."<PropertyGroup Condition=\"'\$(Configuration)|\$(Platform)'=='$m|$parchs{$a}'\">\n";
       print indent(2)."<LinkIncremental>".($m =~ /^Release/?'false':'true')."</LinkIncremental>\n";
-      print indent(2)."<OutDir>\$(SolutionDir).bin\\\$(Configuration).\$(Platform)\\</OutDir>\n";
-      print indent(2)."<IntDir>\$(SolutionDir).bin\\\$(Configuration).\$(Platform)\\\$(ProjectName)\\</IntDir>\n";
+      print indent(2)."<OutDir>\$(SolutionDir).bin\\\$(Configuration)-windows.\$(Platform)\\</OutDir>\n";
+      print indent(2)."<IntDir>\$(SolutionDir).bin\\\$(Configuration)-windows.\$(Platform)\\\$(ProjectName)\\</IntDir>\n";
       print indent(1)."</PropertyGroup>\n";
     }
   }
