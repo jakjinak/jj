@@ -7,6 +7,7 @@
 #include "jj/gui/sizer.h"
 #include "jj/stream.h"
 #include <sstream>
+#include "jj/directories.h"
 
 class wnd : public jj::gui::frame_t
 {
@@ -99,6 +100,22 @@ public:
 
         menu_t* m1, *m2, *m3, *m4;
         menu_bar().append(m1 = new menu_t(*this), jjT("TEST"));
+        m1->append(menuItem_t::options() << opt::text(jjT("Current Dir"))).lock()->OnClick.add([this](menuItem_t&) {
+            t2->changeText(jj::directories::current());
+        });
+        m1->append(menuItem_t::options() << opt::text(jjT("Program Dir"))).lock()->OnClick.add([this](menuItem_t&) {
+            t2->changeText(jj::directories::program());
+        });
+        m1->append(menuItem_t::options() << opt::text(jjT("Program Path"))).lock()->OnClick.add([this](menuItem_t&) {
+            t2->changeText(jj::directories::program(true));
+        });
+        m1->append(menuItem_t::options() << opt::text(jjT("Home Dir"))).lock()->OnClick.add([this](menuItem_t&) {
+            t2->changeText(jj::directories::personal());
+        });
+        m1->append(menuItem_t::options() << opt::text(jjT("Home Dir2"))).lock()->OnClick.add([this](menuItem_t&) {
+            t2->changeText(jj::directories::personal(true));
+        });
+        m1->append(menuItem_t::SEPARATOR);
         auto me = m1->append(menuItem_t::options() << opt::text(jjT("Exit")) << opt::accelerator(keys::accelerator_t(keys::ALT, keys::F4)));
         me.lock()->OnClick.add([this](menuItem_t&) { 
             this->close(); 

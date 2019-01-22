@@ -70,7 +70,7 @@ infovariables: infoextravariables
 ########################################
 # jjbase
 SRCDIR_jjbase := $(realpath .)
-SOURCE_jjbase := string.cpp stringLiterals.cpp stream.cpp log.cpp cmdLine.cpp configurationStorage.cpp
+SOURCE_jjbase := string.cpp stringLiterals.cpp stream.cpp log.cpp cmdLine.cpp configurationStorage.cpp directories.cpp
 CXXFLAGS_jjbase := ${COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjbase}/..)
 SO_CXXFLAGS_jjbase := ${SO_COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjbase}/..)
 VSNAME_jjbase := jjBase
