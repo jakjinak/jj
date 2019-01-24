@@ -70,7 +70,7 @@ infovariables: infoextravariables
 ########################################
 # jjbase
 SRCDIR_jjbase := $(realpath .)
-SOURCE_jjbase := string.cpp stringLiterals.cpp stream.cpp log.cpp cmdLine.cpp configurationStorage.cpp directories.cpp
+SOURCE_jjbase := $(call locate_files,${SRCDIR_jjbase},*.cpp,1)
 CXXFLAGS_jjbase := ${COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjbase}/..)
 SO_CXXFLAGS_jjbase := ${SO_COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjbase}/..)
 VSNAME_jjbase := jjBase
@@ -89,7 +89,7 @@ $(eval $(call define_generate_vsproj,jjbase))
 ########################################
 # jjgui
 SRCDIR_jjgui := $(realpath gui)
-SOURCE_jjgui := common_wx.cpp application_wx.cpp window_wx.cpp menu_wx.cpp sizer_wx.cpp control_wx.cpp button_wx.cpp textLabel_wx.cpp textInput_wx.cpp comboBox_wx.cpp
+SOURCE_jjgui := $(call locate_files,${SRCDIR_jjgui},*.cpp)
 CXXFLAGS_jjgui := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjgui}/../..) ${WXINCDIR}
 VSNAME_jjgui := jjGUI
 VSTYPE_jjgui := lib
@@ -138,7 +138,7 @@ $(eval $(call define_generate_vsproj,jjtest))
 ########################################
 # jjbase-tests
 SRCDIR_jjbase-tests := $(realpath tests)
-SOURCE_jjbase-tests := string_tests.cpp flagSet_tests.cpp options_tests.cpp cmdLine_tests.cpp cmdLineOptions_tests.cpp configuration_tests.cpp props_tests.cpp source_tests.cpp time_tests.cpp log_tests.cpp macro_tests.cpp
+SOURCE_jjbase-tests := $(filter-out TestAppMain.cpp,$(call locate_files,${SRCDIR_jjbase-tests},*.cpp,1))
 CXXFLAGS_jjbase-tests := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
 LIBS_jjbase-tests := ${RESULT_jjtest} ${SO_RESULT_jjbase}
 VSNAME_jjbase-tests := jjbase.Tests

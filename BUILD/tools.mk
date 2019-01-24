@@ -2,6 +2,7 @@ TOOL_ECHO ?= $(shell [ "`echo -e 'a' 2> /dev/null`" = a ] && echo "echo -e" || e
 TOOL_MKDIR ?= mkdir -p
 TOOL_RM ?= rm -f
 TOOL_RMR ?= ${TOOL_RM}r
+TOOL_FIND ?= find
 
 TOOL_AR ?= ar
 

@@ -13,12 +13,12 @@ LIBDIR ?= ${ROOTDIR}/.bin/${BUILD_CONFIGURATION}
 OBJDIR ?= ${ROOTDIR}/.bin/${BUILD_CONFIGURATION}
 TMPDIR ?= ${ROOTDIR}/.bin/${BUILD_CONFIGURATION}/tmp
 
-WIPEDIRS := "${BINDIR}"
+ERASEDIRS := "${BINDIR}"
 ifneq ("${LIBDIR}","${BINDIR}")
-WIPEDIRS += "${LIBDIR}"
+ERASEDIRS += "${LIBDIR}"
 endif
 ifneq ("${OBJDIR}","${BINDIR}")
-WIPEDIRS += "${OBJDIR}"
+ERASEDIRS += "${OBJDIR}"
 endif
 
 ############################################################
@@ -32,6 +32,16 @@ COMMON_LDFLAGS ?= ${PLATFORMSPECIFIC_LDFLAGS} ${MODESPECIFIC_LDFLAGS} ${CUSTOM_L
 SO_COMMON_CXXFLAGS ?= -fPIC ${COMMON_CXXFLAGS}
 SO_COMMON_LDFLAGS ?= -fPIC ${COMMON_LDFLAGS}
 
+
+
+# The macro locate_files takes 3 arguments and is basically a simple wrapper over the program find. It expands to a list of the files found. Parameters:
+# 1 (dir) - the directory in which to start searching
+# 2 (pattern) - the file pattern to be searched for
+# 3 (maxdepth) - (optional) gives the maximum depth to search, 1 means search only in the given dir, unlimited by default
+#(call locate_files(dir,pattern,maxdepth)
+define locate_files
+$(patsubst ./%,%,$(shell cd '$1' && ${TOOL_FIND} . $(if $3,-maxdepth $3,) -type f -name '$2'))
+endef
 
 ########################################
 # this file contains below macros used to generate the targets for individual projects
@@ -51,7 +61,7 @@ infotargetscommon:
 	@${TOOL_ECHO} "${COLOR_HL}info${COLOR_0} ... prints this overview"
 	@${TOOL_ECHO} "${COLOR_HL}help${COLOR_0} ... same as ${COLOR_HL}info${COLOR_0}"
 	@${TOOL_ECHO} "${COLOR_HL}listnames${COLOR_0} ... lists all predefined names, further targets and info are available after doing 'make ${COLOR_HL}info_<name>${COLOR_0}'"
-	@${TOOL_ECHO} "${COLOR_HL}wipeout${COLOR_0} ... delete the whole directory containing all intermendiate and result files"
+	@${TOOL_ECHO} "${COLOR_HL}erase${COLOR_0} ... delete the whole directory containing all intermendiate and result files"
 
 infotargets: infotargetscommon
 	@${TOOL_ECHO} ""
@@ -77,9 +87,9 @@ info: infobody infotargets infovariables
 
 help: info
 
-wipeout:
-	$(call showlabel,${COLOR_CLEAN}=== Wiping all for ${COLOR_HL}${WIPEDIRS}${COLOR_0})
-	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${WIPEDIRS}
+erase:
+	$(call showlabel,"${COLOR_CLEAN}=== Erasing all in ${COLOR_HL}${ERASEDIRS}${COLOR_0}")
+	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${ERASEDIRS}
 
 ${TMPDIR}:
 	$(call showlabel,"${COLOR_SUPPORT}=== Creating directory ${COLOR_HL}${TMPDIR}${COLOR_0}")
