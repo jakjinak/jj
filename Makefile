@@ -99,7 +99,7 @@ $(eval $(call define_generate_vsproj,jjgui))
 # jjtest
 SRCDIR_jjtest := $(realpath test)
 SOURCE_jjtest := test.cpp
-CXXFLAGS_jjtest := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest}/../..)
+CXXFLAGS_jjtest := ${COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjtest}/../..)
 VSTYPE_jjtest := lib
 VSGUID_jjtest := AFD50C25-67B4-4BA2-B68B-0AB431A322B5
 VSREFS_jjtest := jjbase
@@ -119,7 +119,7 @@ $(eval $(call define_generate_vsproj,jjtest))
 # jjbase-tests
 SRCDIR_jjbase-tests := $(realpath tests)
 SOURCE_jjbase-tests := $(filter-out TestAppMain.cpp,$(call locate_files,${SRCDIR_jjbase-tests},*.cpp,1))
-CXXFLAGS_jjbase-tests := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
+CXXFLAGS_jjbase-tests := ${COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
 LIBS_jjbase-tests := ${RESULT_jjtest} ${SO_RESULT_jjbase}
 VSNAME_jjbase-tests := jjbase.Tests
 VSTYPE_jjbase-tests := capp
@@ -140,7 +140,7 @@ $(eval $(call define_generate_vsproj,jjbase-tests))
 # jjtest-tests
 SRCDIR_jjtest-tests := $(realpath tests/test)
 SOURCE_jjtest-tests := test_tests.cpp filter_tests.cpp
-CXXFLAGS_jjtest-tests := ${COMMON_CXXFLAGS} ${WXDEFINE} -I$(realpath ${SRCDIR_jjtest-tests}/../../..)
+CXXFLAGS_jjtest-tests := ${COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjtest-tests}/../../..)
 LIBS_jjtest-tests := ${RESULT_jjtest} ${RESULT_jjbase}
 VSNAME_jjtest-tests := jjtest.Tests
 VSTYPE_jjtest-tests := capp
