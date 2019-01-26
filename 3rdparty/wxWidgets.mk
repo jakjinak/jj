@@ -31,7 +31,7 @@ else
     WXSTEM_STR := gtk2u
     WXSTEM_DIR := gtk2-unicode
     WXSTEM_DEF := __WXGTK__
-    WXSYSINCDIR := -isystem /usr/include/gtk-unix-print-2.0 -isystem /usr/include/gtk-2.0 -isystem /usr/include/atk-1.0 -isystem /usr/include/cairo -isystem /usr/include/gdk-pixbuf-2.0 -isystem /usr/include/pango-1.0 -isyste
+    WXSYSINCDIR := -isystem /usr/include/gtk-unix-print-2.0 -isystem /usr/include/gtk-2.0 -isystem /usr/include/atk-1.0 -isystem /usr/include/cairo -isystem /usr/include/gdk-pixbuf-2.0 -isystem /usr/include/pango-1.0 -isystem /usr/lib64/gtk-2.0/include -isystem /usr/include/glib-2.0 -isystem /usr/lib64/glib-2.0/include -isystem /usr/include/harfbuzz -isystem /usr/include/freetype2 -isystem /usr/include/pixman-1 -isystem /usr/include/libpng15 -isystem /usr/include/libdrm
 ifeq (${WXSTATIC},1)
         WXSYSLIBS := -lpangocairo-1.0 -lpango-1.0 -lcairo -ldl -lgtk-x11-2.0 -lgdk_pixbuf-2.0 -lgdk-x11-2.0 -lgobject-2.0 -lglib-2.0 -lX11 -lXxf86vm
         WXSYSLINKDIR :=
