@@ -1,27 +1,7 @@
 
 include BUILD/detect.mk
 
-WXSTATIC ?= 0
-ifeq (${WXSTATIC},1)
-WXDIR ?= $(abspath .bin/3rdparty/wxWidgets/${BUILD_OS}.${BUILD_ARCH}_static)
-else
-WXDIR ?= $(abspath .bin/3rdparty/wxWidgets/${BUILD_OS}.${BUILD_ARCH})
-endif
-WXDIR_VS ?= D:\test\wxWidgets
-
-ifeq (${WXSTATIC},1)
-WXDEFINE := -D_FILE_OFFSET_BITS=64 -D__WXGTK__
-WXSETUPINCDIR := lib/wx/include/gtk2-unicode-static-3.0
-WXLIBDIR := -L${WXDIR}/lib
-WXEXTRALIBS := -lwxpng-3.0 -lwxzlib-3.0 -lpangocairo-1.0 -lpango-1.0 -lcairo -ldl -lgtk-x11-2.0 -lgdk_pixbuf-2.0 -lgdk-x11-2.0 -lgobject-2.0 -lglib-2.0 -lX11 -lXxf86vm
-else
-WXDEFINE := -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__
-WXSETUPINCDIR := lib/wx/include/gtk2-unicode-3.0
-WXLIBDIR := -L${WXDIR}/lib -Wl,-rpath,${WXDIR}/lib
-WXEXTRALIBS :=
-endif
-WXINCDIR := -isystem ${WXDIR}/include/wx-3.0 -isystem ${WXDIR}/${WXSETUPINCDIR} -I/usr/include/gtk-unix-print-2.0 -I/usr/include/gtk-2.0 -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/pango-1.0 -I/usr/lib64/gtk-2.0/include -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include/harfbuzz -I/usr/include/freetype2 -I/usr/include/pixman-1 -I/usr/include/libpng15 -I/usr/include/libdrm
-WXLIBS := -pthread -lwx_gtk2u_xrc-3.0 -lwx_gtk2u_html-3.0 -lwx_gtk2u_qa-3.0 -lwx_gtk2u_adv-3.0 -lwx_gtk2u_core-3.0 -lwx_baseu_xml-3.0 -lwx_baseu_net-3.0 -lwx_baseu-3.0 ${WXEXTRALIBS}
+include 3rdparty/wxWidgets.mk
 
 ROOTDIR := $(realpath .)
 

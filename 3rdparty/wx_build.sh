@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO convert to a Makefile
+
 if [ -z "$1" ]
 then
     cat << END_OF_BLOCK
@@ -11,11 +13,20 @@ linux.x86_64
 linux.x86_64_static
 linux.x86
 linux.x86_static
+patch-cygwin
+cygwin.x86_64
+cygwin.x86_64_static
 END_OF_BLOCK
     exit
 fi
 
 SWITCHES='--with-libjpeg=builtin --with-libpng=builtin --with-libtiff=builtin --with-regex=builtin --with-zlib=builtin --with-expat=builtin'
+
+patchfile()
+{ f="$1"
+  shift
+  sed "$@" < "$f" > "$f.bak" && mv "$f.bak" "$f"
+}
 
 while [ "$1" ]
 do
@@ -53,6 +64,30 @@ do
         linux.x86_static)
             mkdir -p ../wxout/linux.x86_static
             ./configure --prefix=$(realpath ../wxout/linux.x86_static) --disable-shared $SWITCHES CFLAGS='-m32' CXXFLAGS='-m32' CPPFLAGS='-m32' LDFLAGS='-m32'
+            make
+            make install
+            make distclean
+            ;;
+        patch-cygwin)
+            # https://trac.wxwidgets.org/ticket/16746
+            # https://forums.wxwidgets.org/viewtopic.php?t=33849
+            set -x
+            set -e
+            patchfile src/msw/volume.cpp 's|static long s_cancelSearch = FALSE;|static wxInt32 s_cancelSearch = FALSE;|'
+            patchfile src/common/socket.cpp -e 's|struct timeval tv;|TIMEVAL tv;|' -e 's|tv = \*timeout;|{ tv.tv_sec = timeout->tv_sec; tv.tv_usec = timeout->tv_usec; }|'
+            patchfile src/msw/sockmsw.cpp 's|timeval tv = { 0, 0 };|TIMEVAL tv = { 0, 0 };|'
+            ;;
+        cygwin.x86_64)
+            # TODO link error
+            mkdir -p ../wxout/$1
+            CPPFLAGS='-w -fpermissive -D__USE_W32_SOCKETS' LDFLAGS='-L /lib/w32api/' ./configure --prefix=$(realpath ../wxout/$1) $SWITCHES --with-msw
+            make
+            make install
+            make distclean
+            ;;
+        cygwin.x86_64_static)
+            mkdir -p ../wxout/$1
+            CPPFLAGS='-w -fpermissive -D__USE_W32_SOCKETS' LDFLAGS='-L /lib/w32api/' ./configure --prefix=$(realpath ../wxout/$1) --disable-shared $SWITCHES --with-msw
             make
             make install
             make distclean
