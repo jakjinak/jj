@@ -36,6 +36,9 @@
     <ClInclude Include="exception.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="exceptionTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="flagSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>

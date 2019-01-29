@@ -316,6 +316,7 @@
     <ClInclude Include="defines_auto.h" />
     <ClInclude Include="directories.h" />
     <ClInclude Include="exception.h" />
+    <ClInclude Include="exceptionTypes.h" />
     <ClInclude Include="flagSet.h" />
     <ClInclude Include="functionBag.h" />
     <ClInclude Include="geometry.h" />

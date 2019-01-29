@@ -2,6 +2,7 @@
 #define JJ_GUI_COMMON_WX_H
 
 #include <wx/wx.h>
+#include <wx/treectrl.h>
 #include "jj/gui/common.h"
 
 namespace jj
@@ -31,6 +32,7 @@ template<typename P> struct GETTER<wxStaticText, P> { inline static P* get(wxSta
 template<typename P> struct GETTER<wxTextCtrl, P> { inline static P* get(wxTextCtrl* p) { return p; } };
 template<typename P> struct GETTER<wxComboBox, P> { inline static P* get(wxComboBox* p) { return p; } };
 template<typename P> struct GETTER<wxButton, P> { inline static P* get(wxButton* p) { return p; } };
+template<typename P> struct GETTER<wxTreeCtrl, P> { inline static P* get(wxTreeCtrl* p) { return p; } };
 
 template<typename P> struct GETTER<wxSizer, P> { inline static P* get(wxSizer* p) { return p; } };
 template<typename P> struct GETTER<wxBoxSizer, P> { inline static P* get(wxBoxSizer* p) { return p; } };

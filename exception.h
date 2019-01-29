@@ -3,8 +3,6 @@
 
 #include <stdexcept>
 
-#include "jj/stream.h"
-
 namespace jj
 {
 
@@ -29,9 +27,10 @@ public:
     }
 };
 
-/*! A simple wrapper over logic error. */
+/*! Thrown in a method that is yet to be implemented. */
 struct not_implemented : public std::logic_error
 {
+    /*! Ctor */
     not_implemented() : std::logic_error("Not implemented!") {}
 };
 
