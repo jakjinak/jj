@@ -373,7 +373,7 @@ class app : public jj::gui::application_t
         return true;
     }
 
-	virtual bool onInit()
+	virtual bool on_init()
 	{
         //_CrtSetBreakAlloc(5684);
         f = new wnd(*this);
