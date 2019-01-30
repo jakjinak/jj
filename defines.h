@@ -23,10 +23,13 @@ Define this to an expression providing a "stream" to convert streamed values int
 #define JJ_LOG_STREAM_PROVIDER jj::log::simpleStreamProvider_t()
 #endif
 
+/*! No GUIs available. */
 #define JJ_DEFINED_VALUE_GUI_NONE 0
+/*! GUI based on wxWidgets enabled. */
 #define JJ_DEFINED_VALUE_GUI_WX 1
 
 #ifndef JJ_USE_GUI
+/*! Defines which GUI is available (if any). */
 #define JJ_USE_GUI JJ_DEFINED_VALUE_GUI_WX
 #endif // JJ_USE_GUI
 
