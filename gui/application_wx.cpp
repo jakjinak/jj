@@ -80,7 +80,15 @@ class theApp : public wxApp
 
         r.inst->argc = argc;
         r.inst->argv = argv;
-        return r.inst->onInit();
+        return r.inst->on_init();
+    }
+    virtual int OnRun()
+    {
+        int ret = wxApp::OnRun();
+        registrar_info& r = registrar();
+        if (r.inst)
+            r.inst->on_exit(ret);
+        return ret;
     }
     virtual bool OnExceptionInMainLoop()
     {
