@@ -8,7 +8,7 @@
 #include <list>
 #include <memory>
 #include "jj/exception.h"
-#include "jj/gui/eventCallback.h"
+#include "jj/functionBag.h"
 
 namespace jj
 {
@@ -360,9 +360,9 @@ public:
         return root_.find(cid);
     }
 
-    eventCallback_t<bool, item_t&, item_t*> BeforeSelect;
-    eventCallback_t<void, item_t&, item_t*> OnSelect;
-    eventCallback_t<void, item_t&> OnActivate;
+    functionBag_t<bool, item_t&, item_t*> BeforeSelect;
+    functionBag_t<void, item_t&, item_t*> OnSelect;
+    functionBag_t<void, item_t&> OnActivate;
 };
 
 } // namespace gui

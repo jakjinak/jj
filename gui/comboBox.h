@@ -5,7 +5,7 @@
 
 #if (JJ_USE_GUI)
 
-#include "jj/gui/eventCallback.h"
+#include "jj/functionBag.h"
 
 namespace jj
 {
@@ -51,8 +51,8 @@ public:
     void change(const string_t& item, size_t pos);
     void erase(size_t pos);
 
-    eventCallback_t<void, comboBox_t&> OnSelect;
-    eventCallback_t<void, comboBox_t&> OnChange;
+    functionBag_t<void, comboBox_t&> OnSelect;
+    functionBag_t<void, comboBox_t&> OnChange;
 };
 
 } // namespace gui

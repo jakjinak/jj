@@ -61,7 +61,7 @@ textInput_t::textInput_t(contentHolder_t& owner, options_t setup)
     wrTextInput* tmp = new wrTextInput(*this, GET<wxWindow>::from(&owner), get_id(), s2wxs<string_t>::cvt(setup.Text), wxPoint(setup.Position.Left, setup.Position.Top), wxSize(setup.Size.Width, setup.Size.Height), tif2wxtcs(setup)|ha2wxtcs(setup));
     set_native_pointer(static_cast<wxTextCtrl*>(tmp));
 
-    AUX::setup_first_last_callbacks(OnTextChange,
+    jj::AUX::setup_first_last_callbacks(OnTextChange,
         [this, tmp] { GET<wxTextCtrl>::from(this)->Bind(wxEVT_TEXT, &wrTextInput::evtText, tmp, this->get_id()); },
         [this, tmp] { GET<wxTextCtrl>::from(this)->Unbind(wxEVT_TEXT, &wrTextInput::evtText, tmp, this->get_id()); }
     );

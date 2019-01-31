@@ -6,7 +6,7 @@
 #if (JJ_USE_GUI)
 
 #include "jj/gui/menu.h"
-#include "jj/gui/eventCallback.h"
+#include "jj/functionBag.h"
 #include "jj/gui/stock.h"
 
 namespace jj
@@ -52,7 +52,7 @@ public:
 
     bool close(bool force = false);
 
-    eventCallback_t<bool, topLevelWindow_t&> OnClose;
+    functionBag_t<bool, topLevelWindow_t&> OnClose;
 };
 
 class frame_t;

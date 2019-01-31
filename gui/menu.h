@@ -6,7 +6,7 @@
 #if (JJ_USE_GUI)
 
 #include "jj/gui/keys.h"
-#include "jj/gui/eventCallback.h"
+#include "jj/functionBag.h"
 
 #include <memory>
 
@@ -46,7 +46,7 @@ public:
     string_t text() const;
     void text(const string_t& v);
 
-    eventCallback_t<void, menuItem_t&> OnClick;
+    functionBag_t<void, menuItem_t&> OnClick;
 };
 
 class menu_t : public nativePointerWrapper_t<menu_t>

@@ -77,7 +77,7 @@ menuItem_t::menuItem_t(menu_t& owner, int id)
         std::shared_ptr<wrItem> w(pw = new wrItem);
         w->item_ = this;
         m->wrappers_.push_back(w);
-        AUX::setup_first_last_callbacks(OnClick,
+        jj::AUX::setup_first_last_callbacks(OnClick,
             [this, m, pw] { m->Bind(wxEVT_MENU, &wrItem::evtMenu, pw, this->get_id()); },
             [this, m, pw] { m->Unbind(wxEVT_MENU, &wrItem::evtMenu, pw, this->get_id()); }
         );

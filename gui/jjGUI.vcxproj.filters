@@ -33,9 +33,6 @@
     <ClInclude Include="control.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="eventCallback.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="keys.h">
       <Filter>Header Files</Filter>
     </ClInclude>

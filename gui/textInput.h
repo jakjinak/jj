@@ -5,7 +5,7 @@
 
 #if (JJ_USE_GUI)
 
-#include "jj/gui/eventCallback.h"
+#include "jj/functionBag.h"
 
 namespace jj
 {
@@ -40,7 +40,7 @@ public:
     void text(const string_t& v);
     void changeText(const string_t& v);
 
-    eventCallback_t<void, textInput_t&> OnTextChange;
+    functionBag_t<void, textInput_t&> OnTextChange;
 };
 
 } // namespace gui
