@@ -333,9 +333,9 @@ public:
     tree_T(contentHolder_t& owner, options_t setup)
         : base_t(owner, setup), root_(*this, rootId_)
     {
-        AUX::setup_first_last_callbacks(BeforeSelect, startBeforeSelect, stopBeforeSelect);
-        AUX::setup_first_last_callbacks(OnSelect, startOnSelect, stopOnSelect);
-        AUX::setup_first_last_callbacks(OnActivate, startOnActivate, stopOnActivate);
+        jj::AUX::setup_first_last_callbacks(BeforeSelect, startBeforeSelect, stopBeforeSelect);
+        jj::AUX::setup_first_last_callbacks(OnSelect, startOnSelect, stopOnSelect);
+        jj::AUX::setup_first_last_callbacks(OnActivate, startOnActivate, stopOnActivate);
     }
 
     const item_t& root() const { return root_; }
