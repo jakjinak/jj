@@ -168,12 +168,12 @@ void menuBar_t::reset_native_pointer()
 }
 
 statusBar_t::field_t::field_t()
-    : text_(), width_(0), style_(DEFAULT)
+    : Text(), Width(0), Style(DEFAULT)
 {
 }
 
 statusBar_t::field_t::field_t(const string_t& text, style_t style)
-    : text_(text), width_(0), style_(DEFAULT)
+    : Text(text), Width(0), Style(DEFAULT)
 {
 }
 
@@ -253,7 +253,7 @@ void statusBar_t::set(const fields_t& fields)
         i = 0;
         for (auto& f : fields)
         {
-            arr[i] = s2sbs(f.style_);
+            arr[i] = s2sbs(f.Style);
             ++i;
         }
         sb->SetStatusStyles(fs, arr);
@@ -262,7 +262,7 @@ void statusBar_t::set(const fields_t& fields)
         i = 0;
         for (auto& f : fields)
         {
-            arr[i] = f.width_;
+            arr[i] = f.Width;
             ++i;
         }
         sb->SetStatusWidths(fs, arr);
@@ -278,7 +278,7 @@ void statusBar_t::set(const fields_t& fields)
     i = 0;
     for (auto& f : fields)
     {
-        sb->SetStatusText(s2wxs<string_t>::cvt(f.text_), i);
+        sb->SetStatusText(s2wxs<string_t>::cvt(f.Text), i);
         ++i;
     }
 }
@@ -387,10 +387,9 @@ static long ff2wxfs(frame_t::flags1_t v)
     if (v*frame_t::NO_MAXIMIZE) ret &= (~(wxMAXIMIZE_BOX));
     if (v*frame_t::NO_CLOSE) ret &= (~(wxCLOSE_BOX));
     if (v*frame_t::NO_SYSMENU) ret &= (~(wxSYSTEM_MENU));
-    if (v*frame_t::NO_CAPTION) ret &= (~(wxCAPTION));
+    if (v*frame_t::NO_TITLEBAR) ret &= (~(wxCAPTION));
     if (v*frame_t::NO_TASKBAR) ret |= wxFRAME_NO_TASKBAR;
-    if (v*frame_t::TOOL_WINDOW) ret |= wxFRAME_TOOL_WINDOW;
-    if (v*frame_t::SHAPED) ret |= wxFRAME_SHAPED;
+    if (v*frame_t::TOOL_WINDOW) { ret |= wxFRAME_TOOL_WINDOW; ret |= wxFRAME_NO_TASKBAR; }
     return ret;
 }
 } // namespace <anonymous>
@@ -398,7 +397,7 @@ static long ff2wxfs(frame_t::flags1_t v)
 frame_t::frame_t(application_t& app, options_t setup)
     : parent_t(app, nullptr), native_t(*this)
     , menuBar_(nullptr), statusBar_(nullptr)
-    , onCreateMenuBar([this] { return new menuBar_t(*this); }), onCreateStatusBar([this] { return new statusBar_t(*this); })
+    , OnCreateMenuBar([this] { return new menuBar_t(*this); }), OnCreateStatusBar([this] { return new statusBar_t(*this); })
 {
     wrFrame* tmp = new wrFrame(*this, nullptr, wxID_ANY, s2wxs<string_t>::cvt(setup.Text), wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
     set_native_pointer(static_cast<wxFrame*>(tmp));
@@ -407,7 +406,7 @@ frame_t::frame_t(application_t& app, options_t setup)
 frame_t::frame_t(application_t& app, topLevelWindow_t& owner, options_t setup)
     : parent_t(app, &owner), native_t(*this)
     , menuBar_(nullptr), statusBar_(nullptr)
-    , onCreateMenuBar([this] { return new menuBar_t(*this); }), onCreateStatusBar([this] { return new statusBar_t(*this); })
+    , OnCreateMenuBar([this] { return new menuBar_t(*this); }), OnCreateStatusBar([this] { return new statusBar_t(*this); })
 {
     wrFrame* tmp = new wrFrame(*this, GET<wxWindow>::from(&owner), wxID_ANY, s2wxs<string_t>::cvt(setup.Text), wxPoint(setup.Position.Column, setup.Position.Row), wxSize(setup.Size.Width, setup.Size.Height), ff2wxfs(setup));
     set_native_pointer(static_cast<wxFrame*>(tmp));
@@ -483,7 +482,7 @@ static long df2wxds(dialog_t::flags1_t v)
     if (v*dialog_t::MAXIMIZEABLE) ret |= wxMAXIMIZE_BOX;
     if (v*dialog_t::NO_CLOSE) ret &= (~(wxCLOSE_BOX));
     if (v*dialog_t::NO_SYSMENU) ret &= (~(wxSYSTEM_MENU));
-    if (v*dialog_t::NO_CAPTION) ret &= (~(wxCAPTION));
+    if (v*dialog_t::NO_TITLEBAR) ret &= (~(wxCAPTION));
     return ret;
 }
 } // namespace <anonymous>
