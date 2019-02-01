@@ -319,11 +319,11 @@
     <ClInclude Include="exceptionTypes.h" />
     <ClInclude Include="flagSet.h" />
     <ClInclude Include="functionBag.h" />
-    <ClInclude Include="geometry.h" />
     <ClInclude Include="idGenerator.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="macros.h" />
     <ClInclude Include="options.h" />
+    <ClInclude Include="point.h" />
     <ClInclude Include="props.h" />
     <ClInclude Include="propsTextDeserializer.h" />
     <ClInclude Include="propsTextSerializer.h" />

@@ -7,7 +7,7 @@
 
 #include "jj/string.h"
 #include "jj/idGenerator.h"
-#include "jj/geometry.h"
+#include "jj/point.h"
 #include "jj/options.h"
 
 #include <set>
