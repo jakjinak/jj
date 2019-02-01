@@ -6,6 +6,14 @@
 
 namespace jj
 {
+/*! ostream_t
+Denotes the system native type of generic output stream. */
+/*! istream_t
+Denotes the system native type of generic input stream. */
+/*! fstream_t, ofstream_t, ifstream_t
+Denotes the system native types of inout/out/in file stream. */
+/*! sstream_t, osstream_t, isstream_t
+Denotes the system native types of inout/out/in string stream. */
 #if defined(JJ_USE_WSTRING)
 typedef std::wostream ostream_t;
 typedef std::wistream istream_t;
@@ -30,12 +38,13 @@ typedef std::istringstream isstream_t;
 typedef std::stringstream sstreamt_t;
 #endif // defined(JJ_USE_WSTRING)
 
-extern istream_t& cin;
-extern ostream_t& cout;
-extern ostream_t& cerr;
+extern istream_t& cin; //!< alias to the system native standard input
+extern ostream_t& cout; //!< alias to the system native standard output
+extern ostream_t& cerr; //!< alias to the system native standard error output
 
 namespace AUX
 {
+/*! A helper for the jjS and jjS2 macros. */
 template<typename T>
 class SStreamWrap
 {
@@ -59,7 +68,13 @@ public:
 } // namespace AUX
 } // namespace jj
 
+/*! Expands to an expression which "in-line" uses default stringstream to convert
+given streamed values into a string. Usage:
+my_function_taking_string_as_parameter(jjS(jjT("the values are [") << a << jjT(',') << b << jjT(']'))) */
 #define jjS(text) (jj::AUX::SStreamWrap<jj::sstreamt_t>() << text).str()
+/*! Expands to an expression which "in-line" uses given stringstream type to convert
+given streamed values into a string. Usage:
+throw MyException(jjS2(std::ostringstream, jjT("invalid argument [") << a << jjT(']'))) */
 #define jjS2(type,text) (jj::AUX::SStreamWrap<type>() << text).str()
 
 #endif // JJ_STREAM_H

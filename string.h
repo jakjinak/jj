@@ -30,12 +30,14 @@ namespace jj
 namespace str
 {
 
-extern const std::string EmptyString;
-extern const std::wstring EmptyWString;
-extern const string_t& Empty;
+extern const std::string EmptyString; //!< an empty "narrow" string instance
+extern const std::wstring EmptyWString; //!< an empty "wide" string instance
+extern const string_t& Empty; //!< reference to system native empty string instance
 
 } // namespace str
 } // namespace jj
+
+// TODO locale enabled variants of all those below
 
 namespace jj
 {
@@ -81,8 +83,6 @@ inline string_t to_string_t(const std::wstring& str) { return to_string(str); }
 
 namespace str
 {
-
-// TODO locale enabled variants of all those below
 
 /*! Returns whether given character can be considered a whitespace. */
 bool isspace(char ch);

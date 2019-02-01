@@ -10,7 +10,7 @@ namespace jj
 template<typename STREAM>
 class streamSource_t
 {
-    // TODO add position tracking policy
+    // TODO add position tracking policy (probably as derived source classes)
 public:
     typedef STREAM stream_type; //!< underlying stream type
     typedef typename stream_type::char_type char_type; //!< character type in the underlying stream
