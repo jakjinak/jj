@@ -59,11 +59,11 @@ comboBox_t::comboBox_t(contentHolder_t& owner, options_t setup, const std::initi
     );
     set_native_pointer(static_cast<wxComboBox*>(tmp));
 
-    jj::AUX::setup_first_last_callbacks(OnSelect,
+    setup_functionBag_callbacks(OnSelect,
         [this, tmp] { GET<wxComboBox>::from(this)->Bind(wxEVT_COMBOBOX, &wrComboBox::evtSelect, tmp, this->get_id()); },
         [this, tmp] { GET<wxComboBox>::from(this)->Unbind(wxEVT_COMBOBOX, &wrComboBox::evtSelect, tmp, this->get_id()); }
     );
-    jj::AUX::setup_first_last_callbacks(OnChange,
+    setup_functionBag_callbacks(OnChange,
         [this, tmp] { GET<wxComboBox>::from(this)->Bind(wxEVT_TEXT, &wrComboBox::evtChange, tmp, this->get_id()); },
         [this, tmp] { GET<wxComboBox>::from(this)->Unbind(wxEVT_TEXT, &wrComboBox::evtChange, tmp, this->get_id()); }
     );

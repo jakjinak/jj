@@ -142,16 +142,13 @@ public:
     }
 };
 
-namespace AUX
-{
 /*! A helper to setup functionBag_t's FirstAdded and LastRemoved at once. */
 template<typename T>
-void setup_first_last_callbacks(T& ecb, std::function<void()> first, std::function<void()> last)
+void setup_functionBag_callbacks(T& ecb, std::function<void()> first, std::function<void()> last)
 {
     ecb.FirstAdded = first;
     ecb.LastRemoved = last;
 }
-} // namespace AUX
 
 } // namespace jj
 

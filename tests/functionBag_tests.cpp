@@ -196,7 +196,7 @@ JJ_TEST_CASE(firstlast_callbackscalled)
 {
     reset();
     jj::functionBag_t<void> fb;
-    jj::AUX::setup_first_last_callbacks(fb, [] { calls.push_back(jjT("first")); }, [] {calls.push_back(jjT("last")); });
+    jj::setup_functionBag_callbacks(fb, [] { calls.push_back(jjT("first")); }, [] {calls.push_back(jjT("last")); });
     fb();
     test({});
     int id1 = fb.add(&functionBagTests_t::function0);

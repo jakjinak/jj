@@ -68,7 +68,7 @@ button_t::button_t(contentHolder_t& owner, options_t setup)
     );
     set_native_pointer(static_cast<wxButton*>(tmp));
 
-    jj::AUX::setup_first_last_callbacks(OnClick,
+    setup_functionBag_callbacks(OnClick,
         [this, tmp] { GET<wxButton>::from(this)->Bind(wxEVT_BUTTON, &wrButton::evtButton, tmp, this->get_id()); },
         [this, tmp] { GET<wxButton>::from(this)->Unbind(wxEVT_BUTTON, &wrButton::evtButton, tmp, this->get_id()); }
     );
