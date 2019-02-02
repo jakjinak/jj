@@ -14,9 +14,10 @@ CUSTOM_CXXFLAGS += -static-libgcc -static-libstdc++
 CUSTOM_LDFLAGS += -static-libgcc -static-libstdc++
 endif
 
-.PHONY: all libs uiall uilibs uitests tests clean_all clean clean_tests
+.PHONY: all libs uiall uilibs uitests tests testsbin clean_all clean clean_tests
 
 libs:
+tests: testsbin
 all: libs tests
 uilibs: ${WXDIR}
 uitests: tests
@@ -133,7 +134,8 @@ VSDEFINES_jjbase-tests := \
 	m=release|NDEBUG \
 	_CONSOLE
 VSHEADER_jjbase-tests := $(shell cd "${SRCDIR_jjbase-tests}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
-$(eval $(call define_program,jjbase-tests,tests,clean_tests,jjbase_so jjtest))
+$(eval $(call define_program,jjbase-tests,testsbin,clean_tests,jjbase_so jjtest))
+$(eval $(call define_testrun,jjbase-tests,tests))
 $(eval $(call define_generate_vsproj,jjbase-tests))
 
 ########################################
@@ -153,7 +155,14 @@ VSDEFINES_jjtest-tests := \
 	m=debug|_DEBUG \
 	m=release|NDEBUG \
 	_CONSOLE
-$(eval $(call define_program,jjtest-tests,tests,clean_tests,jjbase jjtest))
+$(eval $(call define_program,jjtest-tests,testsbin,clean_tests,jjbase jjtest))
+TESTRUN_NAME_jjtest-tests := tests/test/runner.sh
+TESTRUN_PARS_jjtest-tests := ${RESULT_jjtest-tests}
+TESTRUN_VARS_jjtest-tests := VERBOSITY_commands=$(VERBOSITY_commands) VERBOSITY_colors=$(VERBOSITY_colors) VERBOSITY_tests=$(VERBOSITY_tests)
+$(eval $(call define_testrun,jjtest-tests,tests))
+TESTRUN_NAME_jjtest-tests2 := ${RESULT_jjtest-tests}
+TESTRUN_PARS_jjtest-tests2 := +t filterTests_t/
+$(eval $(call define_testrun,jjtest-tests2,tests))
 $(eval $(call define_generate_vsproj,jjtest-tests))
 
 

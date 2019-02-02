@@ -77,6 +77,7 @@ public:
     enum class testResults_t
     {
         NONE, //!< no information is shown even if tests fail
+        FATALS, //!< only caught unhandled exceptions are shown
         FAILS, //!< only failed conditions are shown
         ALL //!< all results are shown
     };
@@ -690,7 +691,7 @@ You have to name all the testcases as the additional parameters. */
             DB.test_result(jj::test::output_t::PASSED, jjS(msg)); \
         ++ JJ_TEST_CLASS_ACCESSOR JJ_TEST_CASE_Statistics.Passed; \
     } else { \
-        if (DB.Tests != jj::test::options_t::testResults_t::NONE) \
+        if (DB.Tests >= jj::test::options_t::testResults_t::FAILS) \
             DB.test_result(jj::test::output_t::rt, jjS(msg)); \
         ++ JJ_TEST_CLASS_ACCESSOR jjM2(JJ___MEMBER_,rt); \
         exc \

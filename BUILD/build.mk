@@ -273,11 +273,11 @@ infofinale_$(1): infofinaleshared_$(1)
 .PHONY: infopreludeshared_$(1) infofinaleshared_$(1)
 
 $${SO_RESULT_$(1)}: $${SO_OBJ_$(1)} $(addsuffix },$(addprefix $${RESULT_,$(4)))
-	$$(call showlabel,"$${COLOR_STATLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_SHARLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
 
 $(1)_so_only: $${SO_OBJ_$(1)}
-	$$(call showlabel,"$${COLOR_STATLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
+	$$(call showlabel,"$${COLOR_SHARLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
 endef
 
@@ -378,4 +378,27 @@ $${RESULT_$(1)}: $${OBJ_$(1)}
 $(1)_only: $${OBJ_$(1)}
 	$$(call showlabel, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
+endef
+
+# define_testrun registers a new unit test binary, the first parameter is the stem of all names for this target, it usually
+# is same as the first parameter of define_program, the second parameter is the "parent" rule name
+# One can override the following variables to tweak the behavior:
+# TESTRUN_PREPARE_<name> ... the name of the program to run, defaults to RESULT_<name> (defined in define_program)
+# TESTRUN_VARS_<name> ... the variables to set for the program; defaults to empty
+# TESTRUN_PARS_<name> ... the parameter to pass to the program; defaults to empty
+#       note: based on the VERBOSITY_tests formatting parameters will be passed beyond this variable
+# TESTRUN_PREPARE_<name> ... can provide commands to prepare environment for the test target before the program is invoked
+# TESTRUN_CLEANUP_<name> ... can provide commands to cleanup environment invoked after the program finishes (succeeds)
+# TODO add to info
+#(call define_testrun,name,makerule)
+define define_testrun
+TESTRUN_NAME_$(1) ?= $${RESULT_$(1)}
+
+$(2) : testrun_$(1)
+
+testrun_$(1):
+	$$(call showlabel, "$${COLOR_RUNTEST}=== Running test binary $${COLOR_HL}$${TESTRUN_NAME_$(1)}$${COLOR_0}")
+	$${TESTRUN_PREPARE_$(1)}
+	$(COMMAND_HIDE_PREFIX)$${TESTRUN_VARS_$(1)} $${TESTRUN_NAME_$(1)} $${TESTRUN_PARS_$(1)} $${RUNTEST_STYLE}
+	$${TESTRUN_CLEANUP_$(1)}
 endef

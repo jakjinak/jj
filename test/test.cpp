@@ -44,14 +44,15 @@ void defaultInitializer_t::on_init(db_t& DB)
         [&DB] (const optionDefinition_t&, values_t&) { DB.CaseNames = jj::test::options_t::caseNames_t::ENTERLEAVE; return true; } });
     ArgumentDefinitions->Options.push_back({{name_t(jjT("C")), name_t(jjT("in-color"))}, jjT("Prints output in colors."), 0u, multiple_t::OVERRIDE,
         [&DB] (const optionDefinition_t&, values_t&) { DB.Colors = true; return true; } });
-    ArgumentDefinitions->Options.push_back({{name_t(jjT("results"))}, jjT("Based on provided value prints results of individual tests within testcases; none means no results shown, fails shows only failed tests, all shows failed and passed conditions."), 1u, multiple_t::OVERRIDE,
+    ArgumentDefinitions->Options.push_back({{name_t(jjT("results"))}, jjT("Based on provided value prints results of individual tests within testcases; none means no results shown, fatals shows only caught unhandled exceptions, fails shows only failed tests, all shows failed and passed conditions."), 1u, multiple_t::OVERRIDE,
         [&DB](const optionDefinition_t&, values_t& v) {
             if (v.Values.size()==0) throw std::runtime_error("Invalid number of arg values.");
             jj::string_t& s = v.Values.front();
             if (s==jjT("none")) DB.Tests = jj::test::options_t::testResults_t::NONE;
+            else if (s==jjT("fatals")) DB.Tests = jj::test::options_t::testResults_t::FATALS;
             else if (s==jjT("fails")) DB.Tests = jj::test::options_t::testResults_t::FAILS;
             else if (s==jjT("all")) DB.Tests = jj::test::options_t::testResults_t::ALL;
-            else throw std::runtime_error("Value in --results can be one of none|fails|all.");
+            else throw std::runtime_error("Value in --results can be one of none|fatals|fails|all.");
             return true; } });
     ArgumentDefinitions->Options.push_back({ {name_t(jjT("S")),name_t(jjT("summary"))}, jjT("Determines if and how the summary of tests is printed at the end of the program; none means not printed at all, default show the default (passed/failed/total) in rows, short prints only passed/failed numbers in last row."), 1u, multiple_t::OVERRIDE,
         [&DB](const optionDefinition_t&, values_t& v) {
@@ -246,14 +247,27 @@ void defaultOutput_t::statistics(const statistics_t& stats)
         jj::cout << jjT("\033[1m");
     if (opt_.FinalStatistics == jj::test::options_t::finalStatistics_t::DEFAULT)
     {
+        bool colorSF = opt_.Colors && stats.Failed > 0;
         jj::cout << jjT("SUMMARY\n");
-        jj::cout << jjT("Successful tests:   ") << stats.Passed << jjT("\n");
-        jj::cout << jjT("Failed tests:       ") << stats.Failed << jjT("\n");
+        jj::cout << jjT("Successful tests:   ") << (colorSF ? jjT("\033[32m") : jjT("")) << stats.Passed << (colorSF ? jjT("\033[39m") : jjT("")) << jjT("\n");
+        jj::cout << jjT("Failed tests:       ") << (colorSF ? jjT("\033[31m") : jjT("")) << stats.Failed << (colorSF ? jjT("\033[39m") : jjT("")) << jjT("\n");
         jj::cout << jjT("Tests run in total: ") << stats.total() << jjT("\n");
     }
     else if (opt_.FinalStatistics == jj::test::options_t::finalStatistics_t::SHORT)
     {
-        jj::cout << stats.Passed << jjT('/') << stats.Failed;
+        bool colorSF = opt_.Colors && stats.Failed > 0;
+        if (colorSF)
+            jj::cout << jjT("\033[32m");
+        jj::cout << stats.Passed;
+        if (colorSF)
+            jj::cout << jjT("\033[39m");
+        jj::cout << jjT('/');
+        if (colorSF)
+            jj::cout << jjT("\033[31m");
+        jj::cout << stats.Failed;
+        if (colorSF)
+            jj::cout << jjT("\033[39m");
+        jj::cout << jjT("\n");
     }
     if (opt_.Colors)
         jj::cout << jjT("\033[0m");
@@ -555,22 +569,26 @@ void db_t::run_testcase(std::function<void(statistics_t&)> tc, statistics_t& sta
     catch (const jj::test::testFailed_t& ex)
     {
         ++stats.Failed;
-        test_result(output_t::FAILINFO, jjS(jjT("The previous failure was considered crutial for the test case. Skipping to the end of test case. Exception caught : ") << jj::strcvt::to_string_t(ex.what())));
+        if (Tests != jj::test::options_t::testResults_t::NONE)
+            test_result(output_t::FAILINFO, jjS(jjT("The previous failure was considered crutial for the test case. Skipping to the end of test case. Exception caught : ") << jj::strcvt::to_string_t(ex.what())));
     }
     catch (const std::exception& ex)
     {
         ++stats.Failed;
-        test_result(output_t::FAILINFO, jjS(jjT("Exception caught: ") << jj::strcvt::to_string_t(ex.what())));
+        if (Tests != jj::test::options_t::testResults_t::NONE)
+            test_result(output_t::FAILINFO, jjS(jjT("Exception caught: ") << jj::strcvt::to_string_t(ex.what())));
     }
     catch (const std::string& ex)
     {
         ++stats.Failed;
-        test_result(output_t::FAILINFO, jjS(jjT("Exception caught: ") << jj::strcvt::to_string_t(ex)));
+        if (Tests != jj::test::options_t::testResults_t::NONE)
+            test_result(output_t::FAILINFO, jjS(jjT("Exception caught: ") << jj::strcvt::to_string_t(ex)));
     }
     catch (...)
     {
         ++stats.Failed;
-        test_result(output_t::FAILINFO, jjT("Unknown exception caught!"));
+        if (Tests != jj::test::options_t::testResults_t::NONE)
+            test_result(output_t::FAILINFO, jjT("Unknown exception caught!"));
     }
 }
 
@@ -637,23 +655,33 @@ int main(int argc, const char** argv)
     }
     catch (const jj::test::testingFailed_t& ex)
     {
-        DB.test_result(jj::test::output_t::FAILINFO, jjS(jjT("The previous failure was considered crutial for the test suite. Skipping to the end of test suite.")));
-        std::cout << "Exception caught: " << ex.what() << "\n";
+        if (DB.Tests != jj::test::options_t::testResults_t::NONE)
+        {
+            DB.test_result(jj::test::output_t::FAILINFO, jjS(jjT("The previous failure was considered crutial for the test suite. Skipping to the end of test suite.")));
+            std::cout << "Exception caught: " << ex.what() << "\n";
+        }
+        DB.statistics(DB.Statistics);
         return 1;
     }
     catch (const std::exception& ex)
     {
-        std::cout << "Exception caught: " << ex.what() << "\n";
+        if (DB.Tests != jj::test::options_t::testResults_t::NONE)
+            std::cout << "Exception caught: " << ex.what() << "\n";
+        DB.statistics(DB.Statistics);
         return 2;
     }
     catch (const std::string& ex)
     {
-        std::cout << "Exception caught: " << ex << "\n";
+        if (DB.Tests != jj::test::options_t::testResults_t::NONE)
+            std::cout << "Exception caught: " << ex << "\n";
+        DB.statistics(DB.Statistics);
         return 2;
     }
     catch (...)
     {
-        std::cout << "Unknown exception caught!\n";
+        if (DB.Tests != jj::test::options_t::testResults_t::NONE)
+            std::cout << "Unknown exception caught!\n";
+        DB.statistics(DB.Statistics);
         return 2;
     }
 }

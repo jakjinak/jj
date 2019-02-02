@@ -52,7 +52,7 @@ JJ_TEST_CASE(error_endsclass2)
     JJ_TEST(true);
 }
 
-JJ_TEST_CLASS_END(testTests_t, passes_reportsok, notests_reportsok, warning_reportsok, error_reportsfail, error_endscase, error_endscase2/*, error_endsclass, error_endsclass2*/)
+JJ_TEST_CLASS_END(testTests_t, passes_reportsok, notests_reportsok, warning_reportsok, error_reportsfail, error_endscase, error_endscase2, error_endsclass, error_endsclass2)
 
 //================================================
 
