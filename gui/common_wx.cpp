@@ -17,7 +17,7 @@ namespace gui
 {
 
 contentHolder_t::contentHolder_t()
-    : sizer_(nullptr), onCreateSizer([this] { return new boxSizer_t(*this, boxSizer_t::VERTICAL); })
+    : sizer_(nullptr), OnCreateSizer([this] { return new boxSizer_t(*this, boxSizer_t::VERTICAL); })
 {
 }
 

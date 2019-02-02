@@ -11,6 +11,7 @@ namespace gui
 {
 namespace stock
 {
+/*! Denotes defined stock ids for modal results. */
 enum class item_t
 {
     OK,
@@ -20,6 +21,7 @@ enum class item_t
     MAX_STOCK
 };
 
+/*! Denotes defined stock ids for icons (in dialogs). */
 enum class icon_t
 {
     NONE,

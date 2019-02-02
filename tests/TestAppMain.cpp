@@ -89,7 +89,7 @@ public:
         using namespace jj;
         using namespace jj::gui;
 
-        onCreateSizer = [this] { return new boxSizer_t(*this, boxSizer_t::HORIZONTAL); };
+        OnCreateSizer = [this] { return new boxSizer_t(*this, boxSizer_t::HORIZONTAL); };
 
         tree = new tree_T<myTreeThing>(*this, jj::gui::tree_T<myTreeThing>::options() << opt::text(jjT("ROOT")));
         tree->BeforeSelect.add(*this, &treetest::beforeSelect);
@@ -187,7 +187,7 @@ public:
         using namespace jj;
         using namespace jj::gui;
 
-        onCreateSizer = [this] { return new boxSizer_t(*this, boxSizer_t::VERTICAL); };
+        OnCreateSizer = [this] { return new boxSizer_t(*this, boxSizer_t::VERTICAL); };
 
         textLabel_t* st = new textLabel_t(*this, textLabel_t::options() << opt::text(jjT("ST")));
         b1 = new button_t(*this, button_t::options() << opt::text(jjT("B1")));

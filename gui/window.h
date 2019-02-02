@@ -29,7 +29,7 @@ class application_t;
 class frame_t;
 
 /*! Base class for a window that runs on its own (not within other windows) - typically a frame or dialog. */
-class topLevelWindow_t : public nativePointerWrapper_t<topLevelWindow_t>, public contentHolder_t
+class topLevelWindow_t : public AUX::nativePointerWrapper_t<topLevelWindow_t>, public contentHolder_t
 {
     typedef contentHolder_t parent_t;
 
@@ -43,7 +43,7 @@ public:
     virtual ~topLevelWindow_t() {}
 
     // IGNORE native pointer stuff, implementation specific
-    typedef nativePointerWrapper_t<topLevelWindow_t> native_t;
+    typedef AUX::nativePointerWrapper_t<topLevelWindow_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
@@ -79,7 +79,7 @@ public:
 
 /*! Represents frame's main menu bar.
 Note that only a frame can have a bar, it's not possible in a dialog. */
-class menuBar_t : public nativePointerWrapper_t<menuBar_t>, public menu_t
+class menuBar_t : public AUX::nativePointerWrapper_t<menuBar_t>, public menu_t
 {
     typedef menu_t parent_t;
     frame_t& owner_; //!< the parent frame
@@ -89,13 +89,13 @@ public:
     menuBar_t(frame_t& owner);
 
     // IGNORE native pointer stuff, implementation specific
-    typedef nativePointerWrapper_t<menuBar_t> native_t;
+    typedef AUX::nativePointerWrapper_t<menuBar_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 };
 
 /*! Represents frame's status bar. */
-class statusBar_t : public nativePointerWrapper_t<statusBar_t>
+class statusBar_t : public AUX::nativePointerWrapper_t<statusBar_t>
 {
 public:
     /*! Visual style of bar' field*/
@@ -138,7 +138,7 @@ public:
     statusBar_t(frame_t& owner, const fields_t& fields) : statusBar_t(owner) { set(fields); }
 
     // IGNORE native pointer stuff, implementation specific
-    typedef nativePointerWrapper_t<statusBar_t> native_t;
+    typedef AUX::nativePointerWrapper_t<statusBar_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
@@ -176,7 +176,7 @@ public:
 };
 
 /*! Frame usually represents the main window of an application. */
-class frame_t : public nativePointerWrapper_t<frame_t>, public topLevelWindow_t
+class frame_t : public AUX::nativePointerWrapper_t<frame_t>, public topLevelWindow_t
 {
 public:
     /*! Available styles for a frame. */
@@ -222,7 +222,7 @@ public:
     ~frame_t();
 
     // IGNORE native pointer stuff, implementation specific
-    typedef nativePointerWrapper_t<frame_t> native_t;
+    typedef AUX::nativePointerWrapper_t<frame_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
@@ -298,7 +298,7 @@ public:
 };
 
 /*! Usually represents a "modal" window, which blocks the underlying caller window. */
-class dialog_t : public nativePointerWrapper_t<dialog_t>, public topLevelWindow_t
+class dialog_t : public AUX::nativePointerWrapper_t<dialog_t>, public topLevelWindow_t
 {
 public:
     /*! Available styles for a dialog. */
@@ -333,7 +333,7 @@ public:
     ~dialog_t();
 
     // IGNORE native pointer stuff, implementation specific
-    typedef nativePointerWrapper_t<dialog_t> native_t;
+    typedef AUX::nativePointerWrapper_t<dialog_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
@@ -351,7 +351,7 @@ namespace dlg
 The buttons can be a combination of OK, CANCEL, YES, NO. OK is mutually exclusive with YES and NO;
 both YES and NO implicitly add also the other one (it is enough to specify one of them). 
 \note Call show_modal() to show the dialog. */
-class simple_t : public nativePointerWrapper_t<simple_t>, public dialog_t
+class simple_t : public AUX::nativePointerWrapper_t<simple_t>, public dialog_t
 {
 public:
     typedef opt::e<stock::icon_t> icon1_t;
@@ -368,14 +368,14 @@ public:
     simple_t(topLevelWindow_t& parent, const string_t& message, const string_t& title, options_t setup, std::initializer_list<stock::item_t> buttons);
 
     // IGNORE native pointer stuff, implementation specific
-    typedef nativePointerWrapper_t<simple_t> native_t;
+    typedef AUX::nativePointerWrapper_t<simple_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 };
 
 /*! A dialog with OK, CANCEL and one text input field.
 \note Call show_modal() to show the dialog. */
-class input_t : public nativePointerWrapper_t<input_t>, public dialog_t
+class input_t : public AUX::nativePointerWrapper_t<input_t>, public dialog_t
 {
 public:
     /*! Available flags modifying style of the dialog. */
@@ -397,7 +397,7 @@ public:
     input_t(topLevelWindow_t& parent, const string_t& message, options_t setup);
 
     // IGNORE native pointer stuff, implementation specific
-    typedef nativePointerWrapper_t<input_t> native_t;
+    typedef AUX::nativePointerWrapper_t<input_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
@@ -406,7 +406,7 @@ public:
 
 /*! A dialog allowing to select one or more files on the filesystem. Meant to be used when files are "read".
 \note Call show_modal() to show the dialog. */
-class openFile_t : public nativePointerWrapper_t<openFile_t>, public dialog_t
+class openFile_t : public AUX::nativePointerWrapper_t<openFile_t>, public dialog_t
 {
 public:
     /*! Available flags modifying style of the dialog. */
@@ -431,7 +431,7 @@ public:
     openFile_t(topLevelWindow_t& parent, options_t setup);
 
     // IGNORE native pointer stuff, implementation specific
-    typedef nativePointerWrapper_t<openFile_t> native_t;
+    typedef AUX::nativePointerWrapper_t<openFile_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
@@ -443,7 +443,7 @@ public:
 
 /*! A dialog allowing to select a file on the filesystem. Meant to be used when file is "written to". 
 \note Call show_modal() to show the dialog. */
-class saveFile_t : public nativePointerWrapper_t<saveFile_t>, public dialog_t
+class saveFile_t : public AUX::nativePointerWrapper_t<saveFile_t>, public dialog_t
 {
 public:
     /*! Available flags modifying style of the dialog. */
@@ -467,7 +467,7 @@ public:
     saveFile_t(topLevelWindow_t& parent, options_t setup);
 
     // IGNORE native pointer stuff, implementation specific
-    typedef nativePointerWrapper_t<saveFile_t> native_t;
+    typedef AUX::nativePointerWrapper_t<saveFile_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
@@ -477,7 +477,7 @@ public:
 
 /*! A dialog allowing to select a directory on the file system. 
 \note Call show_modal() to show the dialog. */
-class selectDir_t : public nativePointerWrapper_t<selectDir_t>, public dialog_t
+class selectDir_t : public AUX::nativePointerWrapper_t<selectDir_t>, public dialog_t
 {
 public:
     /*! Available flags modifying style of the dialog. */
@@ -500,7 +500,7 @@ public:
     selectDir_t(topLevelWindow_t& parent, options_t setup);
 
     // IGNORE native pointer stuff, implementation specific
-    typedef nativePointerWrapper_t<selectDir_t> native_t;
+    typedef AUX::nativePointerWrapper_t<selectDir_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 

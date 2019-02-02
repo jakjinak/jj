@@ -217,7 +217,7 @@ public:
     }
 };
 
-class tree_base_t : public nativePointerWrapper_t<tree_base_t>, public control_t
+class tree_base_t : public AUX::nativePointerWrapper_t<tree_base_t>, public control_t
 {
     typedef treeItem_base_t::id_t id_t;
     id_t current_item() const;
@@ -277,7 +277,7 @@ public:
 
     treeImpl_t& impl() { return *impl_; }
 
-    typedef nativePointerWrapper_t<tree_base_t> native_t;
+    typedef AUX::nativePointerWrapper_t<tree_base_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
 
