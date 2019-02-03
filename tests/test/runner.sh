@@ -57,6 +57,7 @@ perform()
     return # code did not match, failed, no more checks
   fi
 
+  out="$(echo "$out" | tr -d '\r')"
   # otherwise check the output of command
   if [[ -z "$output" ]]
   then

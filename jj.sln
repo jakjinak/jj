@@ -10,9 +10,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjGUI", "gui\jjGUI.vcxproj"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjtest", "test\jjtest.vcxproj", "{AFD50C25-67B4-4BA2-B68B-0AB431A322B5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjbase.Tests", "tests\jjbase.Tests.vcxproj", "{1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjbase-tests", "tests\jjbase-tests.vcxproj", "{1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjtest.Tests", "tests\test\jjtest.Tests.vcxproj", "{07D954B6-05DD-4B85-9BFA-0473B5591768}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jjtest-tests", "tests\test\jjtest-tests.vcxproj", "{07D954B6-05DD-4B85-9BFA-0473B5591768}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{586B014B-D960-4C75-AEB6-F1129F25082E}"
 EndProject

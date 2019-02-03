@@ -380,8 +380,11 @@ $(1)_only: $${OBJ_$(1)}
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
 endef
 
+.PHONY: testrun
+
 # define_testrun registers a new unit test binary, the first parameter is the stem of all names for this target, it usually
-# is same as the first parameter of define_program, the second parameter is the "parent" rule name
+# is same as the first parameter of define_program, the second parameter is the "parent" rule name and third is rules on which
+# the binary run depends on (can be empty); the third parameter is ignored if TESTRUN_NO_DEPENDENCIES is defined in environment.
 # One can override the following variables to tweak the behavior:
 # TESTRUN_PREPARE_<name> ... the name of the program to run, defaults to RESULT_<name> (defined in define_program)
 # TESTRUN_VARS_<name> ... the variables to set for the program; defaults to empty
@@ -390,13 +393,15 @@ endef
 # TESTRUN_PREPARE_<name> ... can provide commands to prepare environment for the test target before the program is invoked
 # TESTRUN_CLEANUP_<name> ... can provide commands to cleanup environment invoked after the program finishes (succeeds)
 # TODO add to info
-#(call define_testrun,name,makerule)
+#(call define_testrun,name,makerule,deprule)
 define define_testrun
-TESTRUN_NAME_$(1) ?= $${RESULT_$(1)}
+TESTRUN_NAME_$(1) ?= $${RESULT_$(1)}${PLATFORM_BINARY_SUFFIX}
 
 $(2) : testrun_$(1)
 
-testrun_$(1):
+testrun: testrun_$(1)
+
+testrun_$(1): $(if ${TESTRUN_NO_DEPENDENCIES},,$(3))
 	$$(call showlabel, "$${COLOR_RUNTEST}=== Running test binary $${COLOR_HL}$${TESTRUN_NAME_$(1)}$${COLOR_0}")
 	$${TESTRUN_PREPARE_$(1)}
 	$(COMMAND_HIDE_PREFIX)$${TESTRUN_VARS_$(1)} $${TESTRUN_NAME_$(1)} $${TESTRUN_PARS_$(1)} $${RUNTEST_STYLE}

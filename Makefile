@@ -122,7 +122,7 @@ SRCDIR_jjbase-tests := $(realpath tests)
 SOURCE_jjbase-tests := $(filter-out TestAppMain.cpp,$(call locate_files,${SRCDIR_jjbase-tests},*.cpp,1))
 CXXFLAGS_jjbase-tests := ${COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjbase-tests}/../..)
 LIBS_jjbase-tests := ${RESULT_jjtest} ${SO_RESULT_jjbase}
-VSNAME_jjbase-tests := jjbase.Tests
+VSNAME_jjbase-tests := jjbase-tests
 VSTYPE_jjbase-tests := capp
 VSGUID_jjbase-tests := 1A5FD8DC-621C-41EE-BC8A-BC327F0E9A38
 VSREFS_jjbase-tests := jjtest
@@ -135,7 +135,7 @@ VSDEFINES_jjbase-tests := \
 	_CONSOLE
 VSHEADER_jjbase-tests := $(shell cd "${SRCDIR_jjbase-tests}" && find * -maxdepth 0 -name '*.h' -o -name '*.hpp')
 $(eval $(call define_program,jjbase-tests,testsbin,clean_tests,jjbase_so jjtest))
-$(eval $(call define_testrun,jjbase-tests,tests))
+$(eval $(call define_testrun,jjbase-tests,tests,jjbase-tests))
 $(eval $(call define_generate_vsproj,jjbase-tests))
 
 ########################################
@@ -144,7 +144,7 @@ SRCDIR_jjtest-tests := $(realpath tests/test)
 SOURCE_jjtest-tests := test_tests.cpp filter_tests.cpp
 CXXFLAGS_jjtest-tests := ${COMMON_CXXFLAGS} -I$(realpath ${SRCDIR_jjtest-tests}/../../..)
 LIBS_jjtest-tests := ${RESULT_jjtest} ${RESULT_jjbase}
-VSNAME_jjtest-tests := jjtest.Tests
+VSNAME_jjtest-tests := jjtest-tests
 VSTYPE_jjtest-tests := capp
 VSGUID_jjtest-tests := 07D954B6-05DD-4B85-9BFA-0473B5591768
 VSREFS_jjtest-tests := jjtest
@@ -157,12 +157,12 @@ VSDEFINES_jjtest-tests := \
 	_CONSOLE
 $(eval $(call define_program,jjtest-tests,testsbin,clean_tests,jjbase jjtest))
 TESTRUN_NAME_jjtest-tests := tests/test/runner.sh
-TESTRUN_PARS_jjtest-tests := ${RESULT_jjtest-tests}
+TESTRUN_PARS_jjtest-tests := ${RESULT_jjtest-tests}${PLATFORM_BINARY_SUFFIX}
 TESTRUN_VARS_jjtest-tests := VERBOSITY_commands=$(VERBOSITY_commands) VERBOSITY_colors=$(VERBOSITY_colors) VERBOSITY_tests=$(VERBOSITY_tests)
-$(eval $(call define_testrun,jjtest-tests,tests))
-TESTRUN_NAME_jjtest-tests2 := ${RESULT_jjtest-tests}
+$(eval $(call define_testrun,jjtest-tests,tests,jjtest-tests))
+TESTRUN_NAME_jjtest-tests2 := ${RESULT_jjtest-tests}${PLATFORM_BINARY_SUFFIX}
 TESTRUN_PARS_jjtest-tests2 := +t filterTests_t/
-$(eval $(call define_testrun,jjtest-tests2,tests))
+$(eval $(call define_testrun,jjtest-tests2,tests,jjtest-tests))
 $(eval $(call define_generate_vsproj,jjtest-tests))
 
 
