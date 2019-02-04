@@ -1,9 +1,9 @@
+ROOTDIR := $(realpath .)
+FRAMEWORKDIR := ${ROOTDIR}/BUILD
 
-include BUILD/detect.mk
+include ${FRAMEWORKDIR}/detect.mk
 
 include 3rdparty/wxWidgets.mk
-
-ROOTDIR := $(realpath .)
 
 CUSTOM_CXXFLAGS := -std=c++11 -g
 CUSTOM_LDFLAGS := -std=c++11 -g -pthread
@@ -24,8 +24,8 @@ uitests: tests
 uiall: uilibs uitests
 clean_all: clean clean_tests
 
-include BUILD/build.mk
-include BUILD/VS.mk
+include ${FRAMEWORKDIR}/build.mk
+include ${FRAMEWORKDIR}/VS.mk
 
 .PHONY: infoextratargets infoextravariables
 

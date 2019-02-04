@@ -4,9 +4,12 @@
 ifeq ("${ROOTDIR}","")
 $(error Please define ROOTDIR first.)
 endif
+ifeq ("${FRAMEWORKDIR}","")
+$(error Please define FRAMEWORKDIR first.)
+endif
 
-include BUILD/tools.mk
-include BUILD/verbosity.mk
+include ${FRAMEWORKDIR}/tools.mk
+include ${FRAMEWORKDIR}/verbosity.mk
 
 BINDIR ?= ${ROOTDIR}/.bin/${BUILD_CONFIGURATION}
 LIBDIR ?= ${ROOTDIR}/.bin/${BUILD_CONFIGURATION}
@@ -23,8 +26,8 @@ endif
 
 ############################################################
 # include specific defines
-include BUILD/specific/${BUILD_PLATFORM}.mk
-include BUILD/specific/${BUILD_MODE}.mk
+include ${FRAMEWORKDIR}/specific/${BUILD_PLATFORM}.mk
+include ${FRAMEWORKDIR}/specific/${BUILD_MODE}.mk
 
 COMMON_CXXFLAGS ?= ${PLATFORMSPECIFIC_CXXFLAGS} ${MODESPECIFIC_CXXFLAGS} ${CUSTOM_CXXFLAGS}
 COMMON_ARFLAGS ?= ${PLATFORMSPECIFIC_ARFLAGS} ${MODESPECIFIC_ARFLAGS} ${CUSTOM_ARFLAGS}
