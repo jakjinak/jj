@@ -56,6 +56,16 @@ void control_t::reset_native_pointer()
     parent_t::reset_native_pointer();
 }
 
+bool control_t::enabled() const
+{
+    return GET<wxWindow>::from(this)->IsEnabled();
+}
+
+void control_t::enable(bool v)
+{
+    GET<wxWindow>::from(this)->Enable(v);
+}
+
 } // namespace gui
 } // namespace jj
 

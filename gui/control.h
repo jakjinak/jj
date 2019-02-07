@@ -50,6 +50,13 @@ public:
     typedef AUX::nativePointerWrapper_t<control_t> native_t;
     void set_native_pointer(void* ptr);
     void reset_native_pointer();
+
+    /*! Returns whether the control is enabled, ie. whether the user can interact with the control using mouse, keyboard or so... */
+    bool enabled() const;
+    /*! Sets the enabled state of the control. */
+    void enable(bool v = true);
+    /*! Disables user interaction with the control. */
+    void disable() { enable(false); }
 };
 
 } // namespace gui
