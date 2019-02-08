@@ -310,8 +310,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="cmdLine.h" />
-    <ClInclude Include="configuration.h" />
-    <ClInclude Include="configurationStorage.h" />
     <ClInclude Include="defines.h" />
     <ClInclude Include="defines_auto.h" />
     <ClInclude Include="directories.h" />
@@ -336,7 +334,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cmdLine.cpp" />
-    <ClCompile Include="configurationStorage.cpp" />
     <ClCompile Include="directories.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="stream.cpp" />

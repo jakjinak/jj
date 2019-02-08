@@ -330,7 +330,6 @@
   <ItemGroup>
     <ClCompile Include="cmdLineOptions_tests.cpp" />
     <ClCompile Include="cmdLine_tests.cpp" />
-    <ClCompile Include="configuration_tests.cpp" />
     <ClCompile Include="flagSet_tests.cpp" />
     <ClCompile Include="functionBag_tests.cpp" />
     <ClCompile Include="log_tests.cpp" />
