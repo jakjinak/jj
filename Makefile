@@ -215,9 +215,9 @@ RELEASE_PACKAGE := ${BINDIR}/jj_${BUILD_MODE}-${BUILD_OS}.${BUILD_ARCH}_${RELEAS
 package: ${RELEASE_PACKAGE}
 
 ifneq (${BUILD_OS},windows)
-STUFF_TO_PACKAGE := ${RESULT_jjbase} ${SO_RESULT_jjbase} ${RESULT_jjtest}
+STUFF_TO_PACKAGE := ${RESULT_jjbase} ${SO_RESULT_jjbase} ${RESULT_jjtest} ${RESULT_jjgui}
 else
-STUFF_TO_PACKAGE := ${BINDIR}/jjBase.lib ${BINDIR}/jjtest.lib
+STUFF_TO_PACKAGE := ${BINDIR}/jjBase.lib ${BINDIR}/jjtest.lib ${BINDIR}/jjGUI.lib
 endif
 
 ${RELEASE_PACKAGE} : ${STUFF_TO_PACKAGE} LICENSE

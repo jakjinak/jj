@@ -9,7 +9,7 @@ TOOL_TAR ?= tar
 
 #(call ARCHIVE_TAR_XZ,archivename,directory,files
 define ARCHIVE_TAR_XZ
-	$(COMMAND_HIDE_PREFIX)cd $(2) && ${TOOL_TAR} cJ$(VERBOSE_TAR)f "$(1)" --owner=build --group=build $(3)
+	$(COMMAND_HIDE_PREFIX)cd $(2) && ${TOOL_TAR} cJ$(VERBOSE_TAR)f "$(1)" --numeric-owner $(3)
 endef
 
 TOOL_AR ?= ar
