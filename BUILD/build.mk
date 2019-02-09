@@ -401,13 +401,12 @@ endef
 # is same as the first parameter of define_program, the second parameter is the "parent" rule name and third is rules on which
 # the binary run depends on (can be empty); the third parameter is ignored if TESTRUN_NO_DEPENDENCIES is defined in environment.
 # One can override the following variables to tweak the behavior:
-# TESTRUN_PREPARE_<name> ... the name of the program to run, defaults to RESULT_<name> (defined in define_program)
+# TESTRUN_NAME_<name> ... the name of the program to run, defaults to RESULT_<name> (defined in define_program)
 # TESTRUN_VARS_<name> ... the variables to set for the program; defaults to empty
 # TESTRUN_PARS_<name> ... the parameter to pass to the program; defaults to empty
 #       note: based on the VERBOSITY_tests formatting parameters will be passed beyond this variable
 # TESTRUN_PREPARE_<name> ... can provide commands to prepare environment for the test target before the program is invoked
 # TESTRUN_CLEANUP_<name> ... can provide commands to cleanup environment invoked after the program finishes (succeeds)
-# TODO add to info
 #(call define_testrun,name,makerule,deprule)
 define define_testrun
 TESTRUN_NAME_$(1) ?= $${RESULT_$(1)}${PLATFORM_BINARY_SUFFIX}
@@ -429,4 +428,14 @@ infotestrun_$(1):
 	@${TOOL_ECHO} "It is associated with $${COLOR_INFO}$(2)$${COLOR_0} and depends on $${COLOR_INFO}$(if ${TESTRUN_NO_DEPENDENCIES},,$(3))$${COLOR_0}".
 
 info_$(1): infotestrun_$(1)
+
+ifeq (${VARNAMES_$(1)},)
+# with standalone test targets need to define own var dumper
+.PHONY: vars_$(1)
+
+vars_$(1):
+	$$(call dump-vars,$${VARNAMES_$(1)})
+endif
+
+VARNAMES_$(1) += TESTRUN_NAME_$(1) TESTRUN_VARS_$(1) TESTRUN_PARS_$(1)
 endef
