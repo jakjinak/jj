@@ -30,26 +30,26 @@ include ${FRAMEWORKDIR}/VS.mk
 .PHONY: infoextratargets infoextravariables
 
 infoextratargets:
-	@${TOOL_ECHO} "${COLOR_HL}libs${COLOR_0} ... build all static and shared non-UI libraries"
-	@${TOOL_ECHO} "${COLOR_HL}uilibs${COLOR_0} ... build all static and shared libraries (UI inclusive)"
-	@${TOOL_ECHO} "${COLOR_HL}clean${COLOR_0} ... clean all static and shared libraries (UI inclusive)"
-	@${TOOL_ECHO} "${COLOR_HL}tests${COLOR_0} ... build all test programs (non-UI)"
-	@${TOOL_ECHO} "${COLOR_HL}uitest${COLOR_0} ... build all test programs (UI inclusive)"
-	@${TOOL_ECHO} "${COLOR_HL}clean_tests${COLOR_0} ... clean all test programs (UI inclusive)"
-	@${TOOL_ECHO} "${COLOR_HL}all${COLOR_0} ... build all libs and programs (non-UI)"
-	@${TOOL_ECHO} "${COLOR_HL}uiall${COLOR_0} ... build all libs and programs (UI inclusive)"
-	@${TOOL_ECHO} "${COLOR_HL}clean_all${COLOR_0} ... clean all libs and programs (UI inclusive)"
-	@${TOOL_ECHO} "${COLOR_HL}package${COLOR_0} ... create a .tar.xz containing the built libs and headers (UI inclusive)"
+	@${TOOL_echo} "${COLOR_HL}libs${COLOR_0} ... build all static and shared non-UI libraries"
+	@${TOOL_echo} "${COLOR_HL}uilibs${COLOR_0} ... build all static and shared libraries (UI inclusive)"
+	@${TOOL_echo} "${COLOR_HL}clean${COLOR_0} ... clean all static and shared libraries (UI inclusive)"
+	@${TOOL_echo} "${COLOR_HL}tests${COLOR_0} ... build all test programs (non-UI)"
+	@${TOOL_echo} "${COLOR_HL}uitest${COLOR_0} ... build all test programs (UI inclusive)"
+	@${TOOL_echo} "${COLOR_HL}clean_tests${COLOR_0} ... clean all test programs (UI inclusive)"
+	@${TOOL_echo} "${COLOR_HL}all${COLOR_0} ... build all libs and programs (non-UI)"
+	@${TOOL_echo} "${COLOR_HL}uiall${COLOR_0} ... build all libs and programs (UI inclusive)"
+	@${TOOL_echo} "${COLOR_HL}clean_all${COLOR_0} ... clean all libs and programs (UI inclusive)"
+	@${TOOL_echo} "${COLOR_HL}package${COLOR_0} ... create a .tar.xz containing the built libs and headers (UI inclusive)"
 infotargets: infoextratargets
 
 VARNAMES_GLOBAL += COMPILER_LIB_LINKAGE WXSTATIC RELEASE_PACKAGE_ADD_GUI
 
 infoextravariables:
-	@${TOOL_ECHO} "Additional variables:"
-	@${TOOL_ECHO} "${COLOR_HL}COMPILER_LIB_LINKAGE${COLOR_0} ... defines whether the libgcc and libstdc++ are linked dynamically or statically"
-	@${TOOL_ECHO} "         possible values: static or shared [${COLOR_HL}${COMPILER_LIB_LINKAGE}${COLOR_0}]"
-	@${TOOL_ECHO} "${COLOR_HL}WXSTATIC${COLOR_0} ... defines whether wxWidgets are linked dynamically or statically, enabled if set to 1 [${COLOR_HL}${WXSTATIC}${COLOR_0}]"
-	@${TOOL_ECHO} "${COLOR_HL}RELEASE_PACKAGE_ADD_GUI${COLOR_0} ... set to 1 (default) if target ${COLOR_HL}package${COLOR_0} shall add jjgui into the archive [${COLOR_HL}${RELEASE_PACKAGE_ADD_GUI}${COLOR_0}]"
+	@${TOOL_echo} "Additional variables:"
+	@${TOOL_echo} "${COLOR_HL}COMPILER_LIB_LINKAGE${COLOR_0} ... defines whether the libgcc and libstdc++ are linked dynamically or statically"
+	@${TOOL_echo} "         possible values: static or shared [${COLOR_HL}${COMPILER_LIB_LINKAGE}${COLOR_0}]"
+	@${TOOL_echo} "${COLOR_HL}WXSTATIC${COLOR_0} ... defines whether wxWidgets are linked dynamically or statically, enabled if set to 1 [${COLOR_HL}${WXSTATIC}${COLOR_0}]"
+	@${TOOL_echo} "${COLOR_HL}RELEASE_PACKAGE_ADD_GUI${COLOR_0} ... set to 1 (default) if target ${COLOR_HL}package${COLOR_0} shall add jjgui into the archive [${COLOR_HL}${RELEASE_PACKAGE_ADD_GUI}${COLOR_0}]"
 infovariables: infoextravariables
 
 ########################################
@@ -236,17 +236,17 @@ endif
 
 ${RELEASE_PACKAGE} : ${STUFF_TO_PACKAGE} LICENSE
 	$(call showlabel,"${COLOR_INFO}=== Creating package ${COLOR_HL}$@${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${TMPDIR}/package ${RELEASE_PACKAGE}
-	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} ${TMPDIR}/package/lib
-	$(COMMAND_HIDE_PREFIX)${TOOL_CP} ${STUFF_TO_PACKAGE} ${TMPDIR}/package/lib
-	$(COMMAND_HIDE_PREFIX)${TOOL_CP} LICENSE ${TMPDIR}/package
-	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} ${TMPDIR}/package/include
-	$(COMMAND_HIDE_PREFIX)${TOOL_CP} --parents $$(${TOOL_FIND} . -maxdepth 1 -name '*.h' ) ${TMPDIR}/package/include
-	$(COMMAND_HIDE_PREFIX)[ "${RELEASE_PACKAGE_ADD_GUI}" != 1 ] || ${TOOL_CP} --parents $$(${TOOL_FIND} gui -maxdepth 1 -name '*.h' -a \! -name '*wx*' ) ${TMPDIR}/package/include
+	$(COMMAND_HIDE_PREFIX)${TOOL_rmr} ${TMPDIR}/package ${RELEASE_PACKAGE}
+	$(COMMAND_HIDE_PREFIX)${TOOL_mkdir} ${TMPDIR}/package/lib
+	$(COMMAND_HIDE_PREFIX)${TOOL_cp} ${STUFF_TO_PACKAGE} ${TMPDIR}/package/lib
+	$(COMMAND_HIDE_PREFIX)${TOOL_cp} LICENSE ${TMPDIR}/package
+	$(COMMAND_HIDE_PREFIX)${TOOL_mkdir} ${TMPDIR}/package/include
+	$(COMMAND_HIDE_PREFIX)${TOOL_cp} --parents $$(${TOOL_find} . -maxdepth 1 -name '*.h' ) ${TMPDIR}/package/include
+	$(COMMAND_HIDE_PREFIX)[ "${RELEASE_PACKAGE_ADD_GUI}" != 1 ] || ${TOOL_cp} --parents $$(${TOOL_find} gui -maxdepth 1 -name '*.h' -a \! -name '*wx*' ) ${TMPDIR}/package/include
 	$(call ARCHIVE_TAR_XZ,${RELEASE_PACKAGE},${TMPDIR}/package,*)
-	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${TMPDIR}/package
+	$(COMMAND_HIDE_PREFIX)${TOOL_rmr} ${TMPDIR}/package
 	$(call showlabel,"${COLOR_INFO}=== Created ${COLOR_HL}$(notdir $@)${COLOR_0}${COLOR_INFO} in ${COLOR_HL}$(dir $@)${COLOR_0}")
 
 clean_package:
 	$(call showlabel,"${COLOR_CLEAN}=== Cleaning package ${COLOR_HL}${RELEASE_PACKAGE}${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${TMPDIR}/package ${RELEASE_PACKAGE}
+	$(COMMAND_HIDE_PREFIX)${TOOL_rmr} ${TMPDIR}/package ${RELEASE_PACKAGE}

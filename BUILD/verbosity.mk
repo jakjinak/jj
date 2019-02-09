@@ -8,7 +8,7 @@ VERBOSITY_archive ?= 0
 #$(call showlabel,"label")
 ifeq ($(VERBOSITY_labels),1)
 define showlabel
-	@${TOOL_ECHO} $(1)
+	@${TOOL_echo} $(1)
 endef
 else
 define showlabel
