@@ -39,6 +39,7 @@ infoextratargets:
 	@${TOOL_ECHO} "${COLOR_HL}all${COLOR_0} ... build all libs and programs (non-UI)"
 	@${TOOL_ECHO} "${COLOR_HL}uiall${COLOR_0} ... build all libs and programs (UI inclusive)"
 	@${TOOL_ECHO} "${COLOR_HL}clean_all${COLOR_0} ... clean all libs and programs (UI inclusive)"
+	@${TOOL_ECHO} "${COLOR_HL}package${COLOR_0} ... create a .tar.xz containing the built libs and headers (UI inclusive)"
 infotargets: infoextratargets
 
 infoextravariables:
@@ -46,6 +47,7 @@ infoextravariables:
 	@${TOOL_ECHO} "${COLOR_HL}COMPILER_LIB_LINKAGE${COLOR_0} ... defines whether the libgcc and libstdc++ are linked dynamically or statically"
 	@${TOOL_ECHO} "         possible values: static or shared [${COLOR_HL}${COMPILER_LIB_LINKAGE}${COLOR_0}]"
 	@${TOOL_ECHO} "${COLOR_HL}WXSTATIC${COLOR_0} ... defines whether wxWidgets are linked dynamically or statically, enabled if set to 1 [${COLOR_HL}${WXSTATIC}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}RELEASE_PACKAGE_ADD_GUI${COLOR_0} ... set to 1 (default) if target ${COLOR_HL}package${COLOR_0} shall add jjgui into the archive [${COLOR_HL}${RELEASE_PACKAGE_ADD_GUI}${COLOR_0}]"
 infovariables: infoextravariables
 
 ########################################
@@ -212,12 +214,22 @@ $(eval $(call define_generate_vssln,jj,.))
 RELEASE_VERSION := 0.1.1
 RELEASE_PACKAGE := ${BINDIR}/jj_${BUILD_MODE}-${BUILD_OS}.${BUILD_ARCH}_${RELEASE_VERSION}.tar.gz
 
+.PHONY: package clean_package
+
 package: ${RELEASE_PACKAGE}
 
+RELEASE_PACKAGE_ADD_GUI ?= 1
+
 ifneq (${BUILD_OS},windows)
-STUFF_TO_PACKAGE := ${RESULT_jjbase} ${SO_RESULT_jjbase} ${RESULT_jjtest} ${RESULT_jjgui}
+STUFF_TO_PACKAGE := ${RESULT_jjbase} ${SO_RESULT_jjbase} ${RESULT_jjtest}
+ifeq (${RELEASE_PACKAGE_ADD_GUI},1)
+STUFF_TO_PACKAGE += ${RESULT_jjgui}
+endif
 else
-STUFF_TO_PACKAGE := ${BINDIR}/jjBase.lib ${BINDIR}/jjtest.lib ${BINDIR}/jjGUI.lib
+STUFF_TO_PACKAGE := ${BINDIR}/jjBase.lib ${BINDIR}/jjtest.lib
+ifeq (${RELEASE_PACKAGE_ADD_GUI},1)
+STUFF_TO_PACKAGE += ${BINDIR}/jjGUI.lib
+endif
 endif
 
 ${RELEASE_PACKAGE} : ${STUFF_TO_PACKAGE} LICENSE
@@ -227,7 +239,8 @@ ${RELEASE_PACKAGE} : ${STUFF_TO_PACKAGE} LICENSE
 	$(COMMAND_HIDE_PREFIX)${TOOL_CP} ${STUFF_TO_PACKAGE} ${TMPDIR}/package/lib
 	$(COMMAND_HIDE_PREFIX)${TOOL_CP} LICENSE ${TMPDIR}/package
 	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} ${TMPDIR}/package/include
-	$(COMMAND_HIDE_PREFIX)${TOOL_CP} --parents $$(${TOOL_FIND} . -maxdepth 1 -name '*.h' ; ${TOOL_FIND} gui -maxdepth 1 -name '*.h' -a \! -name '*wx*' ) ${TMPDIR}/package/include
+	$(COMMAND_HIDE_PREFIX)${TOOL_CP} --parents $$(${TOOL_FIND} . -maxdepth 1 -name '*.h' ) ${TMPDIR}/package/include
+	$(COMMAND_HIDE_PREFIX)[ "${RELEASE_PACKAGE_ADD_GUI}" != 1 ] || ${TOOL_CP} --parents $$(${TOOL_FIND} gui -maxdepth 1 -name '*.h' -a \! -name '*wx*' ) ${TMPDIR}/package/include
 	$(call ARCHIVE_TAR_XZ,${RELEASE_PACKAGE},${TMPDIR}/package,*)
 	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${TMPDIR}/package
 	$(call showlabel,"${COLOR_INFO}=== Created ${COLOR_HL}$(notdir $@)${COLOR_0}${COLOR_INFO} in ${COLOR_HL}$(dir $@)${COLOR_0}")

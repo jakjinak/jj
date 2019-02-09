@@ -78,10 +78,12 @@ infovariablescommon:
 	@${TOOL_ECHO} "${COLOR_HL}MACHINE_OS${COLOR_0} ... actual system name, usually linux (assumed to be autodetected) [${COLOR_HL}${MACHINE_OS}${COLOR_0}]"
 	@${TOOL_ECHO} ""
 	@${TOOL_ECHO} "Output related variables:"
-	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_labels${COLOR_0} ... Show extra output describing what is going on, enabled if set to 1 [${COLOR_HL}${VERBOSITY_labels}${COLOR_0}]"
-	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_colors${COLOR_0} ... Print hints in color, enabled if set to 1 [${COLOR_HL}${VERBOSITY_colors}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_labels${COLOR_0} ... Show extra output describing what is going on, enabled if set to 1. [${COLOR_HL}${VERBOSITY_labels}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_colors${COLOR_0} ... Print hints in color, enabled if set to 1. [${COLOR_HL}${VERBOSITY_colors}${COLOR_0}]"
 	@${TOOL_ECHO} "         Note: also tweaks the info target output"
-	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_commands${COLOR_0} ... Forces to not echo the commands executed if enabled by setting to 1 [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_commands${COLOR_0} ... Forces to not echo the commands executed if enabled by setting to 1. [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_tests${COLOR_0} ... Unless set to 1 then tests are setup so that only the number of success/fail tests is printed. [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_archive${COLOR_0} ... When processing archive files then the contents of the archives are shown only if this is 1. [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
 	@${TOOL_ECHO} ""
 
 infovariables: infovariablescommon
