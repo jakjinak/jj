@@ -2,6 +2,7 @@ VERBOSITY_labels ?= 1
 VERBOSITY_colors ?= 1
 VERBOSITY_commands ?= 1
 VERBOSITY_tests ?= 1
+VERBOSITY_archive ?= 0
 
 
 #$(call showlabel,"label")
@@ -64,4 +65,10 @@ RUNTEST_STYLE := -S=none
 endif
 endif
 endif
+endif
+
+ifeq ($(VERBOSITY_archive),1)
+VERBOSE_TAR := v
+else
+VERBOSE_TAR :=
 endif

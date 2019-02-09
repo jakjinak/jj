@@ -205,3 +205,32 @@ VSSLN_FOLDERS_jj := Tests
 VSSLN_FOLDERDEFS_NAME_jj_Tests := Tests
 VSSLN_FOLDERDEFS_GUID_jj_Tests := 586B014B-D960-4C75-AEB6-F1129F25082E
 $(eval $(call define_generate_vssln,jj,.))
+
+
+########################################
+# release package creation
+RELEASE_VERSION := 0.1.1
+RELEASE_PACKAGE := ${BINDIR}/jj_${BUILD_MODE}-${BUILD_OS}.${BUILD_ARCH}_${RELEASE_VERSION}.tar.gz
+
+package: ${RELEASE_PACKAGE}
+
+ifneq (${BUILD_OS},windows)
+STUFF_TO_PACKAGE := ${RESULT_jjbase} ${SO_RESULT_jjbase} ${RESULT_jjtest}
+else
+STUFF_TO_PACKAGE := ${BINDIR}/jjBase.lib ${BINDIR}/jjtest.lib
+endif
+
+${RELEASE_PACKAGE} : ${STUFF_TO_PACKAGE}
+	$(call showlabel,"${COLOR_INFO}=== Creating package ${COLOR_HL}$@${COLOR_0}")
+	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${TMPDIR}/package ${RELEASE_PACKAGE}
+	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} ${TMPDIR}/package/lib
+	$(COMMAND_HIDE_PREFIX)${TOOL_CP} ${STUFF_TO_PACKAGE} ${TMPDIR}/package/lib
+	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} ${TMPDIR}/package/include
+	$(COMMAND_HIDE_PREFIX)${TOOL_CP} --parents $$(${TOOL_FIND} . -maxdepth 1 -name '*.h' ; ${TOOL_FIND} gui -maxdepth 1 -name '*.h' -a \! -name '*wx*' ) ${TMPDIR}/package/include
+	$(call ARCHIVE_TAR_XZ,${RELEASE_PACKAGE},${TMPDIR}/package,*)
+	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${TMPDIR}/package
+	$(call showlabel,"${COLOR_INFO}=== Created ${COLOR_HL}$(notdir $@)${COLOR_0}${COLOR_INFO} in ${COLOR_HL}$(dir $@)${COLOR_0}")
+
+clean_package:
+	$(call showlabel,"${COLOR_CLEAN}=== Cleaning package ${COLOR_HL}${RELEASE_PACKAGE}${COLOR_0}")
+	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${TMPDIR}/package ${RELEASE_PACKAGE}
