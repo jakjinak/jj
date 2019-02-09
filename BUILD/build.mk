@@ -296,11 +296,11 @@ info_$(1): infoshared_$(1)
 
 $${SO_RESULT_$(1)}: $${SO_OBJ_$(1)} $(addsuffix },$(addprefix $${RESULT_,$(4)))
 	$$(call showlabel,"$${COLOR_SHARLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_LINKER} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
 
 $(1)_so_only: $${SO_OBJ_$(1)}
 	$$(call showlabel,"$${COLOR_SHARLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_LINKER} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
 endef
 
 ############################################################
@@ -393,11 +393,11 @@ $(call define_staticcommon_part,$(1),$(2),$(3),$(4))
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showlabel, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_LINKER} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
 
 $(1)_only: $${OBJ_$(1)}
 	$$(call showlabel, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_LINKER} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
 endef
 
 .PHONY: testrun

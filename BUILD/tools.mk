@@ -17,7 +17,7 @@ TOOL_AR ?= ar
 TOOL_CXX ?= g++
 #/opt/gcc-5.5/bin/g++
 #/opt/gcc-7.2/bin/g++
-
+TOOL_LINKER ?= ${TOOL_CXX}
 
 VARNAMES_TOOLS := TOOL_echo TOOL_mkdir TOOL_rm TOOL_rmr TOOL_find TOOL_cp TOOL_tar TOOL_AR TOOL_CXX
 
