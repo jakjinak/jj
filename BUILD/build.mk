@@ -36,6 +36,15 @@ SO_COMMON_CXXFLAGS ?= -fPIC ${COMMON_CXXFLAGS}
 SO_COMMON_LDFLAGS ?= -fPIC ${COMMON_LDFLAGS}
 
 
+# Prints all the pairs of given macros and their values
+# $(call dump-vars,vars)
+# 1 vars is a list of variable names to be printed
+define dump-vars
+	$(foreach var,$1,@${TOOL_ECHO} "${COLOR_HL}${var}${COLOR_0}=[${COLOR_INFO}${${var}}${COLOR_0}] defined by $(origin ${var})"
+	)
+endef
+
+
 
 # The macro locate_files takes 3 arguments and is basically a simple wrapper over the program find. It expands to a list of the files found. Parameters:
 # 1 (dir) - the directory in which to start searching
@@ -64,14 +73,19 @@ infotargetscommon:
 	@${TOOL_ECHO} "${COLOR_HL}info${COLOR_0} ... prints this overview"
 	@${TOOL_ECHO} "${COLOR_HL}help${COLOR_0} ... same as ${COLOR_HL}info${COLOR_0}"
 	@${TOOL_ECHO} "${COLOR_HL}listnames${COLOR_0} ... lists all predefined names, further targets and info are available after doing 'make ${COLOR_HL}info_<name>${COLOR_0}'"
+	@${TOOL_ECHO} "${COLOR_HL}vars${COLOR_0} ... lists all 'global' variables and their values, check also ${COLOR_HL}vars_tools${COLOR_0}"
 	@${TOOL_ECHO} "${COLOR_HL}erase${COLOR_0} ... delete the whole directory containing all intermendiate and result files"
 
 infotargets: infotargetscommon
 	@${TOOL_ECHO} ""
 
+VARNAMES_GLOBAL := BUILD_MODE BUILD_ARCH BUILD_OS MACHINE_ARCH MACHINE_OS \
+        VERBOSITY_labels VERBOSITY_colors VERBOSITY_commands VERBOSITY_tests VERBOSITY_archive \
+        TESTRUN_NO_DEPENDENCIES
+
 infovariablescommon:
 	@${TOOL_ECHO} "Build configuration variables:"
-	@${TOOL_ECHO} "${COLOR_HL}BUILD_MORE${COLOR_0} ... debug or release [current value=${COLOR_HL}${BUILD_MODE}${COLOR_0}]"
+	@${TOOL_ECHO} "${COLOR_HL}BUILD_MODE${COLOR_0} ... debug or release [current value=${COLOR_HL}${BUILD_MODE}${COLOR_0}]"
 	@${TOOL_ECHO} "${COLOR_HL}BUILD_ARCH${COLOR_0} ... the target system architecture, x86 or x86_64 [${COLOR_HL}${BUILD_ARCH}${COLOR_0}]"
 	@${TOOL_ECHO} "${COLOR_HL}BUILD_OS${COLOR_0} ... the target operating system, usually linux [${COLOR_HL}${BUILD_OS}${COLOR_0}]"
 	@${TOOL_ECHO} "${COLOR_HL}MACHINE_ARCH${COLOR_0} ... actual system architecture, x86 or x86_64 (assumed to be autodetected) [${COLOR_HL}${MACHINE_ARCH}${COLOR_0}]"
@@ -85,12 +99,17 @@ infovariablescommon:
 	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_tests${COLOR_0} ... Unless set to 1 then tests are setup so that only the number of success/fail tests is printed. [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
 	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_archive${COLOR_0} ... When processing archive files then the contents of the archives are shown only if this is 1. [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
 	@${TOOL_ECHO} ""
+	@${TOOL_ECHO} "${COLOR_HL}TESTRUN_NO_DEPENDENCIES${COLOR_0} ... Define to one to ONLY run tests without checking for dependencies up-to-date. [${COLOR_HL}${TESTRUN_NO_DEPENDENCIES}${COLOR_0}]"
+	@${TOOL_ECHO} ""
 
 infovariables: infovariablescommon
 
 info: infobody infotargets infovariables
 
 help: info
+
+vars:
+	$(call dump-vars,${VARNAMES_GLOBAL})
 
 erase:
 	$(call showlabel,"${COLOR_CLEAN}=== Erasing all in ${COLOR_HL}${ERASEDIRS}${COLOR_0}")
@@ -107,24 +126,25 @@ ${TMPDIR}:
 define define_common_part
 SRC_$(1) := $$(addprefix $${SRCDIR_$(1)}/,$${SOURCE_$(1)})
 
-.PHONY: $(1) $(1)_only clean_$(1) clean_$(1)_only info_$(1) infoprelude_$(1) infofinale_$(1) infopreludecommon_$(1) listname_$(1)
+.PHONY: $(1) $(1)_only clean_$(1) clean_$(1)_only info_$(1) infocommon_$(1) listname_$(1) vars_$(1)
 
 $(2): $(1)
 $(3): clean_$(1)
 
-infopreludecommon_$(1):
-	@${TOOL_ECHO} "SRCDIR_$(1) = [$${COLOR_INFO}$$(SRCDIR_$(1))$${COLOR_0}]"
-	@${TOOL_ECHO} "SOURCE_$(1) = [$${COLOR_INFO}$$(SOURCE_$(1))$${COLOR_0}]"
+info_$(1): infocommon_$(1)
 
-infoprelude_$(1): infopreludecommon_$(1)
-	@${TOOL_ECHO} "SRC_$(1) = [$${COLOR_INFO}$$(SRC_$(1))$${COLOR_0}]"
-
-info_$(1): infoprelude_$(1) infofinale_$(1)
+infocommon_$(1):
+	@${TOOL_ECHO} "$${COLOR_HL}$(1)$${COLOR_0} is a $${COLOR_INFO}$${BUILDTYPE_$(1)}$${COLOR_0} defined in this makefile"
 
 listname_$(1):
 	@${TOOL_ECHO} "$(1)"
 
 listnames: listname_$(1)
+
+VARNAMES_$(1) := SRCDIR_$(1) SOURCE_$(1) SRC_$(1)
+
+vars_$(1):
+	$$(call dump-vars,$${VARNAMES_$(1)})
 endef
 
 #---------------------------------
@@ -141,11 +161,12 @@ DEP_$(1) := $$(addprefix $${DEPDIR_$(1)}/,$$(SOURCE_$(1):.cpp=.d))
 
 CXXFLAGS_$(1) ?= ${COMMON_CXXFLAGS} $${INCDIR_$(1)}
 LDFLAGS_$(1) ?= ${COMMON_LDFLAGS} $${LIBS_$(1)}
-ARFLAGS_$(1) ?= ${COMMON_ARFLAGS}
+
+VARNAMES_$(1) += OBJDIR_$(1) DEPDIR_$(1) OBJ_$(1) DEP_$(1) CXXFLAGS_$(1) INCDIR_$(1) LDFLAGS_$(1) LIBS_$(1)
 
 -include $${DEP_$(1)}
 
-.PHONY: infopreludestaticcommon_$(1) infofinalestaticcommon_$(1)
+.PHONY: infostatic_$(1)
 
 $(1): $${RESULT_$(1)}
 $${RESULT_$(1)}: $(addsuffix },$(addprefix $${RESULT_,$(4)))
@@ -155,19 +176,12 @@ clean_$(1)_only:
 	$$(call showlabel,"$${COLOR_CLEAN}=== Clean all for $${COLOR_HL}$(1)$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_RM} $${RESULT_$(1)} $${OBJ_$(1)} $${DEP_$(1)}
 
-infopreludestaticcommon_$(1):
-	@${TOOL_ECHO} "CXXFLAGS_$(1) = [$${COLOR_INFO}$$(CXXFLAGS_$(1))$${COLOR_0}]"
-	@${TOOL_ECHO} "OBJDIR_$(1) = [$${COLOR_INFO}$$(OBJDIR_$(1))$${COLOR_0}]"
-	@${TOOL_ECHO} "DEPDIR_$(1) = [$${COLOR_INFO}$$(DEPDIR_$(1))$${COLOR_0}]"
-	@${TOOL_ECHO} "OBJ_$(1) = [$${COLOR_INFO}$$(OBJ_$(1))$${COLOR_0}]"
-	@${TOOL_ECHO} "DEP_$(1) = [$${COLOR_INFO}$$(DEP_$(1))$${COLOR_0}]"
-
-infofinalestaticcommon_$(1):
-	@${TOOL_ECHO}
+infostatic_$(1):
 	@${TOOL_ECHO} "Defines these targets: [$${COLOR_INFO}$(1) $(1)_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1) clean_$(1)_only$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
 	@${TOOL_ECHO} "Depends on these libs: [$${COLOR_INFO}$(4)$${COLOR_0}]"
 	@${TOOL_ECHO} "Is part of these targets: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
 
+info_$(1): infostatic_$(1)
 
 $${DEPDIR_$(1)}:
 	$$(call showlabel,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${DEPDIR_$(1)}$${COLOR_0}")
@@ -188,20 +202,15 @@ endef
 #(call define_static_part_alpha,name,makerule,cleanrule,adddeps)
 define define_static_part_alpha
 RESULT_$(1) ?= ${LIBDIR}/lib$(1).a
+ARFLAGS_$(1) ?= ${COMMON_ARFLAGS}
+
+VARNAMES_$(1) += RESULT_$(1) ARFLAGS_$(1)
 endef
 
 # The following forms the end of a static library definitions.
 #(call define_static_part_omega,name,makerule,cleanrule,adddeps)
 define define_static_part_omega
 $(call define_staticcommon_part,$(1),$(2),$(3),$(4))
-
-infopreludestatic_$(1): infopreludestaticcommon_$(1)
-	@${TOOL_ECHO} "ARFLAGS_$(1) = [$${COLOR_INFO}$$(ARFLAGS_$(1))$${COLOR_0}]"
-
-infoprelude_$(1): infopreludestatic_$(1)
-infofinale_$(1): infofinalestaticcommon_$(1)
-
-.PHONY: infopreludestatic_$(1)
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showlabel,"$${COLOR_STATLIB}=== Creating static library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
@@ -222,6 +231,8 @@ SO_SOURCE_$(1) ?= $${SOURCE_$(1)}
 SO_SRCDIR_$(1) ?= $${SRCDIR_$(1)}
 SO_INCDIR_$(1) ?= $${INCDIR_$(1)}
 SO_LIBS_$(1) ?= $${LIBS_$(1)}
+
+VARNAMES_$(1) += SO_RESULT_$(1) RESULT_$(1)_so SO_SOURCE_$(1) SO_SRCDIR_$(1)
 endef
 
 # The following forms the end of a shared library definitions.
@@ -235,6 +246,8 @@ SO_DEP_$(1) := $$(addprefix $${SO_DEPDIR_$(1)}/,$$(SO_SOURCE_$(1):.cpp=.d))
 
 SO_CXXFLAGS_$(1) ?= ${SO_COMMON_CXXFLAGS} $${SO_INCDIR_$(1)}
 SO_LDFLAGS_$(1) ?= ${SO_COMMON_LDFLAGS} $${SO_LIBS_$(1)}
+
+VARNAMES_$(1) += SO_OBJDIR_$(1) SO_DEPDIR_$(1) SO_OBJ_$(1) SO_DEP_$(1) SO_CXXFLAGS_$(1) SO_INCDIR_$(1) SO_LDFLAGS_$(1) SO_LIBS_$(1)
 
 -include $${SO_DEP_$(1)}
 
@@ -259,23 +272,15 @@ $${SO_OBJDIR_$(1)}/%.o : $${SO_SRCDIR_$(1)}/%.cpp | $${SO_OBJDIR_$(1)} $${SO_DEP
 	$$(call showlabel,"$${COLOR_COMPILE}=== Compiling $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$$<)$${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${SO_CXXFLAGS_$(1)} -MMD -MT $$@ -MF $${SO_DEPDIR_$(1)}/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
 
-infopreludeshared_$(1):
-	@${TOOL_ECHO} "SO_CXXFLAGS_$(1) = [$${COLOR_INFO}$$(SO_CXXFLAGS_$(1))$${COLOR_0}]"
-	@${TOOL_ECHO} "SO_OBJDIR_$(1) = [$${COLOR_INFO}$$(SO_OBJDIR_$(1))$${COLOR_0}]"
-	@${TOOL_ECHO} "SO_DEPDIR_$(1) = [$${COLOR_INFO}$$(SO_DEPDIR_$(1))$${COLOR_0}]"
-	@${TOOL_ECHO} "SO_OBJ_$(1) = [$${COLOR_INFO}$$(SO_OBJ_$(1))$${COLOR_0}]"
-	@${TOOL_ECHO} "SO_DEP_$(1) = [$${COLOR_INFO}$$(SO_DEP_$(1))$${COLOR_0}]"
-	@${TOOL_ECHO} "SO_LDFLAGS_$(1) = [$${COLOR_INFO}$$(SO_LDFLAGS_$(1))$${COLOR_0}]"
+.PHONY: infoshared_$(1)
 
-infofinaleshared_$(1):
+infoshared_$(1):
 	@${TOOL_ECHO} "The shared part defines these targets: [$${COLOR_INFO}$(1)_so $(1)_so_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1)_so clean_$(1)_so_only$${COLOR_0}]"
 	@${TOOL_ECHO} "The shared part depends on these libs: [$${COLOR_INFO}$(4)$${COLOR_0}]"
 	@${TOOL_ECHO} "The shared part is part of these targets: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
 
-infoprelude_$(1): infopreludeshared_$(1)
-infofinale_$(1): infofinaleshared_$(1)
+info_$(1): infoshared_$(1)
 
-.PHONY: infopreludeshared_$(1) infofinaleshared_$(1)
 
 $${SO_RESULT_$(1)}: $${SO_OBJ_$(1)} $(addsuffix },$(addprefix $${RESULT_,$(4)))
 	$$(call showlabel,"$${COLOR_SHARLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
@@ -337,6 +342,7 @@ endef
 # Defines everything for a static library.
 #(call define_static_library,name,makerule,cleanrule,adddeps)
 define define_static_library
+BUILDTYPE_$(1) := staticlib
 $(call define_static_part_alpha,$(1),$(2),$(3),$(4))
 $(call define_common_part,$(1),$(2),$(3),$(4))
 $(call define_static_part_omega,$(1),$(2),$(3),$(4))
@@ -345,6 +351,7 @@ endef
 # Defines everything for a shared library.
 #(call define_shared_library,name,makerule,cleanrule,adddeps)
 define define_shared_library
+BUILDTYPE_$(1) := sharedlib
 $(call define_shared_part_alpha,$(1),$(2),$(3),$(4))
 $(call define_common_part,$(1),$(2),$(3),$(4))
 $(call define_shared_part_omega,$(1),$(2),$(3),$(4))
@@ -353,6 +360,7 @@ endef
 # Defines everything for a library that needs to be both static and shared.
 #(call define_static_and_shared_library,name,makerule,cleanrule,adddeps)
 define define_static_and_shared_library
+BUILDTYPE_$(1) := staticandsharedlib
 $(call define_static_part_alpha,$(1),$(2),$(3),$(4))
 $(call define_shared_part_alpha,$(1),$(2),$(3),$(4))
 $(call define_common_part,$(1),$(2),$(3),$(4))
@@ -363,18 +371,13 @@ endef
 # Defines everything for an executable program.
 #(call define_program,name,makerule,cleanrule,adddeps)
 define define_program
+BUILDTYPE_$(1) := program
 RESULT_$(1) ?= ${BINDIR}/$(1)
+
+VARNAMES_$(1) += LDFLAGS_$(1) LIBS_$(1) RESULT_$(1)
 
 $(call define_common_part,$(1),$(2),$(3),$(4))
 $(call define_staticcommon_part,$(1),$(2),$(3),$(4))
-
-infopreludeprogram_$(1): infopreludestaticcommon_$(1)
-	@${TOOL_ECHO} "LDFLAGS_$(1) = [$${COLOR_INFO}$$(LDFLAGS_$(1))$${COLOR_0}]"
-
-infoprelude_$(1): infopreludeprogram_$(1)
-infofinale_$(1): infofinalestaticcommon_$(1)
-
-.PHONY: infopreludeprogram_$(1)
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showlabel, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
@@ -402,6 +405,8 @@ endef
 define define_testrun
 TESTRUN_NAME_$(1) ?= $${RESULT_$(1)}${PLATFORM_BINARY_SUFFIX}
 
+.PHONY: testrun_$(1) infotestrun_$(1) info_$(1)
+
 $(2) : testrun_$(1)
 
 testrun: testrun_$(1)
@@ -411,4 +416,10 @@ testrun_$(1): $(if ${TESTRUN_NO_DEPENDENCIES},,$(3))
 	$${TESTRUN_PREPARE_$(1)}
 	$(COMMAND_HIDE_PREFIX)$${TESTRUN_VARS_$(1)} $${TESTRUN_NAME_$(1)} $${TESTRUN_PARS_$(1)} $${RUNTEST_STYLE}
 	$${TESTRUN_CLEANUP_$(1)}
+
+infotestrun_$(1):
+	@${TOOL_ECHO} "$${COLOR_HL}$(1)$${COLOR_0} defines a target that runs tests; can be run with $${COLOR_HL}make testrun_$(1)$${COLOR_0}"
+	@${TOOL_ECHO} "It is associated with $${COLOR_INFO}$(2)$${COLOR_0} and depends on $${COLOR_INFO}$(if ${TESTRUN_NO_DEPENDENCIES},,$(3))$${COLOR_0}".
+
+info_$(1): infotestrun_$(1)
 endef

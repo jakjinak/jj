@@ -42,6 +42,8 @@ infoextratargets:
 	@${TOOL_ECHO} "${COLOR_HL}package${COLOR_0} ... create a .tar.xz containing the built libs and headers (UI inclusive)"
 infotargets: infoextratargets
 
+VARNAMES_GLOBAL += COMPILER_LIB_LINKAGE WXSTATIC RELEASE_PACKAGE_ADD_GUI
+
 infoextravariables:
 	@${TOOL_ECHO} "Additional variables:"
 	@${TOOL_ECHO} "${COLOR_HL}COMPILER_LIB_LINKAGE${COLOR_0} ... defines whether the libgcc and libstdc++ are linked dynamically or statically"
