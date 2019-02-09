@@ -220,11 +220,12 @@ else
 STUFF_TO_PACKAGE := ${BINDIR}/jjBase.lib ${BINDIR}/jjtest.lib
 endif
 
-${RELEASE_PACKAGE} : ${STUFF_TO_PACKAGE}
+${RELEASE_PACKAGE} : ${STUFF_TO_PACKAGE} LICENSE
 	$(call showlabel,"${COLOR_INFO}=== Creating package ${COLOR_HL}$@${COLOR_0}")
 	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${TMPDIR}/package ${RELEASE_PACKAGE}
 	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} ${TMPDIR}/package/lib
 	$(COMMAND_HIDE_PREFIX)${TOOL_CP} ${STUFF_TO_PACKAGE} ${TMPDIR}/package/lib
+	$(COMMAND_HIDE_PREFIX)${TOOL_CP} LICENSE ${TMPDIR}/package
 	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} ${TMPDIR}/package/include
 	$(COMMAND_HIDE_PREFIX)${TOOL_CP} --parents $$(${TOOL_FIND} . -maxdepth 1 -name '*.h' ; ${TOOL_FIND} gui -maxdepth 1 -name '*.h' -a \! -name '*wx*' ) ${TMPDIR}/package/include
 	$(call ARCHIVE_TAR_XZ,${RELEASE_PACKAGE},${TMPDIR}/package,*)
