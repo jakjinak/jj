@@ -35,6 +35,12 @@ COMMON_LDFLAGS ?= ${PLATFORMSPECIFIC_LDFLAGS} ${MODESPECIFIC_LDFLAGS} ${CUSTOM_L
 SO_COMMON_CXXFLAGS ?= -fPIC ${COMMON_CXXFLAGS}
 SO_COMMON_LDFLAGS ?= -fPIC ${COMMON_LDFLAGS}
 
+VARNAMES_SPECIFIC := PLATFORMSPECIFIC_CXXFLAGS MODESPECIFIC_CXXFLAGS CUSTOM_CXXFLAGS \
+        PLATFORMSPECIFIC_ARFLAGS MODESPECIFIC_ARFLAGS CUSTOM_ARFLAGS \
+        PLATFORMSPECIFIC_LDFLAGS MODESPECIFIC_LDFLAGS CUSTOM_LDFLAGS
+
+vars_specific:
+	$(call dump-vars,${VARNAMES_SPECIFIC})
 
 # Prints all the pairs of given macros and their values
 # $(call dump-vars,vars)
@@ -73,7 +79,7 @@ infotargetscommon:
 	@${TOOL_ECHO} "${COLOR_HL}info${COLOR_0} ... prints this overview"
 	@${TOOL_ECHO} "${COLOR_HL}help${COLOR_0} ... same as ${COLOR_HL}info${COLOR_0}"
 	@${TOOL_ECHO} "${COLOR_HL}listnames${COLOR_0} ... lists all predefined names, further targets and info are available after doing 'make ${COLOR_HL}info_<name>${COLOR_0}'"
-	@${TOOL_ECHO} "${COLOR_HL}vars${COLOR_0} ... lists all 'global' variables and their values, check also ${COLOR_HL}vars_tools${COLOR_0}"
+	@${TOOL_ECHO} "${COLOR_HL}vars${COLOR_0} ... lists all 'global' variables and their values, check also ${COLOR_HL}vars_specific${COLOR_0} or ${COLOR_HL}vars_tools${COLOR_0}"
 	@${TOOL_ECHO} "${COLOR_HL}erase${COLOR_0} ... delete the whole directory containing all intermendiate and result files"
 
 infotargets: infotargetscommon
@@ -81,6 +87,7 @@ infotargets: infotargetscommon
 
 VARNAMES_GLOBAL := BUILD_MODE BUILD_ARCH BUILD_OS MACHINE_ARCH MACHINE_OS \
         VERBOSITY_labels VERBOSITY_colors VERBOSITY_commands VERBOSITY_tests VERBOSITY_archive \
+        COMMON_CXXFLAGS COMMON_ARFLAGS COMMON_LDFLAGS SO_COMMON_CXXFLAGS SO_COMMON_LDFLAGS \
         TESTRUN_NO_DEPENDENCIES
 
 infovariablescommon:
