@@ -66,7 +66,7 @@ endef
 # see definition of define_static_library, define_shared_library, define_static_and_shared_library or
 # define_program below or the common part right above them on how to use it
 
-.PHONY: help info infobody infotargets infotargetscommon infovariables infovariablescommon listnames wipeout
+.PHONY: help info infobody infotargets infotargetscommon infovariables infovariablescommon list list2 erase
 
 infobody:
 	@${TOOL_ECHO} "These makefiles provide a generic framework how to build static/shared libraries and"
@@ -78,7 +78,7 @@ infotargetscommon:
 	@${TOOL_ECHO} "The highlevel targets are (invoked as 'make <targetname>', of course):"
 	@${TOOL_ECHO} "${COLOR_HL}info${COLOR_0} ... prints this overview"
 	@${TOOL_ECHO} "${COLOR_HL}help${COLOR_0} ... same as ${COLOR_HL}info${COLOR_0}"
-	@${TOOL_ECHO} "${COLOR_HL}listnames${COLOR_0} ... lists all predefined names, further targets and info are available after doing 'make ${COLOR_HL}info_<name>${COLOR_0}'"
+	@${TOOL_ECHO} "${COLOR_HL}list${COLOR_0}, ${COLOR_HL}list2${COLOR_0} ... lists all predefined names, further targets and info are available after doing 'make ${COLOR_HL}info_<name>${COLOR_0}'"
 	@${TOOL_ECHO} "${COLOR_HL}vars${COLOR_0} ... lists all 'global' variables and their values, check also ${COLOR_HL}vars_specific${COLOR_0} or ${COLOR_HL}vars_tools${COLOR_0}"
 	@${TOOL_ECHO} "${COLOR_HL}erase${COLOR_0} ... delete the whole directory containing all intermendiate and result files"
 
@@ -133,7 +133,7 @@ ${TMPDIR}:
 define define_common_part
 SRC_$(1) := $$(addprefix $${SRCDIR_$(1)}/,$${SOURCE_$(1)})
 
-.PHONY: $(1) $(1)_only clean_$(1) clean_$(1)_only info_$(1) infocommon_$(1) listname_$(1) vars_$(1)
+.PHONY: $(1) $(1)_only clean_$(1) clean_$(1)_only info_$(1) infocommon_$(1) list_$(1) list2_$(1) vars_$(1)
 
 $(2): $(1)
 $(3): clean_$(1)
@@ -143,10 +143,15 @@ info_$(1): infocommon_$(1)
 infocommon_$(1):
 	@${TOOL_ECHO} "$${COLOR_HL}$(1)$${COLOR_0} is a $${COLOR_INFO}$${BUILDTYPE_$(1)}$${COLOR_0} defined in this makefile"
 
-listname_$(1):
+list_$(1):
 	@${TOOL_ECHO} "$(1)"
 
-listnames: listname_$(1)
+list2_$(1):
+	@${TOOL_ECHO} "$${BUILDTYPE_$(1)} $(1)"
+
+list: list_$(1)
+
+list2: list2_$(1)
 
 VARNAMES_$(1) := SRCDIR_$(1) SOURCE_$(1) SRC_$(1)
 
@@ -411,7 +416,7 @@ endef
 define define_testrun
 TESTRUN_NAME_$(1) ?= $${RESULT_$(1)}${PLATFORM_BINARY_SUFFIX}
 
-.PHONY: testrun_$(1) infotestrun_$(1) info_$(1)
+.PHONY: testrun_$(1) infotestrun_$(1) info_$(1) listtestrun_$(1) listtestrun2_$(1)
 
 $(2) : testrun_$(1)
 
@@ -428,6 +433,16 @@ infotestrun_$(1):
 	@${TOOL_ECHO} "It is associated with $${COLOR_INFO}$(2)$${COLOR_0} and depends on $${COLOR_INFO}$(if ${TESTRUN_NO_DEPENDENCIES},,$(3))$${COLOR_0}".
 
 info_$(1): infotestrun_$(1)
+
+listtestrun_$(1):
+	@${TOOL_ECHO} "$(1)"
+
+list: listtestrun_$(1)
+
+listtestrun2_$(1):
+	@${TOOL_ECHO} "testrun $(1)"
+
+list2: listtestrun2_$(1)
 
 ifeq (${VARNAMES_$(1)},)
 # with standalone test targets need to define own var dumper
