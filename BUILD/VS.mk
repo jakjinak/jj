@@ -28,7 +28,7 @@ vssln_$(1): | ${TMPDIR}
 	$(COMMAND_HIDE_PREFIX){ $(foreach fold,${VSSLN_FOLDERS_$(1)},echo '$${VSSLN_FOLDERDEFS_NAME_$(1)_$(fold)}|$${VSSLN_FOLDERDEFS_GUID_$(1)_$(fold)}' ;) : ; } >> "$${VSSLN_TMPINPUT_$(1)}"
 	$$(call showlabel,$${COLOR_SUPPORT}=== Generating solution file $${COLOR_HL}$${VSSLN_RESULT_$(1)}$${COLOR_0})
 	$(COMMAND_HIDE_PREFIX)${FRAMEWORKDIR}/../tools/generate_vc.pl sln $${VSSLN_GUID1_$(1)} "$(realpath $(2))/$(1).sln" $${VSSLN_GUID2_$(1)} < "$${VSSLN_TMPINPUT_$(1)}" > "$${VSSLN_RESULT_$(1)}"
-	$(COMMAND_HIDE_PREFIX)${TOOL_RM} $${VSSLN_TMPINPUT_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_rm} $${VSSLN_TMPINPUT_$(1)}
 
 vsall: vssln_$(1)
 
@@ -78,7 +78,7 @@ vsproj_$(1): | ${TMPDIR}
 	$(COMMAND_HIDE_PREFIX){ echo 'includes:' ; for sf in $${VSHEADER_$(1)} ; do echo "$$$$sf" ; done ; } >> "$${VSFLT_TMPINPUT_$(1)}"
 	$$(call showlabel,$${COLOR_SUPPORT}=== Generating filters file $${COLOR_HL}$${VSFLT_RESULT_$(1)}$${COLOR_0})
 	$(COMMAND_HIDE_PREFIX)${FRAMEWORKDIR}/../tools/generate_vc.pl vcfilter $${VSGUID_$(1)} "$$(realpath $${SRCDIR_$(1)})/$${VSNAME_$(1)}.vcxproj.filters" < "$${VSFLT_TMPINPUT_$(1)}" > "$${VSFLT_RESULT_$(1)}"
-	$(COMMAND_HIDE_PREFIX)${TOOL_RM} "$${VSPRJ_TMPINPUT_$(1)}" "$${VSFLT_TMPINPUT_$(1)}"
+	$(COMMAND_HIDE_PREFIX)${TOOL_rm} "$${VSPRJ_TMPINPUT_$(1)}" "$${VSFLT_TMPINPUT_$(1)}"
 
 vsall: vsproj_$(1)
 

@@ -46,7 +46,7 @@ vars_specific:
 # $(call dump-vars,vars)
 # 1 vars is a list of variable names to be printed
 define dump-vars
-	$(foreach var,$1,@${TOOL_ECHO} "${COLOR_HL}${var}${COLOR_0}=[${COLOR_INFO}${${var}}${COLOR_0}] defined by $(origin ${var})"
+	$(foreach var,$1,@${TOOL_echo} "${COLOR_HL}${var}${COLOR_0}=[${COLOR_INFO}${${var}}${COLOR_0}] defined by $(origin ${var})"
 	)
 endef
 
@@ -58,7 +58,7 @@ endef
 # 3 (maxdepth) - (optional) gives the maximum depth to search, 1 means search only in the given dir, unlimited by default
 #(call locate_files(dir,pattern,maxdepth)
 define locate_files
-$(patsubst ./%,%,$(shell cd '$1' && ${TOOL_FIND} . $(if $3,-maxdepth $3,) -type f -name '$2'))
+$(patsubst ./%,%,$(shell cd '$1' && ${TOOL_find} . $(if $3,-maxdepth $3,) -type f -name '$2'))
 endef
 
 ########################################
@@ -69,21 +69,21 @@ endef
 .PHONY: help info infobody infotargets infotargetscommon infovariables infovariablescommon list list2 erase
 
 infobody:
-	@${TOOL_ECHO} "These makefiles provide a generic framework how to build static/shared libraries and"
-	@${TOOL_ECHO} "programs. It allows to define simple rules as makefile targets to ease the build usage."
-	@${TOOL_ECHO} "There are also several variables that can tweak the behavior."
-	@${TOOL_ECHO} ""
+	@${TOOL_echo} "These makefiles provide a generic framework how to build static/shared libraries and"
+	@${TOOL_echo} "programs. It allows to define simple rules as makefile targets to ease the build usage."
+	@${TOOL_echo} "There are also several variables that can tweak the behavior."
+	@${TOOL_echo} ""
 
 infotargetscommon:
-	@${TOOL_ECHO} "The highlevel targets are (invoked as 'make <targetname>', of course):"
-	@${TOOL_ECHO} "${COLOR_HL}info${COLOR_0} ... prints this overview"
-	@${TOOL_ECHO} "${COLOR_HL}help${COLOR_0} ... same as ${COLOR_HL}info${COLOR_0}"
-	@${TOOL_ECHO} "${COLOR_HL}list${COLOR_0}, ${COLOR_HL}list2${COLOR_0} ... lists all predefined names, further targets and info are available after doing 'make ${COLOR_HL}info_<name>${COLOR_0}'"
-	@${TOOL_ECHO} "${COLOR_HL}vars${COLOR_0} ... lists all 'global' variables and their values, check also ${COLOR_HL}vars_specific${COLOR_0} or ${COLOR_HL}vars_tools${COLOR_0}"
-	@${TOOL_ECHO} "${COLOR_HL}erase${COLOR_0} ... delete the whole directory containing all intermendiate and result files"
+	@${TOOL_echo} "The highlevel targets are (invoked as 'make <targetname>', of course):"
+	@${TOOL_echo} "${COLOR_HL}info${COLOR_0} ... prints this overview"
+	@${TOOL_echo} "${COLOR_HL}help${COLOR_0} ... same as ${COLOR_HL}info${COLOR_0}"
+	@${TOOL_echo} "${COLOR_HL}list${COLOR_0}, ${COLOR_HL}list2${COLOR_0} ... lists all predefined names, further targets and info are available after doing 'make ${COLOR_HL}info_<name>${COLOR_0}'"
+	@${TOOL_echo} "${COLOR_HL}vars${COLOR_0} ... lists all 'global' variables and their values, check also ${COLOR_HL}vars_specific${COLOR_0} or ${COLOR_HL}vars_tools${COLOR_0}"
+	@${TOOL_echo} "${COLOR_HL}erase${COLOR_0} ... delete the whole directory containing all intermendiate and result files"
 
 infotargets: infotargetscommon
-	@${TOOL_ECHO} ""
+	@${TOOL_echo} ""
 
 VARNAMES_GLOBAL := BUILD_MODE BUILD_ARCH BUILD_OS MACHINE_ARCH MACHINE_OS \
         VERBOSITY_labels VERBOSITY_colors VERBOSITY_commands VERBOSITY_tests VERBOSITY_archive \
@@ -91,23 +91,23 @@ VARNAMES_GLOBAL := BUILD_MODE BUILD_ARCH BUILD_OS MACHINE_ARCH MACHINE_OS \
         TESTRUN_NO_DEPENDENCIES
 
 infovariablescommon:
-	@${TOOL_ECHO} "Build configuration variables:"
-	@${TOOL_ECHO} "${COLOR_HL}BUILD_MODE${COLOR_0} ... debug or release [current value=${COLOR_HL}${BUILD_MODE}${COLOR_0}]"
-	@${TOOL_ECHO} "${COLOR_HL}BUILD_ARCH${COLOR_0} ... the target system architecture, x86 or x86_64 [${COLOR_HL}${BUILD_ARCH}${COLOR_0}]"
-	@${TOOL_ECHO} "${COLOR_HL}BUILD_OS${COLOR_0} ... the target operating system, usually linux [${COLOR_HL}${BUILD_OS}${COLOR_0}]"
-	@${TOOL_ECHO} "${COLOR_HL}MACHINE_ARCH${COLOR_0} ... actual system architecture, x86 or x86_64 (assumed to be autodetected) [${COLOR_HL}${MACHINE_ARCH}${COLOR_0}]"
-	@${TOOL_ECHO} "${COLOR_HL}MACHINE_OS${COLOR_0} ... actual system name, usually linux (assumed to be autodetected) [${COLOR_HL}${MACHINE_OS}${COLOR_0}]"
-	@${TOOL_ECHO} ""
-	@${TOOL_ECHO} "Output related variables:"
-	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_labels${COLOR_0} ... Show extra output describing what is going on, enabled if set to 1. [${COLOR_HL}${VERBOSITY_labels}${COLOR_0}]"
-	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_colors${COLOR_0} ... Print hints in color, enabled if set to 1. [${COLOR_HL}${VERBOSITY_colors}${COLOR_0}]"
-	@${TOOL_ECHO} "         Note: also tweaks the info target output"
-	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_commands${COLOR_0} ... Forces to not echo the commands executed if enabled by setting to 1. [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
-	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_tests${COLOR_0} ... Unless set to 1 then tests are setup so that only the number of success/fail tests is printed. [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
-	@${TOOL_ECHO} "${COLOR_HL}VERBOSITY_archive${COLOR_0} ... When processing archive files then the contents of the archives are shown only if this is 1. [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
-	@${TOOL_ECHO} ""
-	@${TOOL_ECHO} "${COLOR_HL}TESTRUN_NO_DEPENDENCIES${COLOR_0} ... Define to one to ONLY run tests without checking for dependencies up-to-date. [${COLOR_HL}${TESTRUN_NO_DEPENDENCIES}${COLOR_0}]"
-	@${TOOL_ECHO} ""
+	@${TOOL_echo} "Build configuration variables:"
+	@${TOOL_echo} "${COLOR_HL}BUILD_MODE${COLOR_0} ... debug or release [current value=${COLOR_HL}${BUILD_MODE}${COLOR_0}]"
+	@${TOOL_echo} "${COLOR_HL}BUILD_ARCH${COLOR_0} ... the target system architecture, x86 or x86_64 [${COLOR_HL}${BUILD_ARCH}${COLOR_0}]"
+	@${TOOL_echo} "${COLOR_HL}BUILD_OS${COLOR_0} ... the target operating system, usually linux [${COLOR_HL}${BUILD_OS}${COLOR_0}]"
+	@${TOOL_echo} "${COLOR_HL}MACHINE_ARCH${COLOR_0} ... actual system architecture, x86 or x86_64 (assumed to be autodetected) [${COLOR_HL}${MACHINE_ARCH}${COLOR_0}]"
+	@${TOOL_echo} "${COLOR_HL}MACHINE_OS${COLOR_0} ... actual system name, usually linux (assumed to be autodetected) [${COLOR_HL}${MACHINE_OS}${COLOR_0}]"
+	@${TOOL_echo} ""
+	@${TOOL_echo} "Output related variables:"
+	@${TOOL_echo} "${COLOR_HL}VERBOSITY_labels${COLOR_0} ... Show extra output describing what is going on, enabled if set to 1. [${COLOR_HL}${VERBOSITY_labels}${COLOR_0}]"
+	@${TOOL_echo} "${COLOR_HL}VERBOSITY_colors${COLOR_0} ... Print hints in color, enabled if set to 1. [${COLOR_HL}${VERBOSITY_colors}${COLOR_0}]"
+	@${TOOL_echo} "         Note: also tweaks the info target output"
+	@${TOOL_echo} "${COLOR_HL}VERBOSITY_commands${COLOR_0} ... Forces to not echo the commands executed if enabled by setting to 1. [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
+	@${TOOL_echo} "${COLOR_HL}VERBOSITY_tests${COLOR_0} ... Unless set to 1 then tests are setup so that only the number of success/fail tests is printed. [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
+	@${TOOL_echo} "${COLOR_HL}VERBOSITY_archive${COLOR_0} ... When processing archive files then the contents of the archives are shown only if this is 1. [${COLOR_HL}${VERBOSITY_commands}${COLOR_0}]"
+	@${TOOL_echo} ""
+	@${TOOL_echo} "${COLOR_HL}TESTRUN_NO_DEPENDENCIES${COLOR_0} ... Define to one to ONLY run tests without checking for dependencies up-to-date. [${COLOR_HL}${TESTRUN_NO_DEPENDENCIES}${COLOR_0}]"
+	@${TOOL_echo} ""
 
 infovariables: infovariablescommon
 
@@ -120,11 +120,11 @@ vars:
 
 erase:
 	$(call showlabel,"${COLOR_CLEAN}=== Erasing all in ${COLOR_HL}${ERASEDIRS}${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_RMR} ${ERASEDIRS}
+	$(COMMAND_HIDE_PREFIX)${TOOL_rmr} ${ERASEDIRS}
 
 ${TMPDIR}:
 	$(call showlabel,"${COLOR_SUPPORT}=== Creating directory ${COLOR_HL}${TMPDIR}${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} ${TMPDIR}
+	$(COMMAND_HIDE_PREFIX)${TOOL_mkdir} ${TMPDIR}
 
 #--------------------------
 #------- COMMON DEFINES ---
@@ -141,13 +141,13 @@ $(3): clean_$(1)
 info_$(1): infocommon_$(1)
 
 infocommon_$(1):
-	@${TOOL_ECHO} "$${COLOR_HL}$(1)$${COLOR_0} is a $${COLOR_INFO}$${BUILDTYPE_$(1)}$${COLOR_0} defined in this makefile"
+	@${TOOL_echo} "$${COLOR_HL}$(1)$${COLOR_0} is a $${COLOR_INFO}$${BUILDTYPE_$(1)}$${COLOR_0} defined in this makefile"
 
 list_$(1):
-	@${TOOL_ECHO} "$(1)"
+	@${TOOL_echo} "$(1)"
 
 list2_$(1):
-	@${TOOL_ECHO} "$${BUILDTYPE_$(1)} $(1)"
+	@${TOOL_echo} "$${BUILDTYPE_$(1)} $(1)"
 
 list: list_$(1)
 
@@ -186,22 +186,22 @@ clean_$(1): clean_$(1)_only $(addprefix clean_,$(4))
 
 clean_$(1)_only:
 	$$(call showlabel,"$${COLOR_CLEAN}=== Clean all for $${COLOR_HL}$(1)$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_RM} $${RESULT_$(1)} $${OBJ_$(1)} $${DEP_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_rm} $${RESULT_$(1)} $${OBJ_$(1)} $${DEP_$(1)}
 
 infostatic_$(1):
-	@${TOOL_ECHO} "Defines these targets: [$${COLOR_INFO}$(1) $(1)_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1) clean_$(1)_only$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
-	@${TOOL_ECHO} "Depends on these libs: [$${COLOR_INFO}$(4)$${COLOR_0}]"
-	@${TOOL_ECHO} "Is part of these targets: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
+	@${TOOL_echo} "Defines these targets: [$${COLOR_INFO}$(1) $(1)_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1) clean_$(1)_only$${COLOR_0}] [$${COLOR_INFO}info_$(1)$${COLOR_0}]"
+	@${TOOL_echo} "Depends on these libs: [$${COLOR_INFO}$(4)$${COLOR_0}]"
+	@${TOOL_echo} "Is part of these targets: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
 
 info_$(1): infostatic_$(1)
 
 $${DEPDIR_$(1)}:
 	$$(call showlabel,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${DEPDIR_$(1)}$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} $${DEPDIR_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_mkdir} $${DEPDIR_$(1)}
 
 $${OBJDIR_$(1)}:
 	$$(call showlabel,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${OBJDIR_$(1)}$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} $${OBJDIR_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_mkdir} $${OBJDIR_$(1)}
 
 $${DEPDIR_$(1)}/%.d : ;
 
@@ -268,15 +268,15 @@ clean_$(1)_so: clean_$(1)_so_only $(addprefix clean_,$(4))
 
 clean_$(1)_so_only:
 	$$(call showlabel,"$${COLOR_CLEAN}=== Clean all for $${COLOR_HL}$(1)_so$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_RM} $${SO_RESULT_$(1)} $${SO_OBJ_$(1)} $${SO_DEP_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_rm} $${SO_RESULT_$(1)} $${SO_OBJ_$(1)} $${SO_DEP_$(1)}
 
 $${SO_DEPDIR_$(1)}:
 	$$(call showlabel,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${SO_DEPDIR_$(1)}$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} $${SO_DEPDIR_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_mkdir} $${SO_DEPDIR_$(1)}
 
 $${SO_OBJDIR_$(1)}:
 	$$(call showlabel,"$${COLOR_SUPPORT}=== Creating directory $${COLOR_HL}$${SO_OBJDIR_$(1)}$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_MKDIR} $${SO_OBJDIR_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_mkdir} $${SO_OBJDIR_$(1)}
 
 $${SO_DEPDIR_$(1)}/%.d : ;
 
@@ -287,20 +287,20 @@ $${SO_OBJDIR_$(1)}/%.o : $${SO_SRCDIR_$(1)}/%.cpp | $${SO_OBJDIR_$(1)} $${SO_DEP
 .PHONY: infoshared_$(1)
 
 infoshared_$(1):
-	@${TOOL_ECHO} "The shared part defines these targets: [$${COLOR_INFO}$(1)_so $(1)_so_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1)_so clean_$(1)_so_only$${COLOR_0}]"
-	@${TOOL_ECHO} "The shared part depends on these libs: [$${COLOR_INFO}$(4)$${COLOR_0}]"
-	@${TOOL_ECHO} "The shared part is part of these targets: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
+	@${TOOL_echo} "The shared part defines these targets: [$${COLOR_INFO}$(1)_so $(1)_so_only$${COLOR_0}] [$${COLOR_INFO}clean_$(1)_so clean_$(1)_so_only$${COLOR_0}]"
+	@${TOOL_echo} "The shared part depends on these libs: [$${COLOR_INFO}$(4)$${COLOR_0}]"
+	@${TOOL_echo} "The shared part is part of these targets: [$${COLOR_INFO}$(2)$${COLOR_0}] [$${COLOR_INFO}$(3)$${COLOR_0}]"
 
 info_$(1): infoshared_$(1)
 
 
 $${SO_RESULT_$(1)}: $${SO_OBJ_$(1)} $(addsuffix },$(addprefix $${RESULT_,$(4)))
 	$$(call showlabel,"$${COLOR_SHARLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_LINKER} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
 
 $(1)_so_only: $${SO_OBJ_$(1)}
 	$$(call showlabel,"$${COLOR_SHARLIB}=== Creating shared library $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${SO_RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_LINKER} -shared $${SO_LDFLAGS_$(1)} -o $$@ $${SO_OBJ_$(1)}
 endef
 
 ############################################################
@@ -393,11 +393,11 @@ $(call define_staticcommon_part,$(1),$(2),$(3),$(4))
 
 $${RESULT_$(1)}: $${OBJ_$(1)}
 	$$(call showlabel, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_LINKER} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
 
 $(1)_only: $${OBJ_$(1)}
 	$$(call showlabel, "$${COLOR_PROGRAM}=== Linking program $${COLOR_HL}$$(subst $$(ROOTDIR)/,,$${RESULT_$(1)})$${COLOR_0}")
-	$(COMMAND_HIDE_PREFIX)${TOOL_CXX} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
+	$(COMMAND_HIDE_PREFIX)${TOOL_LINKER} $${OBJ_$(1)} $${LDFLAGS_$(1)} -o $${RESULT_$(1)}
 endef
 
 .PHONY: testrun
@@ -429,18 +429,18 @@ testrun_$(1): $(if ${TESTRUN_NO_DEPENDENCIES},,$(3))
 	$${TESTRUN_CLEANUP_$(1)}
 
 infotestrun_$(1):
-	@${TOOL_ECHO} "$${COLOR_HL}$(1)$${COLOR_0} defines a target that runs tests; can be run with $${COLOR_HL}make testrun_$(1)$${COLOR_0}"
-	@${TOOL_ECHO} "It is associated with $${COLOR_INFO}$(2)$${COLOR_0} and depends on $${COLOR_INFO}$(if ${TESTRUN_NO_DEPENDENCIES},,$(3))$${COLOR_0}".
+	@${TOOL_echo} "$${COLOR_HL}$(1)$${COLOR_0} defines a target that runs tests; can be run with $${COLOR_HL}make testrun_$(1)$${COLOR_0}"
+	@${TOOL_echo} "It is associated with $${COLOR_INFO}$(2)$${COLOR_0} and depends on $${COLOR_INFO}$(if ${TESTRUN_NO_DEPENDENCIES},,$(3))$${COLOR_0}".
 
 info_$(1): infotestrun_$(1)
 
 listtestrun_$(1):
-	@${TOOL_ECHO} "$(1)"
+	@${TOOL_echo} "$(1)"
 
 list: listtestrun_$(1)
 
 listtestrun2_$(1):
-	@${TOOL_ECHO} "testrun $(1)"
+	@${TOOL_echo} "testrun $(1)"
 
 list2: listtestrun2_$(1)
 
