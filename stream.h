@@ -24,7 +24,7 @@ typedef std::wfstream fstream_t;
 
 typedef std::wostringstream osstream_t;
 typedef std::wistringstream isstream_t;
-typedef std::wstringstream sstreamt_t;
+typedef std::wstringstream sstream_t;
 #else
 typedef std::ostream ostream_t;
 typedef std::istream istream_t;
@@ -35,7 +35,7 @@ typedef std::fstream fstream_t;
 
 typedef std::ostringstream osstream_t;
 typedef std::istringstream isstream_t;
-typedef std::stringstream sstreamt_t;
+typedef std::stringstream sstream_t;
 #endif // defined(JJ_USE_WSTRING)
 
 extern istream_t& cin; //!< alias to the system native standard input
@@ -71,7 +71,7 @@ public:
 /*! Expands to an expression which "in-line" uses default stringstream to convert
 given streamed values into a string. Usage:
 my_function_taking_string_as_parameter(jjS(jjT("the values are [") << a << jjT(',') << b << jjT(']'))) */
-#define jjS(text) (jj::AUX::SStreamWrap<jj::sstreamt_t>() << text).str()
+#define jjS(text) (jj::AUX::SStreamWrap<jj::sstream_t>() << text).str()
 /*! Expands to an expression which "in-line" uses given stringstream type to convert
 given streamed values into a string. Usage:
 throw MyException(jjS2(std::ostringstream, jjT("invalid argument [") << a << jjT(']'))) */

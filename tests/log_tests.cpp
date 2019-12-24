@@ -40,7 +40,7 @@ private:
 
 struct testTargetCnt : public jj::log::logTarget_base_t
 {
-    jj::sstreamt_t s;
+    jj::sstream_t s;
     size_t lines;
     testTargetCnt() : lines(0) {}
     virtual void log(const jj::log::message_t& log) override
